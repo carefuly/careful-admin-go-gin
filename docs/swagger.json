@@ -1,0 +1,36 @@
+{
+    "schemes": [
+        "http"
+    ],
+    "swagger": "2.0",
+    "info": {
+        "description": "CarefulAdmin 是一个高效、安全的企业级后台管理系统，提供完整的权限管理和数据可视化功能。\n功能模块包括: 用户管理、角色管理、部门管理、菜单管理、操作日志和数据字典等。",
+        "title": "CarefulAdmin 后台管理系统 API",
+        "termsOfService": "http://swagger.io/terms",
+        "contact": {
+            "name": "CJiaの用心 - 技术支持",
+            "url": "http://www.swagger.io/support",
+            "email": "2224693191@qq.com"
+        },
+        "license": {
+            "name": "Apache 2.0",
+            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+        },
+        "version": "1.0.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/dev-api",
+    "paths": {},
+    "securityDefinitions": {
+        "BearerAuth": {
+            "description": "JWT认证令牌，格式: \"Bearer {token}\"",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        }
+    },
+    "externalDocs": {
+        "description": "开源代码库",
+        "url": "https://github.com/carefuly/carefuly-admin-go-gin"
+    }
+}
