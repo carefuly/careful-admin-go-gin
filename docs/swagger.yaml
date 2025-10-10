@@ -1,4 +1,201 @@
 basePath: /dev-api
+definitions:
+  auth.LoginRequest:
+    properties:
+      password:
+        description: 密码
+        maxLength: 50
+        minLength: 6
+        type: string
+      username:
+        description: 用户名
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  auth.LoginResponse:
+    properties:
+      expire:
+        description: 过期时间(秒)
+        type: integer
+      token:
+        description: JWT令牌
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+        description: 用户信息
+    type: object
+  auth.RefreshTokenRequest:
+    properties:
+      token:
+        description: 旧的JWT令牌
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...
+        type: string
+    required:
+    - token
+    type: object
+  github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User:
+    properties:
+      avatar:
+        description: 头像
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      dept:
+        allOf:
+        - $ref: '#/definitions/system.Dept'
+        description: 部门
+      dept_id:
+        description: 部门ID
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      gender:
+        allOf:
+        - $ref: '#/definitions/user.GenderConst'
+        description: 性别
+      id:
+        description: 主键ID(自增)
+        type: string
+      mobile:
+        description: 电话
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 姓名
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
+  response.Response:
+    properties:
+      code:
+        description: HTTP状态码
+        type: integer
+      data:
+        description: 数据
+      msg:
+        description: 提示信息
+      request_id:
+        description: 请求ID
+        type: string
+      status:
+        description: '响应状态: success|error'
+        type: string
+      timestamp:
+        description: 时间戳
+        type: string
+    type: object
+  system.Dept:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      child_count:
+        description: 子部门数量
+        type: integer
+      children:
+        description: 关联查询字段（不存储到数据库）
+        items:
+          $ref: '#/definitions/system.Dept'
+        type: array
+      code:
+        description: 部门编码
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      id:
+        description: 主键ID(自增)
+        type: string
+      level:
+        description: 层级深度，根节点为0
+        type: integer
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      owner:
+        description: 负责人
+        type: string
+      parent:
+        allOf:
+        - $ref: '#/definitions/system.Dept'
+        description: 父部门信息
+      parent_id:
+        description: 上级部门ID
+        type: string
+      path:
+        description: 节点路径，格式：/1/2/3/"
+        type: string
+      phone:
+        description: 联系电话
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      user_count:
+        description: 用户数量
+        type: integer
+    type: object
+  user.GenderConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      GenderConstFemale: 女
+      GenderConstMale: 男
+      GenderConstSecret: 保密
+    x-enum-varnames:
+    - GenderConstMale
+    - GenderConstFemale
+    - GenderConstSecret
 externalDocs:
   description: 开源代码库
   url: https://github.com/carefuly/carefuly-admin-go-gin
@@ -17,7 +214,107 @@ info:
   termsOfService: http://swagger.io/terms
   title: CarefulAdmin 后台管理系统 API
   version: 1.0.0
-paths: {}
+paths:
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 账号密码登录
+      parameters:
+      - description: 参数信息
+        in: body
+        name: LoginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 账号密码登录
+      tags:
+      - 认证管理
+  /v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户退出登录
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 退出登录
+      tags:
+      - 认证管理
+  /v1/auth/profile:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取当前登录用户信息
+      tags:
+      - 认证管理
+  /v1/auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: 使用旧的JWT令牌获取新的令牌
+      parameters:
+      - description: 刷新令牌参数
+        in: body
+        name: RefreshTokenRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 刷新令牌
+      tags:
+      - 认证管理
 schemes:
 - http
 securityDefinitions:

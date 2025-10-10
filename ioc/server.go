@@ -112,8 +112,21 @@ func (s *Server) StaticPath() string {
 }
 
 func (s *Server) InitGinMiddlewares(rely config.RelyConfig) []gin.HandlerFunc {
+	// 超时配置
+	timeOutConfig := middleware.TimeoutConfig{
+		DefaultTimeout: 1 * time.Hour,
+	}
+
 	return []gin.HandlerFunc{
-		middleware.NewCorsMiddlewareBuilder().Build(),
+		middleware.NewCorsMiddlewareBuilder().Build(),                 // 跨域支持
+		middleware.NewProductionRecoveryMiddleware().Build(),          // 异常恢复
+		middleware.NewRequestTimeoutWithConfig(timeOutConfig).Build(), // 请求超时控制
+		middleware.NewLoginJWTMiddlewareBuilder(rely).
+			IgnorePaths("/dev-api/v1/auth/login").
+			IgnorePaths("/dev-api/v1/auth/refresh-token").
+			Build(), // 认证中间件
+		middleware.NewLogger(rely.Logger).Build(), // 请求日志
+		middleware.NewStorage(rely).Build(),       // 本地化日志
 	}
 }
 

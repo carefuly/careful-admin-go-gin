@@ -20,7 +20,447 @@
     },
     "host": "localhost:8080",
     "basePath": "/dev-api",
-    "paths": {},
+    "paths": {
+        "/v1/auth/login": {
+            "post": {
+                "description": "账号密码登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "账号密码登录",
+                "parameters": [
+                    {
+                        "description": "参数信息",
+                        "name": "LoginRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/logout": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "用户退出登录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "退出登录",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/profile": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取当前登录用户的详细信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "获取当前登录用户信息",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/auth/refresh-token": {
+            "post": {
+                "description": "使用旧的JWT令牌获取新的令牌",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "认证管理"
+                ],
+                "summary": "刷新令牌",
+                "parameters": [
+                    {
+                        "description": "刷新令牌参数",
+                        "name": "RefreshTokenRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RefreshTokenRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "auth.LoginRequest": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "description": "密码",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 6
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                }
+            }
+        },
+        "auth.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "expire": {
+                    "description": "过期时间(秒)",
+                    "type": "integer"
+                },
+                "token": {
+                    "description": "JWT令牌",
+                    "type": "string"
+                },
+                "user": {
+                    "description": "用户信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User"
+                        }
+                    ]
+                }
+            }
+        },
+        "auth.RefreshTokenRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "description": "旧的JWT令牌",
+                    "type": "string",
+                    "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp..."
+                }
+            }
+        },
+        "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "description": "头像",
+                    "type": "string"
+                },
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "dept": {
+                    "description": "部门",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/system.Dept"
+                        }
+                    ]
+                },
+                "dept_id": {
+                    "description": "部门ID",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "gender": {
+                    "description": "性别",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/user.GenderConst"
+                        }
+                    ]
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "mobile": {
+                    "description": "电话",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "姓名",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "username": {
+                    "description": "用户名",
+                    "type": "string"
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "HTTP状态码",
+                    "type": "integer"
+                },
+                "data": {
+                    "description": "数据"
+                },
+                "msg": {
+                    "description": "提示信息"
+                },
+                "request_id": {
+                    "description": "请求ID",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "响应状态: success|error",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "description": "时间戳",
+                    "type": "string"
+                }
+            }
+        },
+        "system.Dept": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "child_count": {
+                    "description": "子部门数量",
+                    "type": "integer"
+                },
+                "children": {
+                    "description": "关联查询字段（不存储到数据库）",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/system.Dept"
+                    }
+                },
+                "code": {
+                    "description": "部门编码",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "邮箱",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "level": {
+                    "description": "层级深度，根节点为0",
+                    "type": "integer"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string"
+                },
+                "owner": {
+                    "description": "负责人",
+                    "type": "string"
+                },
+                "parent": {
+                    "description": "父部门信息",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/system.Dept"
+                        }
+                    ]
+                },
+                "parent_id": {
+                    "description": "上级部门ID",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "节点路径，格式：/1/2/3/\"",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "联系电话",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "user_count": {
+                    "description": "用户数量",
+                    "type": "integer"
+                }
+            }
+        },
+        "user.GenderConst": {
+            "type": "integer",
+            "enum": [
+                1,
+                2,
+                3
+            ],
+            "x-enum-comments": {
+                "GenderConstFemale": "女",
+                "GenderConstMale": "男",
+                "GenderConstSecret": "保密"
+            },
+            "x-enum-varnames": [
+                "GenderConstMale",
+                "GenderConstFemale",
+                "GenderConstSecret"
+            ]
+        }
+    },
     "securityDefinitions": {
         "BearerAuth": {
             "description": "JWT认证令牌，格式: \"Bearer {token}\"",

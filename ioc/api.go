@@ -11,6 +11,7 @@ package ioc
 import (
 	"github.com/carefuly/careful-admin-go-gin/config"
 	"github.com/carefuly/careful-admin-go-gin/docs"
+	"github.com/carefuly/careful-admin-go-gin/internal/web/router"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/gin-gonic/gin"
 	swaggerfiles "github.com/swaggo/files"
@@ -37,15 +38,15 @@ func RegisterRoutes(debug bool, engine *gin.Engine, rely config.RelyConfig) {
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	// 创建API路由组
-	_ = engine.Group(apiPrefix)
-	// {
-	// 	// 版本化路由组
-	// 	v1 := apiGroup.Group("/v1")
-	// 	{
-	// 		// 注册标准系统相关路由
-	// 		careful.NewRouter(rely, v1).RegisterRoutes()
-	// 	}
-	// }
+	apiGroup := engine.Group(apiPrefix)
+	{
+		// 版本化路由组
+		v1 := apiGroup.Group("/v1")
+		{
+			// 注册所有路由
+			router.InitRouter(rely, v1)
+		}
+	}
 
 	// 注册404处理
 	engine.NoRoute(func(c *gin.Context) {

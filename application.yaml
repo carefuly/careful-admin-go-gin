@@ -12,7 +12,7 @@ application:
 nacos:
   host: '1.14.93.5'
   port: 8848
-  namespace: '415956b6-92b5-4bc2-87e7-0e4a99fb8d23'
+  namespace: '31c727b5-d8a9-421b-9b24-53b565a1091d'
   user: 'nacos'
   password: '152369cj'
   dataId: '.env.development.yaml'

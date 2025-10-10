@@ -11,6 +11,7 @@ package ioc
 import (
 	"fmt"
 	"github.com/carefuly/careful-admin-go-gin/config"
+	carefulAutoMigrate "github.com/carefuly/careful-admin-go-gin/internal/model/careful/autoMigrate"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -87,6 +88,7 @@ func initDatabase(database config.DatabaseDetail) (*gorm.DB, error) {
 
 		// 实际迁移操作应该在此处调用
 		// 迁移系统表
+		carefulAutoMigrate.AutoMigrate(db)
 
 		return db, nil
 	default:
