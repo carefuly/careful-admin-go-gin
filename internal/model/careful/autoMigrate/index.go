@@ -11,18 +11,27 @@ package autoMigrate
 import (
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/logger"
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
+	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/tools"
 	"gorm.io/gorm"
 )
 
 // AutoMigrate 迁移表
 func AutoMigrate(db *gorm.DB) {
 	// initSystem(db)
+	// initTools(db)
 	// initLogger(db)
 }
 
 func initSystem(db *gorm.DB) {
 	system.NewUser().AutoMigrate(db) // 用户表
 	system.NewDept().AutoMigrate(db) // 部门表
+}
+
+func initTools(db *gorm.DB) {
+	tools.NewDict().AutoMigrate(db)
+	// tools.NewDictType().AutoMigrate(db)
+	// tools.NewBucket().AutoMigrate(db)
+	// tools.NewFile().AutoMigrate(db)
 }
 
 func initLogger(db *gorm.DB) {

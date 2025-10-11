@@ -38,6 +38,34 @@ definitions:
     required:
     - token
     type: object
+  dict.TypeConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      TypeConstEnum: 枚举字典
+      TypeConstOrdinary: 普通字典
+      TypeConstSystem: 系统字典
+    x-enum-varnames:
+    - TypeConstOrdinary
+    - TypeConstSystem
+    - TypeConstEnum
+  dict.ValueTypeConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      ValueTypeConstBool: 布尔
+      ValueTypeConstInt: 整型
+      ValueTypeConstStr: 字符串
+    x-enum-varnames:
+    - ValueTypeConstStr
+    - ValueTypeConstInt
+    - ValueTypeConstBool
   github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User:
     properties:
       avatar:
@@ -96,6 +124,53 @@ definitions:
       username:
         description: 用户名
         type: string
+    type: object
+  github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.Dict:
+    properties:
+      belongDept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 字典编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      id:
+        description: 主键ID(自增)
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 字典名称
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      type:
+        allOf:
+        - $ref: '#/definitions/dict.TypeConst'
+        description: 字典类型
+      updateTime:
+        description: 更新时间
+        type: string
+      valueType:
+        allOf:
+        - $ref: '#/definitions/dict.ValueTypeConst'
+        description: 数据类型
     type: object
   response.Response:
     properties:
@@ -181,6 +256,87 @@ definitions:
       user_count:
         description: 用户数量
         type: integer
+    type: object
+  tools.CreateDictRequest:
+    properties:
+      code:
+        description: 字典编码
+        maxLength: 100
+        type: string
+      name:
+        description: 字典名称
+        maxLength: 100
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      type:
+        allOf:
+        - $ref: '#/definitions/dict.TypeConst'
+        default: 1
+        description: 字典分类
+      valueType:
+        allOf:
+        - $ref: '#/definitions/dict.ValueTypeConst'
+        default: 1
+        description: 字典值类型
+    required:
+    - code
+    - name
+    type: object
+  tools.DictListPageResponse:
+    properties:
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.Dict'
+        type: array
+      page:
+        description: 页码
+        type: integer
+      pageSize:
+        description: 每页数量
+        type: integer
+      total:
+        description: 总数
+        type: integer
+    type: object
+  tools.UpdateDictRequest:
+    properties:
+      code:
+        description: 字典编码
+        maxLength: 100
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      timestamp:
+        description: 版本
+        type: integer
+    required:
+    - code
+    - id
     type: object
   user.GenderConst:
     enum:
@@ -315,6 +471,354 @@ paths:
       summary: 刷新令牌
       tags:
       - 认证管理
+  /v1/tools/dict/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建字典
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateDictRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.CreateDictRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 创建字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id字典
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 删除字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除字典
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 批量删除字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出字典数据到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典名称
+        in: query
+        name: name
+        type: string
+      - description: 字典编码
+        in: query
+        name: code
+        type: string
+      - default: 1
+        description: 字典分类
+        in: query
+        name: type
+        required: true
+        type: integer
+      - default: 1
+        description: 字典值类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导出字典数据
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id字典信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.Dict'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 导入字典
+      parameters:
+      - description: 文件(支持xlsx/csv格式)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 导入字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有字典列表
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典名称
+        in: query
+        name: name
+        type: string
+      - description: 字典编码
+        in: query
+        name: code
+        type: string
+      - default: 0
+        description: 字典分类
+        in: query
+        name: type
+        required: true
+        type: integer
+      - default: 0
+        description: 字典值类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.Dict'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取所有字典
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取字典分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 字典名称
+        in: query
+        name: name
+        type: string
+      - description: 字典编码
+        in: query
+        name: code
+        type: string
+      - default: 0
+        description: 字典分类
+        in: query
+        name: type
+        required: true
+        type: integer
+      - default: 0
+        description: 字典值类型
+        in: query
+        name: valueType
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tools.DictListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 获取字典分页列表
+      tags:
+      - 系统工具/字典管理
+  /v1/tools/dict/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新字典信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateDictRequest
+        required: true
+        schema:
+          $ref: '#/definitions/tools.UpdateDictRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - LoginToken: []
+      summary: 更新字典
+      tags:
+      - 系统工具/字典管理
 schemes:
 - http
 securityDefinitions:

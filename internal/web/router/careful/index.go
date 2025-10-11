@@ -28,4 +28,6 @@ func NewRouter(rely config.RelyConfig, router *gin.RouterGroup) *Router {
 func (r *Router) RegisterRoutes() {
 	// 认证管理
 	NewAuthRouter(r.rely, r.router).RegisterRouter()
+	// 系统工具
+	NewToolsRouter(r.rely, r.router).RegisterRouter()
 }
