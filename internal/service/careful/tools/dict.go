@@ -79,6 +79,8 @@ func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) err
 			default:
 				return err
 			}
+		} else {
+			return err
 		}
 	}
 
@@ -137,6 +139,8 @@ func (svc *dictService) Update(ctx context.Context, domain domainTools.Dict) err
 					return err
 				}
 			}
+		} else {
+			return err
 		}
 	}
 

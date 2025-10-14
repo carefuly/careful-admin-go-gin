@@ -20,8 +20,8 @@ import (
 
 var (
 	ErrDictNotFound             = gorm.ErrRecordNotFound
-	ErrDictNameDuplicate        = errors.New("字典名称已存在")
 	ErrDictCodeDuplicate        = errors.New("字典编码已存在")
+	ErrDictNameDuplicate        = errors.New("字典名称已存在")
 	ErrDictDuplicate            = errors.New("字典信息已存在")
 	ErrDictVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
 )
