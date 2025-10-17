@@ -19,3 +19,8 @@ func ContainsAnySubstring(s string, subs ...string) bool {
 	}
 	return false
 }
+
+// CleanInputString 清理输入中的特殊字符
+func CleanInputString(input string) string {
+	return strings.TrimSpace(strings.NewReplacer("\n", "", "\r", "").Replace(input))
+}

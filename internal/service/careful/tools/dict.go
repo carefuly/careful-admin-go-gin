@@ -11,9 +11,18 @@ package tools
 import (
 	"context"
 	"errors"
+	"fmt"
+	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	domainTools "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/tools"
+	modelTools "github.com/carefuly/careful-admin-go-gin/internal/model/careful/tools"
 	repositoryTools "github.com/carefuly/careful-admin-go-gin/internal/repository/repository/careful/tools"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/tools/dict"
+	"github.com/carefuly/careful-admin-go-gin/pkg/models"
+	_import "github.com/carefuly/careful-admin-go-gin/pkg/utils/common/import"
+	_string "github.com/carefuly/careful-admin-go-gin/pkg/utils/common/string"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/enumconv"
 	"github.com/go-sql-driver/mysql"
+	"strconv"
 	"strings"
 )
 
@@ -27,7 +36,7 @@ var (
 
 type DictService interface {
 	Create(ctx context.Context, domain domainTools.Dict) error
-	Import(ctx context.Context, userId, deptId string, listMap []map[string]string)
+	Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, domain domainTools.Dict) error
@@ -88,8 +97,99 @@ func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) err
 }
 
 // Import 导入
-func (svc *dictService) Import(ctx context.Context, userId, deptId string, listMap []map[string]string) {
+func (svc *dictService) Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult {
+	result := _import.ImportResult{}
 
+	// 遍历数据
+	for index, list := range listMap {
+		rowNumber := index + 2
+
+		// 数据清洗
+		name := _string.CleanInputString(list["字典名称"])
+		code := _string.CleanInputString(list["字典编码"])
+
+		// 字段校验
+		if name == "" {
+			result.AddError(rowNumber, "【字典名称】不能为空")
+			continue
+		}
+		if code == "" {
+			result.AddError(rowNumber, "【字典编码】不能为空")
+			continue
+		}
+
+		// 唯一性校验
+		exists, err := svc.repo.CheckExistByName(ctx, name, "")
+		if err != nil {
+			result.AddError(rowNumber, fmt.Sprintf("检查【字典名称：%s】唯一性失败：%s", name, err.Error()))
+			continue
+		}
+		if exists {
+			result.AddError(rowNumber, fmt.Sprintf("字典名称【%s】已存在", name))
+			continue
+		}
+		exists, err = svc.repo.CheckExistByCode(ctx, code, "")
+		if err != nil {
+			result.AddError(rowNumber, fmt.Sprintf("检查【字典编码：%s】唯一性失败：%s", code, err.Error()))
+			continue
+		}
+		if exists {
+			result.AddError(rowNumber, fmt.Sprintf("字典编码【%s】已存在", code))
+			continue
+		}
+
+		// 类型转换
+		typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
+		converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+		dictType, err := converter.ToEnum(list["字典类型"])
+		if err != nil {
+			result.AddError(rowNumber, fmt.Sprintf("【字典类型】转换失败：%s", err.Error()))
+			continue
+		}
+		valueTypeValidValues := []string{"字符串", "整型", "布尔"}
+		valueTypeConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, valueTypeValidValues, "字典值类型")
+		valueType, err := valueTypeConverter.ToEnum(list["字典类型值"])
+		if err != nil {
+			result.AddError(rowNumber, fmt.Sprintf("【字典类型值】转换失败：%s", err.Error()))
+			continue
+		}
+
+		// 处理字段
+		var sort int
+		if list["排序"] == "" {
+			sort = 1
+		} else {
+			sort, _ = strconv.Atoi(list["排序"])
+		}
+
+		// 构建领域模型
+		domain := domainTools.Dict{
+			Dict: modelTools.Dict{
+				CoreModels: models.CoreModels{
+					Creator:    user.Id,
+					Modifier:   user.Id,
+					BelongDept: user.DeptId,
+					Sort:       sort,
+					Remark:     list["备注"],
+				},
+				Status:    true,
+				Name:      name,
+				Code:      code,
+				Type:      dictType,
+				ValueType: valueType,
+			},
+		}
+
+		// 创建记录
+		if _, err = svc.repo.Create(ctx, domain); err != nil {
+			result.AddError(rowNumber, "创建失败："+err.Error())
+			continue
+		}
+
+		result.SuccessCount++
+	}
+
+	return result
 }
 
 // Delete 删除

@@ -21,7 +21,9 @@ import (
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
 	"github.com/carefuly/careful-admin-go-gin/pkg/utils/enumconv"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/excelutil"
 	"github.com/carefuly/careful-admin-go-gin/pkg/utils/jwt"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/xlsx"
 	"github.com/carefuly/careful-admin-go-gin/pkg/validate"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -238,7 +240,17 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 		return
 	}
 
-	fmt.Println(user)
+	// 读取Excel文件
+	read, err := xlsx.NewXlsxFile(filePath).ReadSheetByName("字典模板")
+	if err != nil {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	result := h.svc.Import(ctx, user, read)
+	msg := fmt.Sprintf("导入成功【成功导入【%d】条数据, 失败【%d】条数据】", result.SuccessCount, result.FailCount)
+
+	response.NewResponse().Success(ctx, msg, result)
 }
 
 // Delete
@@ -575,5 +587,123 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 // @Router /v1/tools/dict/export [get]
 // @Security LoginToken
 func (h *dictHandler) Export(ctx *gin.Context) {
+	// 从上下文中获取登录信息
+	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
+	if !ok {
+		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserId)))
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
 
+	user, err := h.userSvc.GetById(ctx, claims.UserId)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取用户信息异常 >>> %v", err.Error()))
+		zap.S().Error("获取用户信息异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+
+	name := ctx.DefaultQuery("name", "")
+	code := ctx.DefaultQuery("code", "")
+	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	valueType, _ := strconv.Atoi(ctx.DefaultQuery("valueType", "0"))
+
+	filter := domainTools.DictFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: user.DeptId,
+		},
+		Status:    status,
+		Name:      name,
+		Code:      code,
+		Type:      dict.TypeConst(dictType),
+		ValueType: dict.ValueTypeConst(valueType),
+	}
+
+	list, err := h.svc.GetListAll(ctx, filter)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取列表异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 准备导出配置
+	filename := fmt.Sprintf("数据字典导出_%s.xlsx", time.Now().Format("20060102150405"))
+	cfg := excelutil.ExcelExportConfig{
+		SheetName:  "数据字典",
+		FileName:   filename,
+		StreamMode: true,
+		Columns: []excelutil.ExcelColumn{
+			{Title: "字典名称", Field: "Name", Width: 22},
+			{Title: "字典编码", Field: "Code", Width: 17},
+			{
+				Title: "字典编码",
+				Field: "Type",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
+					converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+					str, _ := converter.FromEnum(value.(dict.TypeConst))
+					return str
+				},
+			},
+			{
+				Title: "数据类型",
+				Field: "ValueType",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValueValidValues := []string{"字符串", "整型", "布尔"}
+					typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "数据类型")
+					str, _ := typeValueConverter.FromEnum(value.(dict.ValueTypeConst))
+					return str
+				},
+			},
+			{
+				Title: "状态",
+				Field: "Status",
+				Width: 10,
+				Formatter: func(value interface{}) string {
+					if status, ok := value.(bool); ok {
+						if status {
+							return "启用"
+						}
+						return "停用"
+					}
+					return fmt.Sprintf("%v", value)
+				},
+			},
+			{Title: "排序", Field: "Sort", Width: 8},
+			{Title: "创建时间", Field: "CreateTime", Width: 22},
+			{Title: "更新时间", Field: "UpdateTime", Width: 22},
+			{Title: "备注", Field: "Remark", Width: 40},
+		},
+		Data: list,
+	}
+
+	// 创建并执行导出器
+	exporter := excelutil.NewExcelExporter(&cfg)
+	f, err := exporter.Export()
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("导出数据字典异常 >>> %v", err.Error()))
+		zap.S().Error("导出数据字典异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Type", "application/octet-stream")
+	ctx.Header("Content-Disposition", "attachment; filename=export.xlsx")
+	ctx.Header("Pragma", "no-cache")
+	ctx.Header("Cache-Control", "no-store")
+
+	// 流式写入响应
+	if _, err := f.WriteTo(ctx.Writer); err != nil {
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "生成Excel失败", nil)
+	}
 }
