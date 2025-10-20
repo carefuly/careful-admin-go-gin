@@ -28,8 +28,8 @@ func initSystem(db *gorm.DB) {
 }
 
 func initTools(db *gorm.DB) {
-	tools.NewDict().AutoMigrate(db)
-	// tools.NewDictType().AutoMigrate(db)
+	// tools.NewDict().AutoMigrate(db)
+	tools.NewDictType().AutoMigrate(db)
 	// tools.NewBucket().AutoMigrate(db)
 	// tools.NewFile().AutoMigrate(db)
 }

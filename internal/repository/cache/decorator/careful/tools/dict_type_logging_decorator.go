@@ -1,8 +1,8 @@
 /**
  * Description：
- * FileName：dict_logging_decorator.go
+ * FileName：dict_type_logging_decorator.go
  * Author：CJiaの用心
- * Create：2025/10/11 11:58:05
+ * Create：2025/10/19 14:52:55
  * Remark：
  */
 
@@ -22,20 +22,20 @@ import (
 	"time"
 )
 
-type DictCacheLoggingDecorator struct {
-	cache  cacheTools.DictCache
+type DictTypeCacheLoggingDecorator struct {
+	cache  cacheTools.DictTypeCache
 	logger cacheRecord.CacheLogger
 }
 
-func NewDictCacheLoggingDecorator(cache cacheTools.DictCache, logger cacheRecord.CacheLogger) DictCacheLoggingDecorator {
-	return DictCacheLoggingDecorator{
+func NewDictTypeCacheLoggingDecorator(cache cacheTools.DictTypeCache, logger cacheRecord.CacheLogger) DictTypeCacheLoggingDecorator {
+	return DictTypeCacheLoggingDecorator{
 		cache:  cache,
 		logger: logger,
 	}
 }
 
 // 通用日志记录函数
-func (d *DictCacheLoggingDecorator) logOperation(
+func (d *DictTypeCacheLoggingDecorator) logOperation(
 	ctx context.Context,
 	key string,
 	value interface{},
@@ -78,20 +78,20 @@ func (d *DictCacheLoggingDecorator) logOperation(
 }
 
 // 从上下文中安全获取字符串值
-func (d *DictCacheLoggingDecorator) getStringFromContext(ctx context.Context, key string) string {
+func (d *DictTypeCacheLoggingDecorator) getStringFromContext(ctx context.Context, key string) string {
 	if val, ok := ctx.Value(key).(string); ok {
 		return val
 	}
 	return ""
 }
 
-func (d *DictCacheLoggingDecorator) Get(ctx context.Context, id string) (*domainTools.Dict, error) {
+func (d *DictTypeCacheLoggingDecorator) Get(ctx context.Context, id string) (*domainTools.DictType, error) {
 	start := time.Now()
 	result, err := d.cache.Get(ctx, id)
 
 	// 特殊处理"未找到"情况
 	var value interface{}
-	if errors.Is(err, cacheTools.ErrDictNotExist) {
+	if errors.Is(err, cacheTools.ErrDictTypeNotExist) {
 		value = "not_found"
 	} else if result != nil {
 		value = result
@@ -101,27 +101,27 @@ func (d *DictCacheLoggingDecorator) Get(ctx context.Context, id string) (*domain
 	return result, err
 }
 
-func (d *DictCacheLoggingDecorator) Set(ctx context.Context, domain domainTools.Dict) error {
+func (d *DictTypeCacheLoggingDecorator) Set(ctx context.Context, domain domainTools.DictType) error {
 	start := time.Now()
 	err := d.cache.Set(ctx, domain)
 	d.logOperation(ctx, domain.Id, domain, err, start)
 	return err
 }
 
-func (d *DictCacheLoggingDecorator) Del(ctx context.Context, id string) error {
+func (d *DictTypeCacheLoggingDecorator) Del(ctx context.Context, id string) error {
 	start := time.Now()
 	err := d.cache.Del(ctx, id)
 	d.logOperation(ctx, id, "not_found", err, start)
 	return err
 }
 
-func (d *DictCacheLoggingDecorator) SetNotFound(ctx context.Context, id string) error {
+func (d *DictTypeCacheLoggingDecorator) SetNotFound(ctx context.Context, id string) error {
 	start := time.Now()
 	err := d.cache.SetNotFound(ctx, id)
 	d.logOperation(ctx, id, "not_found", err, start)
 	return err
 }
 
-func (d *DictCacheLoggingDecorator) key(id string) string {
-	return fmt.Sprintf("%s:%s", cacheTools.ErrDictKey, id)
+func (d *DictTypeCacheLoggingDecorator) key(id string) string {
+	return fmt.Sprintf("%s:%s", cacheTools.ErrDictTypeKey, id)
 }

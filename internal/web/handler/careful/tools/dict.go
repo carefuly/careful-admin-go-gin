@@ -163,8 +163,8 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 		Dict: modelTools.Dict{
 			CoreModels: models.CoreModels{
 				Sort:       req.Sort,
-				Creator:    claims.UserId,
-				Modifier:   claims.UserId,
+				Creator:    user.Id,
+				Modifier:   user.Id,
 				BelongDept: user.DeptId,
 				Remark:     req.Remark,
 			},
@@ -488,8 +488,8 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取分页列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取分页列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典分页列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典分页列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -560,8 +560,8 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -627,8 +627,8 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

@@ -721,6 +721,613 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/tools/dictType/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除字典信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "批量删除字典信息",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/create": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建字典信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "创建字典信息",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreateDictTypeRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tools.CreateDictTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "删除字典信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/export": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导出字典信息到Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "导出字典信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典信息名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "primary",
+                        "description": "标签类型",
+                        "name": "dictTag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典名称",
+                        "name": "dictName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "数据类型",
+                        "name": "valueType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典id",
+                        "name": "dict_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id字典信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "获取字典信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/import": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导入字典信息",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "导入字典信息",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "文件(支持xlsx/csv格式)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有字典信息列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "获取所有字典信息",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典信息名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "primary",
+                        "description": "标签类型",
+                        "name": "dictTag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典名称",
+                        "name": "dictName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "数据类型",
+                        "name": "valueType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典id",
+                        "name": "dict_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/listByDictNames": {
+            "post": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "返回分层结构的字典项映射",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "根据字典名称批量查询字典项",
+                "parameters": [
+                    {
+                        "description": "字典名称数组",
+                        "name": "dictNames",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取字典信息分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "获取字典信息分页列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "字典信息名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "default": "primary",
+                        "description": "标签类型",
+                        "name": "dictTag",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典名称",
+                        "name": "dictName",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "数据类型",
+                        "name": "valueType",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "数据字典id",
+                        "name": "dict_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/tools.DictTypeListPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tools/dictType/update": {
+            "put": {
+                "security": [
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新字典信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统工具/字典信息管理"
+                ],
+                "summary": "更新字典信息",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateDictTypeRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tools.UpdateDictTypeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -813,6 +1420,30 @@ const docTemplate = `{
                 "ValueTypeConstStr",
                 "ValueTypeConstInt",
                 "ValueTypeConstBool"
+            ]
+        },
+        "dict_type.DictTagConst": {
+            "type": "string",
+            "enum": [
+                "primary",
+                "success",
+                "warning",
+                "danger",
+                "info"
+            ],
+            "x-enum-comments": {
+                "DictTagConstDanger": "danger",
+                "DictTagConstInfo": "info",
+                "DictTagConstPrimary": "primary",
+                "DictTagConstSuccess": "success",
+                "DictTagConstWarning": "warning"
+            },
+            "x-enum-varnames": [
+                "DictTagConstPrimary",
+                "DictTagConstSuccess",
+                "DictTagConstWarning",
+                "DictTagConstDanger",
+                "DictTagConstInfo"
             ]
         },
         "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User": {
@@ -958,6 +1589,171 @@ const docTemplate = `{
                 "updateTime": {
                     "description": "更新时间",
                     "type": "string"
+                },
+                "valueType": {
+                    "description": "数据类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.ValueTypeConst"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "boolValue": {
+                    "description": "布尔-字典信息值",
+                    "type": "boolean"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "dict": {
+                    "description": "数据字典",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_tools.Dict"
+                        }
+                    ]
+                },
+                "dictColor": {
+                    "description": "标签颜色",
+                    "type": "string"
+                },
+                "dictName": {
+                    "description": "字典名称",
+                    "type": "string"
+                },
+                "dictTag": {
+                    "description": "标签类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict_type.DictTagConst"
+                        }
+                    ]
+                },
+                "dict_id": {
+                    "description": "所属字典ID",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "intValue": {
+                    "description": "整型-字典信息值",
+                    "type": "integer"
+                },
+                "label": {
+                    "description": "名称",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "字典项名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "strValue": {
+                    "description": "字符串-字典信息值",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                },
+                "value": {
+                    "description": "值"
+                },
+                "valueType": {
+                    "description": "数据类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.ValueTypeConst"
+                        }
+                    ]
+                }
+            }
+        },
+        "github_com_carefuly_careful-admin-go-gin_internal_model_careful_tools.Dict": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "字典编码",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "字典名称",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "type": {
+                    "description": "字典类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict.TypeConst"
+                        }
+                    ]
                 },
                 "valueType": {
                     "description": "数据类型",
@@ -1140,6 +1936,68 @@ const docTemplate = `{
                 }
             }
         },
+        "tools.CreateDictTypeRequest": {
+            "type": "object",
+            "required": [
+                "dict_id",
+                "name"
+            ],
+            "properties": {
+                "boolValue": {
+                    "description": "布尔-字典信息值",
+                    "type": "boolean"
+                },
+                "dictColor": {
+                    "description": "标签颜色",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "dictTag": {
+                    "description": "标签类型",
+                    "default": "primary",
+                    "maxLength": 10,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict_type.DictTagConst"
+                        }
+                    ]
+                },
+                "dict_id": {
+                    "description": "字典ID",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "intValue": {
+                    "description": "整型-字典信息值",
+                    "type": "integer"
+                },
+                "name": {
+                    "description": "字典信息名称",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
+                "strValue": {
+                    "description": "字符串-字典信息值",
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
         "tools.DictListPageResponse": {
             "type": "object",
             "properties": {
@@ -1148,6 +2006,30 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.Dict"
+                    }
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页数量",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
+        "tools.DictTypeListPageResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType"
                     }
                 },
                 "page": {
@@ -1179,6 +2061,64 @@ const docTemplate = `{
                 "id": {
                     "description": "主键ID",
                     "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
+                "timestamp": {
+                    "description": "版本",
+                    "type": "integer"
+                }
+            }
+        },
+        "tools.UpdateDictTypeRequest": {
+            "type": "object",
+            "required": [
+                "dict_id",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "dictColor": {
+                    "description": "标签颜色",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "dictTag": {
+                    "description": "标签类型",
+                    "default": "primary",
+                    "maxLength": 10,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dict_type.DictTagConst"
+                        }
+                    ]
+                },
+                "dict_id": {
+                    "description": "字典ID",
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "字典信息名称",
+                    "type": "string",
+                    "maxLength": 50
                 },
                 "remark": {
                     "description": "备注",

@@ -8,7 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	system "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	tools "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/tools"
+	_import "github.com/carefuly/careful-admin-go-gin/pkg/utils/common/import"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -139,15 +141,17 @@ func (mr *MockDictServiceMockRecorder) GetListPage(ctx, filters interface{}) *go
 }
 
 // Import mocks base method.
-func (m *MockDictService) Import(ctx context.Context, userId, deptId string, listMap []map[string]string) {
+func (m *MockDictService) Import(ctx context.Context, user system.User, listMap []map[string]string) _import.ImportResult {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Import", ctx, userId, deptId, listMap)
+	ret := m.ctrl.Call(m, "Import", ctx, user, listMap)
+	ret0, _ := ret[0].(_import.ImportResult)
+	return ret0
 }
 
 // Import indicates an expected call of Import.
-func (mr *MockDictServiceMockRecorder) Import(ctx, userId, deptId, listMap interface{}) *gomock.Call {
+func (mr *MockDictServiceMockRecorder) Import(ctx, user, listMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockDictService)(nil).Import), ctx, userId, deptId, listMap)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockDictService)(nil).Import), ctx, user, listMap)
 }
 
 // Update mocks base method.
