@@ -1,0 +1,35 @@
+# 服务
+server:
+  host: "localhost"
+  port: 8080
+# 应用
+application:
+  name: "CarefulAdmin 后台管理"
+  version: "1.0.0"
+  environment: "development" # production
+  debug: true
+# 数据库
+database:
+  careful:
+    type: mysql
+    host: 127.0.0.1
+    port: 3306
+    username: root
+    password: 123456
+    dbname: careful_admin_go_gin
+    charset: utf8mb4
+    collation: ""
+    prefix: ""
+    maxIdleConn: 10
+    maxOpenConn: 100
+    connMaxLifetime: 30m
+# 缓存
+cache:
+  host: 127.0.0.1
+  port: 6379
+  password: ""
+  db: 0
+# token认证
+token:
+  secret: "tHHnEqc1fZzVx7vZnN1Bm7vUks4iw42L"
+  expire: 86400
