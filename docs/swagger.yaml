@@ -1,4 +1,155 @@
 basePath: /api
+definitions:
+  auth.LoginRequest:
+    properties:
+      password:
+        description: 密码
+        maxLength: 50
+        minLength: 6
+        type: string
+      username:
+        description: 用户名
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  auth.LoginResponse:
+    properties:
+      expire:
+        description: 过期时间(秒)
+        type: integer
+      token:
+        description: JWT令牌
+        type: string
+      user:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+        description: 用户信息
+    type: object
+  auth.RefreshTokenRequest:
+    properties:
+      token:
+        description: 旧的JWT令牌
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6Ikp...
+        type: string
+    required:
+    - token
+    type: object
+  github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User:
+    properties:
+      address:
+        description: 详细地址
+        type: string
+      avatar:
+        description: 头像
+        type: string
+      belongDept:
+        description: 数据归属部门
+        type: string
+      bio:
+        description: 个人简介
+        type: string
+      birthday:
+        description: 生日
+        type: string
+      city:
+        description: 所在城市
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      email:
+        description: 邮箱
+        type: string
+      gender:
+        allOf:
+        - $ref: '#/definitions/user.GenderConst'
+        description: 性别
+      id:
+        description: 主键ID(自增)
+        type: string
+      mobile:
+        description: 手机号
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 真实姓名
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        allOf:
+        - $ref: '#/definitions/user.Status'
+        description: 状态
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+      username:
+        description: 用户名
+        type: string
+    type: object
+  response.Response:
+    properties:
+      code:
+        description: HTTP状态码
+        type: integer
+      data:
+        description: 数据
+      msg:
+        description: 提示信息
+      request_id:
+        description: 请求ID
+        type: string
+      status:
+        description: '响应状态: success|error'
+        type: string
+      timestamp:
+        description: 时间戳
+        type: string
+    type: object
+  user.GenderConst:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      GenderConstFemale: 女
+      GenderConstMale: 男
+      GenderConstSecret: 保密
+    x-enum-varnames:
+    - GenderConstMale
+    - GenderConstFemale
+    - GenderConstSecret
+  user.Status:
+    enum:
+    - 1
+    - 2
+    - 3
+    type: integer
+    x-enum-comments:
+      StatusDisabled: 禁用
+      StatusLocked: 锁定
+      StatusNormal: 正常
+    x-enum-varnames:
+    - StatusNormal
+    - StatusDisabled
+    - StatusLocked
 externalDocs:
   description: 开源代码库
   url: https://github.com/carefuly/careful-admin-go-gin
@@ -17,7 +168,107 @@ info:
   termsOfService: http://swagger.io/terms
   title: CarefulAdmin 后台管理系统 API
   version: 1.0.0
-paths: {}
+paths:
+  /v1/auth/login:
+    post:
+      consumes:
+      - application/json
+      description: 账号密码登录
+      parameters:
+      - description: 参数信息
+        in: body
+        name: LoginRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 账号密码登录
+      tags:
+      - 认证管理
+  /v1/auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: 用户退出登录
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 退出登录
+      tags:
+      - 认证管理
+  /v1/auth/profile:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前登录用户的详细信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取当前登录用户信息
+      tags:
+      - 认证管理
+  /v1/auth/refresh-token:
+    post:
+      consumes:
+      - application/json
+      description: 使用旧的JWT令牌获取新的令牌
+      parameters:
+      - description: 刷新令牌参数
+        in: body
+        name: RefreshTokenRequest
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RefreshTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/auth.LoginResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: 刷新令牌
+      tags:
+      - 认证管理
 schemes:
 - http
 securityDefinitions:

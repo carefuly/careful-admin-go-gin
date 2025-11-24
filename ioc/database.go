@@ -11,6 +11,7 @@ package ioc
 import (
 	"fmt"
 	"github.com/carefuly/careful-admin-go-gin/config"
+	carefulAutoMigrate "github.com/carefuly/careful-admin-go-gin/internal/model/careful/auto_migrate"
 	"go.uber.org/zap"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -43,7 +44,7 @@ func (p *DbPool) initDatabases(databases map[string]config.DatabaseDetail) {
 		switch name {
 		case "careful":
 			p.Careful = db
-			configureConnectionPool(p.Careful, dbConfig)
+			// configureConnectionPool(p.Careful, dbConfig)
 		default:
 			zap.L().Warn("未知的数据库配置", zap.String("name", name))
 		}
@@ -81,7 +82,7 @@ func initDatabase(database config.DatabaseDetail) (*gorm.DB, error) {
 
 		// 实际迁移操作应该在此处调用
 		// 迁移系统表
-		// carefulAutoMigrate.AutoMigrate(db)
+		carefulAutoMigrate.AutoMigrate(db)
 
 		return db, nil
 	default:
