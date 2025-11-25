@@ -176,14 +176,27 @@ func GetOS(ua string) string {
 }
 
 // SaveLoginLog 保存登录日志
-func SaveLoginLog(c *gin.Context, user system.User, db *gorm.DB) {
+func SaveLoginLog(c *gin.Context, user system.User, loginResult bool, failureReason string, db *gorm.DB) {
 	ip := GetNormalizedRequestIP(c)
 	ua := GetUserAgent(c)
 
 	analysisData := GetIPAnalysis(ip)
 
+	// 处理用户信息，如果用户不存在（登录失败），则用户名从请求中获取，创建者和修改者设为0
+	var loginUsername string
+	var creator, modifier string
+	if user.Id != "" {
+		loginUsername = user.Username
+		creator = user.Id
+		modifier = user.Id
+	} else {
+		loginUsername = ""
+		creator = ""
+		modifier = ""
+	}
+
 	log := logger.LoginLogger{
-		LoginUsername:  user.Username,
+		LoginUsername:  loginUsername,
 		Ip:             ip,
 		Agent:          ua,
 		Browser:        GetBrowser(ua),
@@ -199,9 +212,11 @@ func SaveLoginLog(c *gin.Context, user system.User, db *gorm.DB) {
 		CountryCode:    analysisData.CountryCode,
 		Longitude:      analysisData.Longitude,
 		Latitude:       analysisData.Latitude,
+		LoginResult:    loginResult,   // 记录登录结果
+		FailureReason:  failureReason, // 记录失败原因
 		CoreModels: models.CoreModels{
-			Creator:  user.Id, // 假设用户ID字段为ID
-			Modifier: user.Id,
+			Creator:  creator,
+			Modifier: modifier,
 		},
 	}
 

@@ -33,9 +33,9 @@ type LoginRequest struct {
 
 // LoginResponse 登录响应
 type LoginResponse struct {
-	Token  string             `json:"token"`  // JWT令牌
-	Expire int                `json:"expire"` // 过期时间(秒)
-	User   *domainSystem.User `json:"user"`   // 用户信息
+	Token  string            `json:"token"`  // JWT令牌
+	Expire int               `json:"expire"` // 过期时间(秒)
+	User   domainSystem.User `json:"user"`   // 用户信息
 }
 
 // RefreshTokenRequest 刷新令牌请求
@@ -99,22 +99,21 @@ func (h *authHandler) LoginHandler(ctx *gin.Context) {
 		return
 	}
 
-	ipAddress := request_utils.GetNormalizedRequestIP(ctx)
-	userAgent := request_utils.GetUserAgent(ctx)
-
-	fmt.Println(ipAddress)
-	fmt.Println(userAgent)
-
 	// 调用业务逻辑
 	domain, err := h.userSvc.Login(ctx, req.Username, req.Password)
 	if err != nil {
+		var failureReason string
 		switch {
 		case errors.Is(err, serviceSystem.ErrUserInvalidCredential):
+			failureReason = "用户名或密码错误"
+			go request_utils.SaveLoginLog(ctx, domain, false, failureReason, h.rely.Db.Careful)
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "用户名或密码错误", nil)
 			return
 		default:
 			ctx.Set("internalError", fmt.Sprintf("用户登录异常 >>> %v", err.Error()))
 			zap.S().Error("用户登录异常 >>> ", zap.Error(err))
+			failureReason = "用户登录异常 >>> " + err.Error()
+			go request_utils.SaveLoginLog(ctx, domain, false, failureReason, h.rely.Db.Careful)
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -125,17 +124,35 @@ func (h *authHandler) LoginHandler(ctx *gin.Context) {
 	if err != nil {
 		ctx.Set("internalError", fmt.Sprintf("生成令牌异常 >>> %v", err.Error()))
 		zap.S().Error("生成令牌异常 >>> ", zap.Error(err))
+		// 即使令牌生成失败，用户认证也是成功的，这里记录为成功但附带失败信息，或者根据业务定义
+		// 通常认为认证成功即登录成功，令牌问题是后续问题。但为了精确，也可以记录为失败。
+		// 这里选择记录为成功，并在失败原因中说明令牌问题。
+		failureReason := "生成令牌异常 >>> " + err.Error()
+		go request_utils.SaveLoginLog(ctx, domain, true, failureReason, h.rely.Db.Careful)
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
-	// 记录登录日志
-	go request_utils.SaveLoginLog(ctx, domain, h.rely.Db.Careful)
+	// 登录成功
+	lastLogin := time.Now().Format("2006-01-02 15:04:05.999")
+	lastLoginIp := request_utils.GetNormalizedRequestIP(ctx)
+	// 记录登录后的时间和ip
+	err = h.userSvc.UpdateLoginField(ctx, lastLogin, lastLoginIp, domain)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("修改登录时间和ip异常 >>> %v", err.Error()))
+		zap.S().Error("修改登录时间和ip异常 >>> ", zap.Error(err))
+		// 记录登录成功，但更新用户信息失败的日志
+		go request_utils.SaveLoginLog(ctx, domain, true, "登录成功，但更新用户最后登录信息失败: "+err.Error(), h.rely.Db.Careful)
+	} else {
+		// 记录登录成功的日志
+		go request_utils.SaveLoginLog(ctx, domain, true, "登录成功", h.rely.Db.Careful)
+	}
 
 	// 返回用户信息和令牌
 	response.NewResponse().Success(ctx, "登录成功", LoginResponse{
 		Token:  token,
 		Expire: h.rely.Token.Expire * 3600,
+		User:   domain,
 	})
 }
 
@@ -183,7 +200,7 @@ func (h *authHandler) RefreshTokenHandler(ctx *gin.Context) {
 	}
 
 	// 获取用户信息
-	domain, err := h.userSvc.GetById(ctx, claims.UserId)
+	domain, err := h.userSvc.GetById(ctx, claims.UserID)
 	if err != nil {
 		if errors.Is(err, serviceSystem.ErrUserNotFound) {
 			response.NewResponse().Error(ctx, http.StatusUnauthorized, "用户不存在", nil)
@@ -208,6 +225,7 @@ func (h *authHandler) RefreshTokenHandler(ctx *gin.Context) {
 	response.NewResponse().Success(ctx, "登录成功", LoginResponse{
 		Token:  token,
 		Expire: h.rely.Token.Expire * 3600,
+		User:   domain,
 	})
 }
 
@@ -226,7 +244,7 @@ func (h *authHandler) LogoutHandler(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
-		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserId)))
+		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserID)))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -264,7 +282,7 @@ func (h *authHandler) LogoutHandler(ctx *gin.Context) {
 	}
 
 	// 将token加入黑名单
-	if err := h.blacklistSvc.Add(ctx, tokenStr, claims.UserId, remainingTime); err != nil {
+	if err := h.blacklistSvc.Add(ctx, tokenStr, claims.UserID, remainingTime); err != nil {
 		ctx.Set("internalError", fmt.Sprintf("将token加入黑名单失败 >>> %v", err.Error()))
 		zap.S().Error("将token加入黑名单失败 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
@@ -290,13 +308,13 @@ func (h *authHandler) ProfileHandler(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
-		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserId)))
+		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserID)))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
 	// 根据id获取用户信息
-	domain, err := h.userSvc.GetById(ctx, claims.UserId)
+	domain, err := h.userSvc.GetById(ctx, claims.UserID)
 	if err != nil {
 		if errors.Is(err, serviceSystem.ErrUserNotFound) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "用户不存在", nil)

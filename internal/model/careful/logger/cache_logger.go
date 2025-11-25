@@ -19,15 +19,15 @@ type CacheLogger struct {
 	models.CoreModels
 
 	Status        bool   `gorm:"type:boolean;index:idx_status;default:true;column:status;comment:状态【true-启用 false-停用】" json:"status"` // 状态
-	CacheHost     string `gorm:"size:100;column:cacheHost;comment:当前主机地址" json:"cacheHost"`                                           // 当前主机地址
-	CacheIp       string `gorm:"size:100;column:cacheIp;comment:缓存者IP" json:"cacheIp"`                                                // 缓存者IP
-	CacheUsername string `gorm:"size:40;index:idx_search;column:cacheUsername;comment:缓存用户名" json:"cacheUsername"`                    // 缓存用户名
-	CacheMethod   string `gorm:"size:10;index:idx_search;column:cacheMethod;comment:缓存请求方式" json:"cacheMethod"`                       // 缓存请求方式
-	CachePath     string `gorm:"size:255;column:cachePath;comment:缓存请求地址" json:"cachePath"`                                           // 缓存请求地址
-	CacheTime     string `gorm:"size:255;column:cacheTime;comment:缓存记录时间" json:"cacheTime"`                                           // 缓存记录时间
-	CacheKey      string `gorm:"size:255;column:cacheKey;comment:缓存key键" json:"cacheKey"`                                             // 缓存请求地址
-	CacheValue    string `gorm:"type:mediumtext;column:cacheValue;comment:缓存value值" json:"cacheValue"`                                // 缓存value值
-	CacheError    string `gorm:"size:255;column:cacheError;comment:缓存Error错误" json:"cacheError"`                                      // 缓存Error错误
+	CacheHost     string `gorm:"size:100;column:cache_host;comment:当前主机地址" json:"cache_host"`                                         // 当前主机地址
+	CacheIp       string `gorm:"size:100;column:cache_ip;comment:缓存者IP" json:"cache_ip"`                                              // 缓存者IP
+	CacheUsername string `gorm:"size:40;index;column:cache_username;comment:缓存用户名" json:"cache_username"`                             // 缓存用户名
+	CacheMethod   string `gorm:"size:10;index;column:cache_method;comment:缓存请求方式" json:"cache_method"`                                // 缓存请求方式
+	CachePath     string `gorm:"size:255;column:cache_path;comment:缓存请求地址" json:"cache_path"`                                         // 缓存请求地址
+	CacheTime     string `gorm:"size:255;column:cache_time;comment:缓存记录时间" json:"cache_time"`                                         // 缓存记录时间
+	CacheKey      string `gorm:"size:255;column:cache_key;comment:缓存key键" json:"cache_key"`                                           // 缓存请求地址
+	CacheValue    string `gorm:"type:mediumtext;column:cache_value;comment:缓存value值" json:"cache_value"`                              // 缓存value值
+	CacheError    string `gorm:"size:255;column:cache_error;comment:缓存Error错误" json:"cache_error"`                                    // 缓存Error错误
 }
 
 func NewCacheLogger() *CacheLogger {

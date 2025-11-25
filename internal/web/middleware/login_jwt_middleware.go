@@ -146,15 +146,18 @@ func (l *LoginJWTMiddlewareBuilder) Build() gin.HandlerFunc {
 		// 通过 gin.Context.Set() 方法存储数据时，需要指定一个键，以便在后续的中间件或处理程序中访问该数据。
 		// 通过 gin.Context.Get() 方法获取数据时，需要指定相同的键。
 
-		ctx.Set("requestIp", request_utils.GetNormalizedRequestIP(ctx))
 		ctx.Set("request", ctx.Request)
+		ctx.Set("request_ip", request_utils.GetNormalizedRequestIP(ctx))
 
 		// 将用户信息存储到上下文
 		ctx.Set("claims", claims)
-		ctx.Set("userId", claims.UserId)
+		// 精确信息
+		ctx.Set("user_id", claims.UserID)
+		ctx.Set("dept_id", claims.DeptID)
 		ctx.Set("username", claims.UserInfo["username"])
-		ctx.Set("userInfo", claims.UserInfo)
-		ctx.Set("X-Request-ID", claims.UserId)
+		ctx.Set("user_info", claims.UserInfo)
+		// 其他信息
+		ctx.Set("X-Request-ID", claims.UserID)
 
 		ctx.Next()
 	}
@@ -172,7 +175,7 @@ func (l *LoginJWTMiddlewareBuilder) containsAnySubstring(str string, subs []stri
 
 // GetUserIDFromContext 从上下文中获取用户ID
 func (l *LoginJWTMiddlewareBuilder) GetUserIDFromContext(ctx *gin.Context) (string, error) {
-	userID, exists := ctx.Get("userId")
+	userID, exists := ctx.Get("user_id")
 	if !exists {
 		return "", errors.New("用户ID未找到")
 	}
@@ -182,7 +185,7 @@ func (l *LoginJWTMiddlewareBuilder) GetUserIDFromContext(ctx *gin.Context) (stri
 
 // GetUserInfoFromContext 从上下文中获取用户信息
 func (l *LoginJWTMiddlewareBuilder) GetUserInfoFromContext(ctx *gin.Context) (map[string]interface{}, error) {
-	userInfo, exists := ctx.Get("userInfo")
+	userInfo, exists := ctx.Get("user_info")
 	if !exists {
 		return nil, errors.New("用户信息未找到")
 	}

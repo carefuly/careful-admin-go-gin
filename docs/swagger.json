@@ -238,6 +238,27 @@
                 }
             }
         },
+        "dept.Type": {
+            "type": "string",
+            "enum": [
+                "company",
+                "department",
+                "team",
+                "other"
+            ],
+            "x-enum-comments": {
+                "TypeCompany": "公司",
+                "TypeDepartment": "部门",
+                "TypeOther": "其他",
+                "TypeTeam": "小组"
+            },
+            "x-enum-varnames": [
+                "TypeCompany",
+                "TypeDepartment",
+                "TypeTeam",
+                "TypeOther"
+            ]
+        },
         "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User": {
             "type": "object",
             "properties": {
@@ -273,6 +294,18 @@
                     "description": "创建人",
                     "type": "string"
                 },
+                "dept": {
+                    "description": "部门",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/system.Dept"
+                        }
+                    ]
+                },
+                "dept_id": {
+                    "description": "部门ID",
+                    "type": "string"
+                },
                 "email": {
                     "description": "邮箱",
                     "type": "string"
@@ -287,6 +320,18 @@
                 },
                 "id": {
                     "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "is_superuser": {
+                    "description": "是否为超级管理员",
+                    "type": "boolean"
+                },
+                "last_login": {
+                    "description": "最后登录时间",
+                    "type": "string"
+                },
+                "last_login_ip": {
+                    "description": "最后登录IP",
                     "type": "string"
                 },
                 "mobile": {
@@ -355,6 +400,110 @@
                 "timestamp": {
                     "description": "时间戳",
                     "type": "string"
+                }
+            }
+        },
+        "system.Dept": {
+            "type": "object",
+            "properties": {
+                "belongDept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "child_count": {
+                    "description": "子部门数量",
+                    "type": "integer"
+                },
+                "children": {
+                    "description": "子部门列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/system.Dept"
+                    }
+                },
+                "code": {
+                    "description": "部门编码",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "dept_type": {
+                    "description": "部门类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dept.Type"
+                        }
+                    ]
+                },
+                "description": {
+                    "description": "部门描述",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "部门邮箱",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "level": {
+                    "description": "关联查询字段",
+                    "type": "integer"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string"
+                },
+                "owner": {
+                    "description": "部门负责人",
+                    "type": "string"
+                },
+                "parent": {
+                    "description": "父部门",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/system.Dept"
+                        }
+                    ]
+                },
+                "parent_id": {
+                    "description": "上级部门",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "部门路径，格式：/1/2/3/",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "部门电话",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "user_count": {
+                    "description": "用户数量",
+                    "type": "integer"
                 }
             }
         },

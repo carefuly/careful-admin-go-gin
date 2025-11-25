@@ -13,7 +13,7 @@ import (
 	"errors"
 	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	repositorySystem "github.com/carefuly/careful-admin-go-gin/internal/repository/repository/careful/system"
-	user "github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system/user"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -26,6 +26,9 @@ var (
 
 type UserService interface {
 	Login(ctx context.Context, username, password string) (domainSystem.User, error)
+
+	UpdateLoginField(ctx context.Context, lastLogin string, lastLoginIp string, domain domainSystem.User) error
+
 	GetById(ctx context.Context, id string) (domainSystem.User, error)
 }
 
@@ -64,6 +67,11 @@ func (svc *userService) Login(ctx context.Context, username, password string) (d
 	}
 
 	return domain, nil
+}
+
+// UpdateLoginField 更新登录字段
+func (svc *userService) UpdateLoginField(ctx context.Context, lastLogin string, lastLoginIp string, domain domainSystem.User) error {
+	return svc.repo.UpdateLoginField(ctx, lastLogin, lastLoginIp, domain)
 }
 
 // GetById 获取详情

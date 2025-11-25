@@ -32,4 +32,4 @@ cache:
 # token认证
 token:
   secret: "tHHnEqc1fZzVx7vZnN1Bm7vUks4iw42L"
-  expire: 86400
+  expire: 1

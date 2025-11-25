@@ -22,10 +22,11 @@ func AutoMigrate(db *gorm.DB) {
 
 func initSystem(db *gorm.DB) {
 	system.NewUser().AutoMigrate(db) // 用户表
+	system.NewDept().AutoMigrate(db) // 部门表
 }
 
 func initLogger(db *gorm.DB) {
 	logger.NewLoginLogger().AutoMigrate(db)   // 登录日志表
 	logger.NewOperateLogger().AutoMigrate(db) // 操作日志表
-	logger.NewCacheLogger().AutoMigrate(db) // 缓存日志表
+	logger.NewCacheLogger().AutoMigrate(db)   // 缓存日志表
 }

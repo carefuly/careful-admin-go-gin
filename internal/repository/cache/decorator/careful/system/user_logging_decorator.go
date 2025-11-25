@@ -49,12 +49,12 @@ func (d *UserCacheLoggingDecorator) logOperation(
 
 	entity := &modelLogger.CacheLogger{
 		CoreModels: models.CoreModels{
-			Creator:    getStringFromContext(ctx, "userId"),
-			Modifier:   getStringFromContext(ctx, "userId"),
-			BelongDept: getStringFromContext(ctx, "deptId"),
+			Creator:    getStringFromContext(ctx, "user_id"),
+			Modifier:   getStringFromContext(ctx, "user_id"),
+			BelongDept: getStringFromContext(ctx, "dept_id"),
 		},
 		CacheHost:     request.Host,
-		CacheIp:       getStringFromContext(ctx, "requestIp"),
+		CacheIp:       getStringFromContext(ctx, "request_ip"),
 		CacheUsername: getStringFromContext(ctx, "username"),
 		CacheMethod:   request.Method,
 		CachePath:     request.URL.Path,

@@ -10,10 +10,13 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"github.com/carefuly/careful-admin-go-gin/config"
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
 	"github.com/carefuly/careful-admin-go-gin/ioc"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system/dept"
+	"github.com/carefuly/careful-admin-go-gin/pkg/models"
 	uuid7 "github.com/gofrs/uuid"
 	uuid4 "github.com/google/uuid"
 	"go.uber.org/zap"
@@ -47,6 +50,14 @@ func main() {
 
 	// 自动迁移表
 	system.NewUser().AutoMigrate(configManager.RelyConfig.Db.Careful)
+	system.NewDept().AutoMigrate(configManager.RelyConfig.Db.Careful)
+
+	// 创建部门
+	err := ensureDefaultDept(configManager.RelyConfig.Db.Careful)
+	if err != nil {
+		fmt.Printf("创建部门失败: %v\n", err)
+		os.Exit(1)
+	}
 
 	// 创建超级用户
 	if err := createSuperUser(configManager.RelyConfig.Db.Careful); err != nil {
@@ -55,6 +66,99 @@ func main() {
 	}
 
 	fmt.Println("超级用户创建成功！")
+}
+
+// ensureDefaultDept 创建根部门
+func ensureDefaultDept(db *gorm.DB) error {
+	var count int64
+	if err := db.Model(&system.Dept{}).Count(&count).Error; err != nil {
+		return fmt.Errorf("检查部门表失败: %v", err)
+	}
+
+	// 如果没有部门，创建根部门
+	if count == 0 {
+		// -------------------------- 1. 初始化根部门 (ID = "root") --------------------------
+		var rootDept system.Dept
+		rootDeptID := "root" // 根部门的固定ID
+		// 先查询ID为 "root" 的部门是否存在
+		if err := db.Where("id = ?", rootDeptID).First(&rootDept).Error; err != nil {
+			// 如果不存在，则创建根部门
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				rootDept = system.Dept{
+					CoreModels: models.CoreModels{
+						Id:        rootDeptID, // 直接指定ID为 "root"
+						Timestamp: generateTimestamp(),
+						Remark:    "根部门",
+					},
+					Status:      true,
+					Name:        "根部门",  // 根部门的名称
+					Code:        "ROOT", // 根部门的编码
+					DeptType:    dept.TypeOther,
+					Owner:       "",
+					Phone:       "",
+					Email:       "",
+					Description: "",
+					ParentID:    nil,
+					Parent:      nil,
+					Level:       0,   // 根节点层级为0
+					Path:        "/", // 根部门的路径
+					UserCount:   0,
+					ChildCount:  0,
+					Children:    nil,
+				}
+				rootDept.Id = "root"
+				if err := db.Create(&rootDept).Error; err != nil {
+					// 创建根部门失败
+					return err
+				}
+			} else {
+				// 查询过程中发生未知错误
+				return err
+			}
+		}
+		// -------------------------- 2. 初始化默认公司部门 --------------------------
+		var defaultCompany system.Dept
+		defaultCompanyCode := "CAREFUL-COMPANY" // 默认公司的编码
+		// 先查询编码为 "CAREFUL-COMPANY" 的部门是否存在
+		if err := db.Where("code = ?", defaultCompanyCode).First(&defaultCompany).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				// 创建默认公司部门，并将其父部门ID设为 "root"
+				defaultCompany = system.Dept{
+					CoreModels: models.CoreModels{
+						Id:        generateId(),
+						Timestamp: generateTimestamp(),
+					},
+					Status:      true,
+					Name:        "用心集团有限公司", // 默认公司名称
+					Code:        defaultCompanyCode,
+					DeptType:    dept.TypeDepartment,
+					Owner:       "",
+					Phone:       "",
+					Email:       "",
+					Description: "",
+					ParentID:    &rootDeptID, // 父部门ID指向根部门的ID "root"
+					Parent:      nil,
+					Level:       1, // 层级为1，表示是根部门的子部门
+					// Path:        "/" + defaultCompany.Id + "/", // 路径由父部门路径和自身ID组成
+					UserCount:  0,
+					ChildCount: 0,
+					Children:   nil,
+				}
+				// 路径由父部门路径和自身ID组成
+				defaultCompany.Path = "/" + defaultCompany.Id + "/"
+				if err := db.Create(&defaultCompany).Error; err != nil {
+					// 创建默认公司部门失败
+					return err
+				}
+			} else {
+				// 查询过程中发生未知错误
+				return err
+			}
+		}
+		fmt.Println("已创建根部门和默认部门")
+	}
+
+	return nil
 }
 
 // createSuperUser 创建超级用户
@@ -162,6 +266,39 @@ func createSuperUser(db *gorm.DB) error {
 	bio, _ := reader.ReadString('\n')
 	user.Bio = strings.TrimSpace(bio)
 
+	// 获取可用部门列表
+	var deptList []system.Dept
+	if err := db.Where("id != ?", "root").
+		Where("status = ?", true).
+		Find(&deptList).Error; err != nil {
+		return fmt.Errorf("获取部门列表失败: %v", err)
+	}
+	fmt.Println("\n可用部门:")
+	fmt.Println("0. 不分配部门")
+	for i, d := range deptList {
+		fmt.Printf("%d. %s (%s)\n", i+1, d.Name, d.Code)
+	}
+
+	// 设置创建者和部门
+	// 选择部门
+	fmt.Printf("请选择部门 [0-%d] (0表示不分配部门): ", len(deptList))
+	deptInput, _ := reader.ReadString('\n')
+	deptInput = strings.TrimSpace(deptInput)
+
+	if deptInput == "" || deptInput == "0" {
+		user.DeptID = nil // 不分配部门
+		fmt.Println("用户将不分配到任何部门")
+	} else {
+		// 解析用户输入
+		var deptIndex int
+		if _, err := fmt.Sscanf(deptInput, "%d", &deptIndex); err != nil || deptIndex < 1 || deptIndex > len(deptList) {
+			return fmt.Errorf("无效的部门选择")
+		}
+		selectedDept := &deptList[deptIndex-1]
+		user.DeptID = &selectedDept.Id
+		fmt.Printf("用户将分配到部门: %s\n", selectedDept.Name)
+	}
+
 	// 验证数据 (如果 Validate 方法已实现)
 	if err := user.Validate(); err != nil {
 		return err
@@ -169,6 +306,7 @@ func createSuperUser(db *gorm.DB) error {
 
 	user.Id = generateId()
 	user.Timestamp = generateTimestamp()
+	user.IsSuperuser = true
 
 	// 创建用户
 	if err := db.Create(user).Error; err != nil {
@@ -192,6 +330,14 @@ func createSuperUser(db *gorm.DB) error {
 	fmt.Printf("所在城市: %s\n", user.City)
 	fmt.Printf("详细地址: %s\n", user.Address)
 	fmt.Printf("个人简介: %s\n", user.Bio)
+	if user.DeptID != nil {
+		var d system.Dept
+		if err := db.Where("id = ?", user.DeptID).First(&d).Error; err == nil {
+			fmt.Printf("所属部门: %s\n", d.Name)
+		}
+	} else {
+		fmt.Println("未分配部门")
+	}
 
 	return nil
 }

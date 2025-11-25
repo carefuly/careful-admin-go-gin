@@ -24,19 +24,20 @@ var (
 
 type Claims struct {
 	jwt.RegisteredClaims
-	UserId    string                 `json:"userId"`    // 用户ID
-	Username  string                 `json:"username"`  // 用户名
-	UserAgent string                 `json:"userAgent"` // 用户代理
-	UserInfo  map[string]interface{} `json:"userInfo"`  // 用户信息(精简版)
+	UserID    string                 `json:"user_id"`    // 用户ID
+	Username  string                 `json:"username"`   // 用户名
+	DeptID    *string                `json:"dept_id"`    // 部门ID
+	UserAgent string                 `json:"user_agent"` // 用户代理
+	UserInfo  map[string]interface{} `json:"user_info"`  // 用户信息(精简版)
 }
 
 // TokenConfig JWT配置
 type TokenConfig struct {
-	Secret      string        `json:"secret"`      // 密钥
-	ExpireHours int           `json:"expireHours"` // 过期时间(小时)
-	Issuer      string        `json:"issuer"`      // 签发者
-	Audience    []string      `json:"audience"`    // 接收方
-	MaxRefresh  time.Duration `json:"maxRefresh"`  // 最大刷新时间
+	Secret      string        `json:"secret"`       // 密钥
+	ExpireHours int           `json:"expire_hours"` // 过期时间(小时)
+	Issuer      string        `json:"issuer"`       // 签发者
+	Audience    []string      `json:"audience"`     // 接收方
+	MaxRefresh  time.Duration `json:"max_refresh"`  // 最大刷新时间
 }
 
 // TokenService JWT服务接口
@@ -61,6 +62,7 @@ func (s *DefaultJWTService) GenerateToken(ctx *gin.Context, userId string, userI
 	essentialUserInfo := map[string]interface{}{
 		"id":       userInfo.Id,
 		"username": userInfo.Username,
+		"dept_id":  userInfo.DeptID,
 		// 只包含必要信息，避免令牌过大
 	}
 
@@ -69,8 +71,9 @@ func (s *DefaultJWTService) GenerateToken(ctx *gin.Context, userId string, userI
 	expiresAt := now.Add(time.Hour * time.Duration(s.config.ExpireHours))
 
 	claims := Claims{
-		UserId:    userId,
+		UserID:    userId,
 		Username:  userInfo.Username,
+		DeptID:    userInfo.DeptID,
 		UserAgent: ctx.GetHeader("User-Agent"),
 		UserInfo:  essentialUserInfo,
 		RegisteredClaims: jwt.RegisteredClaims{

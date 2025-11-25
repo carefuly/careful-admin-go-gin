@@ -16,6 +16,7 @@ import (
 	cacheSystem "github.com/carefuly/careful-admin-go-gin/internal/repository/cache/careful/system"
 	cacheDecorator "github.com/carefuly/careful-admin-go-gin/internal/repository/cache/decorator/careful/system"
 	daoSystem "github.com/carefuly/careful-admin-go-gin/internal/repository/dao/careful/system"
+	"github.com/carefuly/careful-admin-go-gin/pkg/models"
 	"go.uber.org/zap"
 )
 
@@ -24,6 +25,8 @@ var (
 )
 
 type UserRepository interface {
+	UpdateLoginField(ctx context.Context, lastLogin string, lastLoginIp string, domain domainSystem.User) error
+
 	GetById(ctx context.Context, id string) (domainSystem.User, error)
 	GetByUsername(ctx context.Context, username string) (domainSystem.User, error)
 }
@@ -38,6 +41,11 @@ func NewUserRepository(dao daoSystem.UserDAO, cache cacheDecorator.UserCacheLogg
 		dao:   dao,
 		cache: cache,
 	}
+}
+
+// UpdateLoginField 更新登录字段
+func (repo *userRepository) UpdateLoginField(ctx context.Context, lastLogin string, lastLoginIp string, domain domainSystem.User) error {
+	return repo.dao.UpdateLoginField(ctx, lastLogin, lastLoginIp, repo.toEntity(domain))
 }
 
 // GetById 根据ID获取
@@ -80,6 +88,37 @@ func (repo *userRepository) GetByUsername(ctx context.Context, username string) 
 		return domainSystem.User{}, err
 	}
 	return repo.toDomain(user), nil
+}
+
+// toEntity 转换为实体模型
+func (repo *userRepository) toEntity(domain domainSystem.User) modelSystem.User {
+	return modelSystem.User{
+		CoreModels: models.CoreModels{
+			Id:         domain.Id,
+			Sort:       domain.Sort,
+			Timestamp:  domain.Timestamp,
+			Creator:    domain.Creator,
+			Modifier:   domain.Modifier,
+			BelongDept: domain.BelongDept,
+			Remark:     domain.Remark,
+		},
+		Status:      domain.Status,
+		Username:    domain.Username,
+		Password:    domain.Password,
+		Gender:      domain.Gender,
+		Email:       domain.Email,
+		Mobile:      domain.Mobile,
+		Name:        domain.Name,
+		Avatar:      domain.Avatar,
+		Birthday:    domain.Birthday,
+		City:        domain.City,
+		Address:     domain.Address,
+		Bio:         domain.Bio,
+		IsSuperuser: domain.IsSuperuser,
+		LastLogin:   domain.LastLogin,
+		LastLoginIp: domain.LastLoginIp,
+		DeptID:      domain.DeptID,
+	}
 }
 
 // toDomain 转换为领域模型

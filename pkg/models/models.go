@@ -33,6 +33,11 @@ type CoreModels struct {
 
 // BeforeCreate 创建前钩子
 func (c *CoreModels) BeforeCreate(tx *gorm.DB) (err error) {
+	// 增加一个判断：如果 Id 字段已经被手动设置了值，就直接返回，不做任何操作
+	if c.Id != "" {
+		return nil
+	}
+
 	// 设置id
 	u7, err := uuid7.NewV7()
 	if err != nil {
