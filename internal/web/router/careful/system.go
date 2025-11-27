@@ -1,0 +1,55 @@
+/**
+ * Description：
+ * FileName：system.go
+ * Author：CJiaの用心
+ * Create：2025/11/26 10:16:17
+ * Remark：
+ */
+
+package careful
+
+import (
+	"github.com/carefuly/careful-admin-go-gin/config"
+	cacheSystem "github.com/carefuly/careful-admin-go-gin/internal/repository/cache/careful/system"
+	cacheDecoratorSystem "github.com/carefuly/careful-admin-go-gin/internal/repository/cache/decorator/careful/system"
+	cacheRecord "github.com/carefuly/careful-admin-go-gin/internal/repository/cache/decorator/record"
+	daoSystem "github.com/carefuly/careful-admin-go-gin/internal/repository/dao/careful/system"
+	repositorySystem "github.com/carefuly/careful-admin-go-gin/internal/repository/repository/careful/system"
+	serviceSystem "github.com/carefuly/careful-admin-go-gin/internal/service/careful/system"
+	handlerSystem "github.com/carefuly/careful-admin-go-gin/internal/web/handler/careful/system"
+	"github.com/gin-gonic/gin"
+)
+
+type SystemRouter struct {
+	rely   config.RelyConfig
+	router *gin.RouterGroup
+}
+
+func NewSystemRouter(rely config.RelyConfig, router *gin.RouterGroup) *SystemRouter {
+	return &SystemRouter{
+		rely:   rely,
+		router: router,
+	}
+}
+
+func (r *SystemRouter) RegisterRouter() {
+	baseRouter := r.router.Group("/system")
+
+	// 用户
+	userCache := cacheSystem.NewRedisUserCache(r.rely.Redis)
+	userCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	userCacheLoggingDecorator := cacheDecoratorSystem.NewUserCacheLoggingDecorator(userCache, userCacheLogger)
+	userDAO := daoSystem.NewGORMUserDAO(r.rely.Db.Careful)
+	userRepository := repositorySystem.NewUserRepository(userDAO, userCacheLoggingDecorator)
+	userService := serviceSystem.NewUserService(userRepository)
+
+	// 部门
+	deptCache := cacheSystem.NewRedisDeptCache(r.rely.Redis)
+	deptCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	deptCacheLoggingDecorator := cacheDecoratorSystem.NewDeptCacheLoggingDecorator(deptCache, deptCacheLogger)
+	deptDAO := daoSystem.NewGORMDeptDAO(r.rely.Db.Careful)
+	deptRepository := repositorySystem.NewDeptRepository(deptDAO, deptCacheLoggingDecorator)
+	deptService := serviceSystem.NewDeptService(deptRepository)
+	deptHandler := handlerSystem.NewDeptHandler(r.rely, deptService, userService)
+	deptHandler.RegisterRoutes(baseRouter)
+}

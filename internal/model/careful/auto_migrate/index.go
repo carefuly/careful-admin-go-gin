@@ -21,8 +21,8 @@ func AutoMigrate(db *gorm.DB) {
 }
 
 func initSystem(db *gorm.DB) {
-	system.NewUser().AutoMigrate(db) // 用户表
 	system.NewDept().AutoMigrate(db) // 部门表
+	system.NewUser().AutoMigrate(db) // 用户表
 }
 
 func initLogger(db *gorm.DB) {

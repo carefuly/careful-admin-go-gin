@@ -55,6 +55,74 @@ definitions:
     - TypeDepartment
     - TypeTeam
     - TypeOther
+  github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Dept:
+    properties:
+      belong_dept:
+        description: 数据归属部门
+        type: string
+      code:
+        description: 部门编码
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      dept_type:
+        allOf:
+        - $ref: '#/definitions/dept.Type'
+        description: 部门类型
+      description:
+        description: 部门描述
+        type: string
+      email:
+        description: 部门邮箱
+        type: string
+      id:
+        description: 主键ID(自增)
+        type: string
+      level:
+        description: 关联查询字段
+        type: integer
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 部门名称
+        type: string
+      owner:
+        description: 部门负责人
+        type: string
+      parent:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
+        description: 父部门
+      parent_id:
+        description: 上级部门
+        type: string
+      path:
+        description: 部门路径，格式：/1/2/3/
+        type: string
+      phone:
+        description: 部门电话
+        type: string
+      remark:
+        description: 备注
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+    type: object
   github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User:
     properties:
       address:
@@ -63,7 +131,7 @@ definitions:
       avatar:
         description: 头像
         type: string
-      belongDept:
+      belong_dept:
         description: 数据归属部门
         type: string
       bio:
@@ -83,7 +151,7 @@ definitions:
         type: string
       dept:
         allOf:
-        - $ref: '#/definitions/system.Dept'
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
         description: 部门
       dept_id:
         description: 部门ID
@@ -136,38 +204,11 @@ definitions:
         description: 用户名
         type: string
     type: object
-  response.Response:
+  github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept:
     properties:
-      code:
-        description: HTTP状态码
-        type: integer
-      data:
-        description: 数据
-      msg:
-        description: 提示信息
-      request_id:
-        description: 请求ID
-        type: string
-      status:
-        description: '响应状态: success|error'
-        type: string
-      timestamp:
-        description: 时间戳
-        type: string
-    type: object
-  system.Dept:
-    properties:
-      belongDept:
+      belong_dept:
         description: 数据归属部门
         type: string
-      child_count:
-        description: 子部门数量
-        type: integer
-      children:
-        description: 子部门列表
-        items:
-          $ref: '#/definitions/system.Dept'
-        type: array
       code:
         description: 部门编码
         type: string
@@ -201,7 +242,7 @@ definitions:
         type: string
       parent:
         allOf:
-        - $ref: '#/definitions/system.Dept'
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
         description: 父部门
       parent_id:
         description: 上级部门
@@ -224,9 +265,134 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
-      user_count:
-        description: 用户数量
+    type: object
+  response.Response:
+    properties:
+      code:
+        description: HTTP状态码
         type: integer
+      data:
+        description: 数据
+      msg:
+        description: 提示信息
+      request_id:
+        description: 请求ID
+        type: string
+      status:
+        description: '响应状态: success|error'
+        type: string
+      timestamp:
+        description: 时间戳
+        type: string
+    type: object
+  system.CreateDeptRequest:
+    properties:
+      code:
+        description: 部门编码
+        maxLength: 50
+        type: string
+      dept_type:
+        allOf:
+        - $ref: '#/definitions/dept.Type'
+        default: department
+        description: 部门类型
+        maxLength: 20
+      description:
+        description: 部门描述
+        type: string
+      email:
+        description: 部门邮箱
+        maxLength: 64
+        type: string
+      name:
+        description: 部门名称
+        maxLength: 50
+        type: string
+      owner:
+        description: 部门负责人
+        maxLength: 64
+        type: string
+      parent_id:
+        description: 父部门ID
+        maxLength: 110
+        type: string
+      phone:
+        description: 部门电话
+        maxLength: 64
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+    required:
+    - code
+    - name
+    type: object
+  system.UpdateDeptRequest:
+    properties:
+      code:
+        description: 部门编码
+        maxLength: 50
+        type: string
+      dept_type:
+        allOf:
+        - $ref: '#/definitions/dept.Type'
+        default: department
+        description: 部门类型
+        maxLength: 20
+      description:
+        description: 部门描述
+        type: string
+      email:
+        description: 部门邮箱
+        maxLength: 64
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      name:
+        description: 部门名称
+        maxLength: 50
+        type: string
+      owner:
+        description: 部门负责人
+        maxLength: 64
+        type: string
+      parent_id:
+        description: 父部门ID
+        maxLength: 110
+        type: string
+      phone:
+        description: 部门电话
+        maxLength: 64
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      timestamp:
+        description: 版本
+        type: integer
+    required:
+    - code
+    - id
+    - name
     type: object
   user.GenderConst:
     enum:
@@ -375,6 +541,263 @@ paths:
       summary: 刷新令牌
       tags:
       - 认证管理
+  /v1/system/dept/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除部门信息
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 批量删除部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建部门信息
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateDeptRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateDeptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 创建部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id部门信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 删除部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id部门信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Dept'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有部门列表信息
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 部门名称
+        in: query
+        name: name
+        type: string
+      - description: 部门编码
+        in: query
+        name: code
+        type: string
+      - description: 部门类型
+        in: query
+        name: dept_type
+        type: string
+      - default: 0
+        description: 层级深度
+        in: query
+        name: level
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Dept'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取所有部门
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/listTree:
+    get:
+      consumes:
+      - application/json
+      description: 获取部门树形结构信息
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 部门名称
+        in: query
+        name: name
+        type: string
+      - description: 部门编码
+        in: query
+        name: code
+        type: string
+      - description: 部门类型
+        in: query
+        name: dept_type
+        type: string
+      - default: 0
+        description: 层级深度
+        in: query
+        name: level
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取部门树形结构
+      tags:
+      - 系统管理/部门管理
+  /v1/system/dept/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新部门信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateDeptRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateDeptRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 更新部门
+      tags:
+      - 系统管理/部门管理
 schemes:
 - http
 securityDefinitions:

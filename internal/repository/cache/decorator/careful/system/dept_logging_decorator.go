@@ -1,8 +1,8 @@
 /**
  * Description：
- * FileName：user_logging_decorator.go
+ * FileName：dept_logging_decorator.go
  * Author：CJiaの用心
- * Create：2025/11/24 17:06:25
+ * Create：2025/11/26 02:29:33
  * Remark：
  */
 
@@ -22,20 +22,20 @@ import (
 	"time"
 )
 
-type UserCacheLoggingDecorator struct {
-	cache  cacheSystem.UserCache
+type DeptCacheLoggingDecorator struct {
+	cache  cacheSystem.DeptCache
 	logger cacheRecord.CacheLogger
 }
 
-func NewUserCacheLoggingDecorator(cache cacheSystem.UserCache, logger cacheRecord.CacheLogger) UserCacheLoggingDecorator {
-	return UserCacheLoggingDecorator{
+func NewDeptCacheLoggingDecorator(cache cacheSystem.DeptCache, logger cacheRecord.CacheLogger) DeptCacheLoggingDecorator {
+	return DeptCacheLoggingDecorator{
 		cache:  cache,
 		logger: logger,
 	}
 }
 
 // 通用日志记录函数
-func (d *UserCacheLoggingDecorator) logOperation(
+func (d *DeptCacheLoggingDecorator) logOperation(
 	ctx context.Context,
 	key string,
 	value interface{},
@@ -80,20 +80,20 @@ func (d *UserCacheLoggingDecorator) logOperation(
 }
 
 // 从上下文中安全获取字符串值
-func (d *UserCacheLoggingDecorator) getStringFromContext(ctx context.Context, key string) string {
+func (d *DeptCacheLoggingDecorator) getStringFromContext(ctx context.Context, key string) string {
 	if val, ok := ctx.Value(key).(string); ok {
 		return val
 	}
 	return ""
 }
 
-func (d *UserCacheLoggingDecorator) Get(ctx context.Context, id string) (*domainSystem.User, error) {
+func (d *DeptCacheLoggingDecorator) Get(ctx context.Context, id string) (*domainSystem.Dept, error) {
 	start := time.Now()
 	result, err := d.cache.Get(ctx, id)
 
 	// 特殊处理"未找到"情况
 	var value interface{}
-	if errors.Is(err, cacheSystem.ErrUserNotExist) {
+	if errors.Is(err, cacheSystem.ErrDeptNotExist) {
 		value = "not_found"
 	} else if result != nil {
 		value = result
@@ -103,27 +103,27 @@ func (d *UserCacheLoggingDecorator) Get(ctx context.Context, id string) (*domain
 	return result, err
 }
 
-func (d *UserCacheLoggingDecorator) Set(ctx context.Context, domain domainSystem.User) error {
+func (d *DeptCacheLoggingDecorator) Set(ctx context.Context, domain domainSystem.Dept) error {
 	start := time.Now()
 	err := d.cache.Set(ctx, domain)
 	d.logOperation(ctx, domain.Id, domain, err, start)
 	return err
 }
 
-func (d *UserCacheLoggingDecorator) Del(ctx context.Context, id string) error {
+func (d *DeptCacheLoggingDecorator) Del(ctx context.Context, id string) error {
 	start := time.Now()
 	err := d.cache.Del(ctx, id)
 	d.logOperation(ctx, id, "not_found", err, start)
 	return err
 }
 
-func (d *UserCacheLoggingDecorator) SetNotFound(ctx context.Context, id string) error {
+func (d *DeptCacheLoggingDecorator) SetNotFound(ctx context.Context, id string) error {
 	start := time.Now()
 	err := d.cache.SetNotFound(ctx, id)
 	d.logOperation(ctx, id, "not_found", err, start)
 	return err
 }
 
-func (d *UserCacheLoggingDecorator) key(id string) string {
-	return fmt.Sprintf("%s:%s", cacheSystem.ErrUserKey, id)
+func (d *DeptCacheLoggingDecorator) key(id string) string {
+	return fmt.Sprintf("%s:%s", cacheSystem.ErrDeptKey, id)
 }

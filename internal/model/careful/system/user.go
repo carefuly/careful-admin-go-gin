@@ -51,7 +51,9 @@ func (u *User) TableName() string {
 }
 
 func (u *User) AutoMigrate(db *gorm.DB) {
-	err := db.Set("gorm:table_options", "ENGINE=InnoDB,COMMENT='用户表'").AutoMigrate(&User{})
+	err := db.Set("gorm:foreignKeyConstraint", true).
+		Set("gorm:table_options", "ENGINE=InnoDB,COMMENT='用户表'").
+		AutoMigrate(&User{})
 	if err != nil {
 		zap.L().Error("User表模型迁移失败", zap.Error(err))
 	}

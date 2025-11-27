@@ -183,6 +183,419 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/v1/system/dept/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "批量删除部门",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "创建部门",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreateDeptRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.CreateDeptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "删除部门",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "获取部门",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Dept"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有部门列表信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "获取所有部门",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "部门名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "部门编码",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "部门类型",
+                        "name": "dept_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "层级深度",
+                        "name": "level",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Dept"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/listTree": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取部门树形结构信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "获取部门树形结构",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "部门名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "部门编码",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "部门类型",
+                        "name": "dept_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "层级深度",
+                        "name": "level",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/dept/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新部门信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/部门管理"
+                ],
+                "summary": "更新部门",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateDeptRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.UpdateDeptRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -262,6 +675,103 @@ const docTemplate = `{
                 "TypeOther"
             ]
         },
+        "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Dept": {
+            "type": "object",
+            "properties": {
+                "belong_dept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "code": {
+                    "description": "部门编码",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "dept_type": {
+                    "description": "部门类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dept.Type"
+                        }
+                    ]
+                },
+                "description": {
+                    "description": "部门描述",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "部门邮箱",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "level": {
+                    "description": "关联查询字段",
+                    "type": "integer"
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string"
+                },
+                "owner": {
+                    "description": "部门负责人",
+                    "type": "string"
+                },
+                "parent": {
+                    "description": "父部门",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
+                        }
+                    ]
+                },
+                "parent_id": {
+                    "description": "上级部门",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "部门路径，格式：/1/2/3/",
+                    "type": "string"
+                },
+                "phone": {
+                    "description": "部门电话",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "updateTime": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
         "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User": {
             "type": "object",
             "properties": {
@@ -273,7 +783,7 @@ const docTemplate = `{
                     "description": "头像",
                     "type": "string"
                 },
-                "belongDept": {
+                "belong_dept": {
                     "description": "数据归属部门",
                     "type": "string"
                 },
@@ -301,7 +811,7 @@ const docTemplate = `{
                     "description": "部门",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/system.Dept"
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
                         }
                     ]
                 },
@@ -379,50 +889,12 @@ const docTemplate = `{
                 }
             }
         },
-        "response.Response": {
+        "github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept": {
             "type": "object",
             "properties": {
-                "code": {
-                    "description": "HTTP状态码",
-                    "type": "integer"
-                },
-                "data": {
-                    "description": "数据"
-                },
-                "msg": {
-                    "description": "提示信息"
-                },
-                "request_id": {
-                    "description": "请求ID",
-                    "type": "string"
-                },
-                "status": {
-                    "description": "响应状态: success|error",
-                    "type": "string"
-                },
-                "timestamp": {
-                    "description": "时间戳",
-                    "type": "string"
-                }
-            }
-        },
-        "system.Dept": {
-            "type": "object",
-            "properties": {
-                "belongDept": {
+                "belong_dept": {
                     "description": "数据归属部门",
                     "type": "string"
-                },
-                "child_count": {
-                    "description": "子部门数量",
-                    "type": "integer"
-                },
-                "children": {
-                    "description": "子部门列表",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/system.Dept"
-                    }
                 },
                 "code": {
                     "description": "部门编码",
@@ -472,7 +944,7 @@ const docTemplate = `{
                     "description": "父部门",
                     "allOf": [
                         {
-                            "$ref": "#/definitions/system.Dept"
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
                         }
                     ]
                 },
@@ -503,9 +975,177 @@ const docTemplate = `{
                 "timestamp": {
                     "description": "版本号(时间戳)",
                     "type": "integer"
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "description": "HTTP状态码",
+                    "type": "integer"
                 },
-                "user_count": {
-                    "description": "用户数量",
+                "data": {
+                    "description": "数据"
+                },
+                "msg": {
+                    "description": "提示信息"
+                },
+                "request_id": {
+                    "description": "请求ID",
+                    "type": "string"
+                },
+                "status": {
+                    "description": "响应状态: success|error",
+                    "type": "string"
+                },
+                "timestamp": {
+                    "description": "时间戳",
+                    "type": "string"
+                }
+            }
+        },
+        "system.CreateDeptRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "部门编码",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "dept_type": {
+                    "description": "部门类型",
+                    "default": "department",
+                    "maxLength": 20,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dept.Type"
+                        }
+                    ]
+                },
+                "description": {
+                    "description": "部门描述",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "部门邮箱",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "owner": {
+                    "description": "部门负责人",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "parent_id": {
+                    "description": "父部门ID",
+                    "type": "string",
+                    "maxLength": 110
+                },
+                "phone": {
+                    "description": "部门电话",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "system.UpdateDeptRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "code": {
+                    "description": "部门编码",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "dept_type": {
+                    "description": "部门类型",
+                    "default": "department",
+                    "maxLength": 20,
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dept.Type"
+                        }
+                    ]
+                },
+                "description": {
+                    "description": "部门描述",
+                    "type": "string"
+                },
+                "email": {
+                    "description": "部门邮箱",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "id": {
+                    "description": "主键ID",
+                    "type": "string"
+                },
+                "name": {
+                    "description": "部门名称",
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "owner": {
+                    "description": "部门负责人",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "parent_id": {
+                    "description": "父部门ID",
+                    "type": "string",
+                    "maxLength": 110
+                },
+                "phone": {
+                    "description": "部门电话",
+                    "type": "string",
+                    "maxLength": 64
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string",
+                    "maxLength": 255
+                },
+                "sort": {
+                    "description": "排序",
+                    "type": "integer",
+                    "default": 1
+                },
+                "status": {
+                    "description": "状态【true-启用 false-停用】",
+                    "type": "boolean",
+                    "default": true
+                },
+                "timestamp": {
+                    "description": "版本",
                     "type": "integer"
                 }
             }

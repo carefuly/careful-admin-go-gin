@@ -102,9 +102,6 @@ func ensureDefaultDept(db *gorm.DB) error {
 					Parent:      nil,
 					Level:       0,   // 根节点层级为0
 					Path:        "/", // 根部门的路径
-					UserCount:   0,
-					ChildCount:  0,
-					Children:    nil,
 				}
 				rootDept.Id = "root"
 				if err := db.Create(&rootDept).Error; err != nil {
@@ -131,7 +128,7 @@ func ensureDefaultDept(db *gorm.DB) error {
 					Status:      true,
 					Name:        "用心集团有限公司", // 默认公司名称
 					Code:        defaultCompanyCode,
-					DeptType:    dept.TypeDepartment,
+					DeptType:    dept.TypeCompany,
 					Owner:       "",
 					Phone:       "",
 					Email:       "",
@@ -139,13 +136,11 @@ func ensureDefaultDept(db *gorm.DB) error {
 					ParentID:    &rootDeptID, // 父部门ID指向根部门的ID "root"
 					Parent:      nil,
 					Level:       1, // 层级为1，表示是根部门的子部门
+					Path:        "/",
 					// Path:        "/" + defaultCompany.Id + "/", // 路径由父部门路径和自身ID组成
-					UserCount:  0,
-					ChildCount: 0,
-					Children:   nil,
 				}
 				// 路径由父部门路径和自身ID组成
-				defaultCompany.Path = "/" + defaultCompany.Id + "/"
+				// defaultCompany.Path = "/" + defaultCompany.Id + "/"
 				if err := db.Create(&defaultCompany).Error; err != nil {
 					// 创建默认公司部门失败
 					return err
