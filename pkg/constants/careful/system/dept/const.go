@@ -18,18 +18,34 @@ const (
 	TypeOther      Type = "other"      // 其他
 )
 
-// Type 返回部门类型的字符串表示
-func (t Type) String() string {
-	switch t {
-	case TypeCompany:
-		return "公司"
-	case TypeDepartment:
-		return "部门"
-	case TypeTeam:
-		return "小组"
-	case TypeOther:
-		return "其他"
-	default:
-		return "未知"
-	}
+// TypeMapping 字典类型映射
+var TypeMapping = map[Type]string{
+	TypeCompany:    "公司",
+	TypeDepartment: "部门",
+	TypeTeam:       "小组",
+	TypeOther:      "其他",
 }
+
+// TypeImportMapping 字典类型映射
+var TypeImportMapping = map[string]Type{
+	"公司": TypeCompany,
+	"部门": TypeDepartment,
+	"小组": TypeTeam,
+	"其他": TypeOther,
+}
+
+// // Type 返回部门类型的字符串表示
+// func (t Type) String() string {
+// 	switch t {
+// 	case TypeCompany:
+// 		return "公司"
+// 	case TypeDepartment:
+// 		return "部门"
+// 	case TypeTeam:
+// 		return "小组"
+// 	case TypeOther:
+// 		return "其他"
+// 	default:
+// 		return "未知"
+// 	}
+// }

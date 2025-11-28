@@ -14,7 +14,6 @@ import (
 	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	repositorySystem "github.com/carefuly/careful-admin-go-gin/internal/repository/repository/careful/system"
 	"github.com/go-sql-driver/mysql"
-	"gorm.io/gorm"
 	"strings"
 )
 
@@ -39,9 +38,9 @@ type DeptTree struct {
 
 type DeptService interface {
 	Create(ctx context.Context, domain domainSystem.Dept) error
-	Delete(ctx context.Context, id string, db *gorm.DB) error
-	BatchDelete(ctx context.Context, ids []string, db *gorm.DB) error
-	Update(ctx context.Context, domain domainSystem.Dept, db *gorm.DB) error
+	Delete(ctx context.Context, id string) error
+	BatchDelete(ctx context.Context, ids []string) error
+	Update(ctx context.Context, domain domainSystem.Dept) error
 
 	GetById(ctx context.Context, id string) (domainSystem.Dept, error)
 	GetListTree(ctx context.Context, filters domainSystem.DeptFilter) ([]DeptTree, error)
@@ -115,23 +114,18 @@ func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) er
 }
 
 // Delete 删除
-func (svc *deptService) Delete(ctx context.Context, id string, db *gorm.DB) error {
-	domain, err := svc.GetById(ctx, id)
-	if err != nil {
-		return err
-	}
-
-	canDelete, err := domain.CanDelete(db)
+func (svc *deptService) Delete(ctx context.Context, id string) error {
+	canDelete, err := svc.canDelete(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	if !canDelete {
-		leaf, _ := domain.IsLeaf(db)
+		leaf, _ := svc.isLeaf(ctx, id)
 		if !leaf {
 			return ErrDeptHasChildren
 		}
-		count, _ := domain.GetUserCount(db)
+		count, _ := svc.GetUserCount(ctx, id)
 		if count > 0 {
 			return ErrDeptHasUsers
 		}
@@ -141,16 +135,11 @@ func (svc *deptService) Delete(ctx context.Context, id string, db *gorm.DB) erro
 }
 
 // BatchDelete 批量删除
-func (svc *deptService) BatchDelete(ctx context.Context, ids []string, db *gorm.DB) error {
+func (svc *deptService) BatchDelete(ctx context.Context, ids []string) error {
 	var failedIds []string
 
 	for _, id := range ids {
-		domain, err := svc.GetById(ctx, id)
-		if err != nil {
-			return err
-		}
-
-		canDelete, _ := domain.CanDelete(db)
+		canDelete, _ := svc.canDelete(ctx, id)
 		if canDelete {
 			failedIds = append(failedIds, id)
 			continue
@@ -161,7 +150,7 @@ func (svc *deptService) BatchDelete(ctx context.Context, ids []string, db *gorm.
 }
 
 // Update 更新
-func (svc *deptService) Update(ctx context.Context, domain domainSystem.Dept, db *gorm.DB) error {
+func (svc *deptService) Update(ctx context.Context, domain domainSystem.Dept) error {
 	root := "root"
 	// 判空处理
 	if domain.ParentID == nil || *domain.ParentID == "" {
@@ -201,9 +190,9 @@ func (svc *deptService) Update(ctx context.Context, domain domainSystem.Dept, db
 		return repositorySystem.ErrDeptDisabled
 	}
 	// 不能将子部门设置为父部门，会形成循环引用
-	ancestors, err := parent.GetAncestors(db)
+	ancestors, err := svc.repo.GetAncestors(ctx, domain)
 	if err != nil {
-		return err // 数据库查询错误直接返回
+		return err
 	}
 
 	// 目标部门是否在父部门的祖先链中 → 是则循环引用
@@ -251,6 +240,11 @@ func (svc *deptService) GetById(ctx context.Context, id string) (domainSystem.De
 		return domain, repositorySystem.ErrDeptNotFound
 	}
 	return domain, err
+}
+
+// GetUserCount 获取部门下的用户数量
+func (svc *deptService) GetUserCount(ctx context.Context, id string) (int64, error) {
+	return svc.repo.GetUserCount(ctx, id)
 }
 
 // GetListTree 查询部门树
@@ -314,4 +308,25 @@ func (svc *deptService) IsDuplicateEntryError(err error) (string, bool) {
 	default:
 		return "unknown", true // 未知唯一键冲突
 	}
+}
+
+// isLeaf 判断是否为叶子节点（没有子部门）
+func (svc *deptService) isLeaf(ctx context.Context, id string) (bool, error) {
+	count, err := svc.repo.GetChildCount(ctx, id)
+	return count == 0, err
+}
+
+// canDelete 判断是否可以删除（没有子部门和用户）
+func (svc *deptService) canDelete(ctx context.Context, id string) (bool, error) {
+	isLeaf, err := svc.isLeaf(ctx, id)
+	if err != nil || !isLeaf {
+		return false, err
+	}
+
+	userCount, err := svc.GetUserCount(ctx, id)
+	if err != nil || userCount > 0 {
+		return false, err
+	}
+
+	return true, nil
 }

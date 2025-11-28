@@ -39,6 +39,9 @@ type DeptRepository interface {
 
 	GetById(ctx context.Context, id string) (domainSystem.Dept, error)
 	GetByParentId(ctx context.Context, parentId string) (domainSystem.Dept, error)
+	GetUserCount(ctx context.Context, id string) (int64, error)
+	GetChildCount(ctx context.Context, id string) (int64, error)
+	GetAncestors(ctx context.Context, model domainSystem.Dept) ([]domainSystem.Dept, error)
 	GetListAll(ctx context.Context, filters domainSystem.DeptFilter) ([]domainSystem.Dept, error)
 
 	CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error)
@@ -155,6 +158,35 @@ func (repo *deptRepository) GetByParentId(ctx context.Context, parentId string) 
 		return domainSystem.Dept{}, err
 	}
 	return repo.toDomain(model), nil
+}
+
+// GetUserCount 获取部门下的用户数量
+func (repo *deptRepository) GetUserCount(ctx context.Context, id string) (int64, error) {
+	return repo.dao.FindUserCount(ctx, id)
+}
+
+// GetChildCount 获取子部门数量
+func (repo *deptRepository) GetChildCount(ctx context.Context, id string) (int64, error) {
+	return repo.dao.FindChildCount(ctx, id)
+}
+
+// GetAncestors 获取所有祖先部门
+func (repo *deptRepository) GetAncestors(ctx context.Context, model domainSystem.Dept) ([]domainSystem.Dept, error) {
+	list, err := repo.dao.FindAncestors(ctx, repo.toEntity(model))
+	if err != nil {
+		return []domainSystem.Dept{}, err
+	}
+
+	if len(list) == 0 {
+		return []domainSystem.Dept{}, nil
+	}
+
+	var toDomain []domainSystem.Dept
+	for _, v := range list {
+		toDomain = append(toDomain, repo.toDomain(v))
+	}
+
+	return toDomain, nil
 }
 
 // GetListAll 查询所有列表

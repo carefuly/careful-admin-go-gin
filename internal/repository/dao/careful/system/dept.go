@@ -37,6 +37,9 @@ type DeptDAO interface {
 
 	FindById(ctx context.Context, id string) (*system.Dept, error)
 	FindByParentId(ctx context.Context, parentId string) (*system.Dept, error)
+	FindUserCount(ctx context.Context, id string) (int64, error)
+	FindChildCount(ctx context.Context, id string) (int64, error)
+	FindAncestors(ctx context.Context, model system.Dept) ([]*system.Dept, error)
 	FindListAll(ctx context.Context, filter domainSystem.DeptFilter) ([]*system.Dept, error)
 
 	CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error)
@@ -124,6 +127,46 @@ func (dao *GORMDeptDAO) FindByParentId(ctx context.Context, parentId string) (*s
 	var model system.Dept
 	err := dao.db.WithContext(ctx).Where("id = ?", parentId).First(&model).Error
 	return &model, err
+}
+
+// FindUserCount 获取部门下的用户数量
+func (dao *GORMDeptDAO) FindUserCount(ctx context.Context, id string) (int64, error) {
+	var userCount int64
+	err := dao.db.WithContext(ctx).
+		Model(&system.Dept{}).
+		Where("dept_id = ?", id).
+		Count(&userCount).
+		Error
+	return userCount, err
+}
+
+// FindChildCount 获取子部门数量
+func (dao *GORMDeptDAO) FindChildCount(ctx context.Context, id string) (int64, error) {
+	var count int64
+	err := dao.db.WithContext(ctx).
+		Model(&system.Dept{}).
+		Where("parent_id = ?", id).
+		Count(&count).
+		Error
+	return count, err
+}
+
+// FindAncestors 获取所有祖先部门
+func (dao *GORMDeptDAO) FindAncestors(ctx context.Context, model system.Dept) ([]*system.Dept, error) {
+	var ancestors []*system.Dept
+	currentID := model.ParentID
+	for currentID != nil {
+		var parent *system.Dept
+		if err := dao.db.WithContext(ctx).First(&parent, currentID).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				break // 防止因数据不一致导致死循环
+			}
+			return nil, err
+		}
+		ancestors = append([]*system.Dept{parent}, ancestors...) //  prepend
+		currentID = parent.ParentID
+	}
+	return ancestors, nil
 }
 
 // FindListAll 获取所有列表

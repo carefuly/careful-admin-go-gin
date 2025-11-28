@@ -3,6 +3,7 @@ module github.com/carefuly/careful-admin-go-gin
 go 1.24.0
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/fatih/color v1.18.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-contrib/cors v1.7.6
@@ -10,8 +11,10 @@ require (
 	github.com/go-playground/locales v0.14.1
 	github.com/go-playground/universal-translator v0.18.1
 	github.com/go-playground/validator/v10 v10.27.0
+	github.com/go-sql-driver/mysql v1.8.1
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v5 v5.3.0
+	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
 	github.com/mssola/user_agent v0.6.0
 	github.com/redis/go-redis/v9 v9.17.0
@@ -44,7 +47,6 @@ require (
 	github.com/go-openapi/jsonreference v0.19.6 // indirect
 	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.19.15 // indirect
-	github.com/go-sql-driver/mysql v1.8.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect

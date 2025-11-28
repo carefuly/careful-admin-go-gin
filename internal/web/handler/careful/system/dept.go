@@ -19,6 +19,7 @@ import (
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/enumconv"
 	"github.com/carefuly/careful-admin-go-gin/pkg/utils/jwt"
 	"github.com/carefuly/careful-admin-go-gin/pkg/validate"
 	"github.com/gin-gonic/gin"
@@ -129,6 +130,13 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 	}
 
 	// 校验参数
+	typeValidValues := []string{"company", "department", "team", "other"}
+	converter := enumconv.NewEnumConverter(dept.TypeMapping, dept.TypeImportMapping, typeValidValues, "部门类型")
+	_, err = converter.FromEnum(req.DeptType)
+	if err != nil {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
 
 	// 转换为领域模型
 	domain := domainSystem.Dept{
@@ -196,7 +204,7 @@ func (h *deptHandler) Delete(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.svc.Delete(ctx, id, h.rely.Db.Careful); err != nil {
+	if err := h.svc.Delete(ctx, id); err != nil {
 		switch {
 		case errors.Is(err, serviceSystem.ErrDeptNotFound):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门信息不存在", nil)
@@ -237,7 +245,7 @@ func (h *deptHandler) BatchDelete(ctx *gin.Context) {
 		return
 	}
 
-	err := h.svc.BatchDelete(ctx, ids, h.rely.Db.Careful)
+	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
 		ctx.Set("internal", err.Error())
 		zap.L().Error("批量删除部门异常", zap.Error(err))
@@ -284,6 +292,13 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 	}
 
 	// 校验参数
+	typeValidValues := []string{"company", "department", "team", "other"}
+	converter := enumconv.NewEnumConverter(dept.TypeMapping, dept.TypeImportMapping, typeValidValues, "部门类型")
+	_, err = converter.FromEnum(req.DeptType)
+	if err != nil {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
 
 	// 转换为领域模型
 	domain := domainSystem.Dept{
@@ -308,7 +323,7 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 		},
 	}
 
-	if err := h.svc.Update(ctx, domain, h.rely.Db.Careful); err != nil {
+	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
 		case errors.Is(err, serviceSystem.ErrDeptCodeDuplicate):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门编码已存在", nil)
