@@ -133,7 +133,7 @@ func (dao *GORMDeptDAO) FindByParentId(ctx context.Context, parentId string) (*s
 func (dao *GORMDeptDAO) FindUserCount(ctx context.Context, id string) (int64, error) {
 	var userCount int64
 	err := dao.db.WithContext(ctx).
-		Model(&system.Dept{}).
+		Model(&system.User{}).
 		Where("dept_id = ?", id).
 		Count(&userCount).
 		Error

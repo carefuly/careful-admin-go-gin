@@ -52,4 +52,14 @@ func (r *SystemRouter) RegisterRouter() {
 	deptService := serviceSystem.NewDeptService(deptRepository)
 	deptHandler := handlerSystem.NewDeptHandler(r.rely, deptService, userService)
 	deptHandler.RegisterRoutes(baseRouter)
+
+	// 岗位
+	postCache := cacheSystem.NewRedisPostCache(r.rely.Redis)
+	postCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	postCacheLoggingDecorator := cacheDecoratorSystem.NewPostCacheLoggingDecorator(postCache, postCacheLogger)
+	postDAO := daoSystem.NewGORMPostDAO(r.rely.Db.Careful)
+	postRepository := repositorySystem.NewPostRepository(postDAO, postCacheLoggingDecorator)
+	postService := serviceSystem.NewPostService(postRepository)
+	postHandler := handlerSystem.NewPostHandler(r.rely, postService, userService)
+	postHandler.RegisterRoutes(baseRouter)
 }

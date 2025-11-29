@@ -33,10 +33,6 @@ type Dept struct {
 	// 关联查询字段
 	Level int    `gorm:"type:int;not null;index;default:0;column:level;comment:层级深度" json:"level"` // 层级深度，根节点为0
 	Path  string `gorm:"size:512;index;column:path;comment:部门路径，格式：/1/2/3/" json:"path"`           // 部门路径，格式：/1/2/3/
-
-	// UserCount  int     `gorm:"type:int;default:0;column:user_count;comment:用户数量" json:"user_count"`      // 用户数量
-	// ChildCount int     `gorm:"type:int;default:0;column:child_count;comment:子部门数量" json:"child_count"`   // 子部门数量
-	// Children   []*Dept `gorm:"foreignKey:ParentID" json:"children"`                                      // 子部门列表
 }
 
 func NewDept() *Dept {

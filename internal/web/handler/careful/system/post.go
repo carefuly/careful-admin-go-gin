@@ -1,8 +1,8 @@
 /**
  * Description：
- * FileName：dept.go
+ * FileName：post.go
  * Author：CJiaの用心
- * Create：2025/11/26 09:43:00
+ * Create：2025/11/30 00:57:00
  * Remark：
  */
 
@@ -15,7 +15,7 @@ import (
 	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	modelSystem "github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
 	serviceSystem "github.com/carefuly/careful-admin-go-gin/internal/service/careful/system"
-	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system/dept"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system/post"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
@@ -29,44 +29,48 @@ import (
 	"strconv"
 )
 
-// CreateDeptRequest 创建
-type CreateDeptRequest struct {
-	Status      bool      `json:"status" binding:"omitempty" default:"true"`                 // 状态【true-启用 false-停用】
-	Name        string    `json:"name" binding:"required,max=50" default:""`                 // 部门名称
-	Code        string    `json:"code" binding:"required,max=50" default:""`                 // 部门编码
-	DeptType    dept.Type `json:"dept_type" binding:"omitempty,max=20" default:"department"` // 部门类型
-	Owner       string    `json:"owner" binding:"omitempty,max=64" default:""`               // 部门负责人
-	Phone       string    `json:"phone" binding:"omitempty,max=64" default:""`               // 部门电话
-	Email       string    `json:"email" binding:"omitempty,max=64" default:""`               // 部门邮箱
-	Description string    `json:"description" binding:"omitempty" default:""`                // 部门描述
-	ParentID    *string   `json:"parent_id" binding:"omitempty,max=110" default:""`          // 父部门ID
-	Sort        int       `json:"sort" binding:"omitempty" default:"1"`                      // 排序
-	Remark      string    `json:"remark" binding:"omitempty,max=255"`                        // 备注
+// CreatePostRequest 创建
+type CreatePostRequest struct {
+	Status      bool       `json:"status" binding:"omitempty" default:"true"`      // 状态【true-启用 false-停用】
+	Name        string     `json:"name" binding:"required,max=50" default:""`      // 岗位名称
+	Code        string     `json:"code" binding:"required,max=50" default:""`      // 岗位名称
+	PostType    post.Type  `json:"post_type" binding:"omitempty" default:"5"`      // 岗位类型
+	Level       post.Level `json:"level" binding:"omitempty" default:"4"`          // 岗位级别
+	Description string     `json:"description" binding:"omitempty" default:""`     // 岗位描述
+	DeptID      *string    `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
+	Sort        int        `json:"sort" binding:"omitempty" default:"1"`           // 排序
+	Remark      string     `json:"remark" binding:"omitempty,max=255"`             // 备注
 }
 
-// ImportDeptRequest 导入
-type ImportDeptRequest struct {
+// ImportPostRequest 导入
+type ImportPostRequest struct {
 	File *multipart.FileHeader `form:"file" binding:"required"` // 文件
 }
 
-// UpdateDeptRequest 更新
-type UpdateDeptRequest struct {
-	Id          string    `json:"id" binding:"required" default:""`                          // 主键ID
-	Status      bool      `json:"status" binding:"omitempty" default:"true"`                 // 状态【true-启用 false-停用】
-	Name        string    `json:"name" binding:"required,max=50" default:""`                 // 部门名称
-	Code        string    `json:"code" binding:"required,max=50" default:""`                 // 部门编码
-	DeptType    dept.Type `json:"dept_type" binding:"omitempty,max=20" default:"department"` // 部门类型
-	Owner       string    `json:"owner" binding:"omitempty,max=64" default:""`               // 部门负责人
-	Phone       string    `json:"phone" binding:"omitempty,max=64" default:""`               // 部门电话
-	Email       string    `json:"email" binding:"omitempty,max=64" default:""`               // 部门邮箱
-	Description string    `json:"description" binding:"omitempty" default:""`                // 部门描述
-	ParentID    *string   `json:"parent_id" binding:"omitempty,max=110" default:""`          // 父部门ID
-	Sort        int       `json:"sort" binding:"omitempty" default:"1"`                      // 排序
-	Timestamp   int64     `json:"timestamp" binding:"omitempty"`                             // 版本
-	Remark      string    `json:"remark" binding:"omitempty,max=255"`                        // 备注
+// UpdatePostRequest 更新
+type UpdatePostRequest struct {
+	Id          string     `json:"id" binding:"required" default:""`               // 主键ID
+	Status      bool       `json:"status" binding:"omitempty" default:"true"`      // 状态【true-启用 false-停用】
+	Name        string     `json:"name" binding:"required,max=50" default:""`      // 岗位名称
+	Code        string     `json:"code" binding:"required,max=50" default:""`      // 岗位名称
+	PostType    post.Type  `json:"post_type" binding:"omitempty" default:"5"`      // 岗位类型
+	Level       post.Level `json:"level" binding:"omitempty" default:"4"`          // 岗位级别
+	Description string     `json:"description" binding:"omitempty" default:""`     // 岗位描述
+	DeptID      *string    `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
+	Sort        int        `json:"sort" binding:"omitempty" default:"1"`           // 排序
+	Timestamp   int64      `json:"timestamp" binding:"omitempty"`                  // 版本
+	Remark      string     `json:"remark" binding:"omitempty,max=255"`             // 备注
 }
 
-type DeptHandler interface {
+// PostListPageResponse 列表分页响应
+type PostListPageResponse struct {
+	List     []domainSystem.Post `json:"list"`     // 列表
+	Total    int64               `json:"total"`    // 总数
+	Page     int                 `json:"page"`     // 页码
+	PageSize int                 `json:"pageSize"` // 每页数量
+}
+
+type PostHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	Import(ctx *gin.Context)
@@ -74,51 +78,51 @@ type DeptHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
-	GetListTree(ctx *gin.Context)
+	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 	Export(ctx *gin.Context)
 }
 
-type deptHandler struct {
+type postHandler struct {
 	rely    config.RelyConfig
-	svc     serviceSystem.DeptService
+	svc     serviceSystem.PostService
 	userSvc serviceSystem.UserService
 }
 
-func NewDeptHandler(rely config.RelyConfig, svc serviceSystem.DeptService, userSvc serviceSystem.UserService) DeptHandler {
-	return &deptHandler{
+func NewPostHandler(rely config.RelyConfig, svc serviceSystem.PostService, userSvc serviceSystem.UserService) PostHandler {
+	return &postHandler{
 		rely:    rely,
 		svc:     svc,
 		userSvc: userSvc,
 	}
 }
 
-func (h *deptHandler) RegisterRoutes(router *gin.RouterGroup) {
-	base := router.Group("/dept")
+func (h *postHandler) RegisterRoutes(router *gin.RouterGroup) {
+	base := router.Group("/post")
 	base.POST("/create", h.Create)
 	base.POST("/import", h.Import)
 	base.DELETE("/delete/:id", h.Delete)
 	base.POST("/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
-	base.GET("/listTree", h.GetListTree)
+	base.GET("/listPage", h.GetListPage)
 	base.GET("/listAll", h.GetListAll)
 	base.GET("/export", h.Export)
 }
 
 // Create
-// @Summary 创建部门
-// @Description 创建部门信息
-// @Tags 系统管理/部门管理
+// @Summary 创建岗位
+// @Description 创建岗位信息
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
-// @Param CreateDeptRequest body CreateDeptRequest true "请求"
+// @Param CreatePostRequest body CreatePostRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/create [post]
+// @Router /v1/system/post/create [post]
 // @Security LoginToken
-func (h *deptHandler) Create(ctx *gin.Context) {
+func (h *postHandler) Create(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -135,24 +139,32 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req CreateDeptRequest
+	var req CreatePostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
 	}
 
 	// 校验参数
-	typeValidValues := []string{"company", "department", "team", "other"}
-	converter := enumconv.NewEnumConverter(dept.TypeMapping, dept.TypeImportMapping, typeValidValues, "部门类型")
-	_, err = converter.FromEnum(req.DeptType)
+	typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
+	converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
+	_, err = converter.FromEnum(req.PostType)
+	if err != nil {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
+	levelConverter := enumconv.NewEnumConverter(post.LevelMapping, post.LevelImportMapping, levelValidValues, "岗位级别")
+	_, err = levelConverter.FromEnum(req.Level)
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	// 转换为领域模型
-	domain := domainSystem.Dept{
-		Dept: modelSystem.Dept{
+	domain := domainSystem.Post{
+		Post: modelSystem.Post{
 			CoreModels: models.CoreModels{
 				Sort:       req.Sort,
 				Creator:    user.Id,
@@ -163,32 +175,21 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 			Status:      req.Status,
 			Name:        req.Name,
 			Code:        req.Code,
-			DeptType:    req.DeptType,
-			Owner:       req.Owner,
-			Phone:       req.Phone,
-			Email:       req.Email,
+			PostType:    req.PostType,
+			Level:       req.Level,
 			Description: req.Description,
-			ParentID:    req.ParentID,
+			DeptID:      req.DeptID,
 		},
 	}
 
 	if err := h.svc.Create(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrDeptCodeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门编码已存在", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptNameParentDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "同级别下已存在相同的部门信息", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptParentNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门信息不存在", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptDisabled):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门已被禁用，无法在其下创建子部门", nil)
+		case errors.Is(err, serviceSystem.ErrPostCodeDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位编码已存在", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建部门信息失败 >>> %v", err.Error()))
-			zap.S().Error("创建部门信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("创建岗位信息失败 >>> %v", err.Error()))
+			zap.S().Error("创建岗位信息失败 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -198,35 +199,35 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 }
 
 // Import
-// @Summary 导入部门
-// @Description 导入部门信息
-// @Tags 系统管理/部门管理
+// @Summary 导入岗位
+// @Description 导入岗位信息
+// @Tags 系统管理/岗位管理
 // @Accept multipart/form-data
 // @Produce application/json
 // @Security BearerAuth
 // @Param file formData file true "文件(支持xlsx/csv格式)"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/import [post]
+// @Router /v1/system/post/import [post]
 // @Security LoginToken
-func (h *deptHandler) Import(ctx *gin.Context) {
+func (h *postHandler) Import(ctx *gin.Context) {
 	// TODO implement me
 	panic("implement me")
 }
 
 // Delete
-// @Summary 删除部门
-// @Description 删除指定id部门信息
-// @Tags 系统管理/部门管理
+// @Summary 删除岗位
+// @Description 删除指定id岗位信息
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param id path string true "id"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/delete/{id} [delete]
+// @Router /v1/system/post/delete/{id} [delete]
 // @Security LoginToken
-func (h *deptHandler) Delete(ctx *gin.Context) {
+func (h *postHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, "ID不能为空", nil)
@@ -235,18 +236,15 @@ func (h *deptHandler) Delete(ctx *gin.Context) {
 
 	if err := h.svc.Delete(ctx, id); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrDeptNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门信息不存在", nil)
+		case errors.Is(err, serviceSystem.ErrPostNotFound):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位信息不存在", nil)
 			return
-		case errors.Is(err, serviceSystem.ErrDeptHasChildren):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门含有子部门，无法删除", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptHasUsers):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门下仍有用户，无法删除", nil)
+		case errors.Is(err, serviceSystem.ErrPostHasUsers):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位下仍有用户，无法删除", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("删除部门信息异常 >>> %v", err.Error()))
-			zap.S().Error("删除部门信息异常 >>> ", zap.Error(err))
+			ctx.Set("internalError", fmt.Sprintf("删除岗位信息异常 >>> %v", err.Error()))
+			zap.S().Error("删除岗位信息异常 >>> ", zap.Error(err))
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -256,18 +254,18 @@ func (h *deptHandler) Delete(ctx *gin.Context) {
 }
 
 // BatchDelete
-// @Summary 批量删除部门
-// @Description 批量删除部门信息
-// @Tags 系统管理/部门管理
+// @Summary 批量删除岗位
+// @Description 批量删除岗位信息
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param ids body []string true "id数组"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/batchDelete [post]
+// @Router /v1/system/post/batchDelete [post]
 // @Security LoginToken
-func (h *deptHandler) BatchDelete(ctx *gin.Context) {
+func (h *postHandler) BatchDelete(ctx *gin.Context) {
 	var ids []string
 	if err := ctx.ShouldBindJSON(&ids); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
@@ -277,7 +275,7 @@ func (h *deptHandler) BatchDelete(ctx *gin.Context) {
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
 		ctx.Set("internal", err.Error())
-		zap.L().Error("批量删除部门异常", zap.Error(err))
+		zap.L().Error("批量删除岗位异常", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -286,18 +284,18 @@ func (h *deptHandler) BatchDelete(ctx *gin.Context) {
 }
 
 // Update
-// @Summary 更新部门
-// @Description 更新部门信息
-// @Tags 系统管理/部门管理
+// @Summary 更新岗位
+// @Description 更新岗位信息
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
-// @Param UpdateDeptRequest body UpdateDeptRequest true "请求"
+// @Param UpdatePostRequest body UpdatePostRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/update [put]
+// @Router /v1/system/post/update [put]
 // @Security LoginToken
-func (h *deptHandler) Update(ctx *gin.Context) {
+func (h *postHandler) Update(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -314,28 +312,35 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var req UpdateDeptRequest
+	var req UpdatePostRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
 	}
 
 	// 校验参数
-	typeValidValues := []string{"company", "department", "team", "other"}
-	converter := enumconv.NewEnumConverter(dept.TypeMapping, dept.TypeImportMapping, typeValidValues, "部门类型")
-	_, err = converter.FromEnum(req.DeptType)
+	typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
+	converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
+	_, err = converter.FromEnum(req.PostType)
+	if err != nil {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
+	levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
+	levelConverter := enumconv.NewEnumConverter(post.LevelMapping, post.LevelImportMapping, levelValidValues, "岗位级别")
+	_, err = levelConverter.FromEnum(req.Level)
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	// 转换为领域模型
-	domain := domainSystem.Dept{
-		Dept: modelSystem.Dept{
+	domain := domainSystem.Post{
+		Post: modelSystem.Post{
 			CoreModels: models.CoreModels{
-				Id:         req.Id,
 				Sort:       req.Sort,
-				Timestamp:  req.Timestamp,
+				Creator:    user.Id,
 				Modifier:   user.Id,
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
@@ -343,41 +348,24 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 			Status:      req.Status,
 			Name:        req.Name,
 			Code:        req.Code,
-			DeptType:    req.DeptType,
-			Owner:       req.Owner,
-			Phone:       req.Phone,
-			Email:       req.Email,
+			PostType:    req.PostType,
+			Level:       req.Level,
 			Description: req.Description,
-			ParentID:    req.ParentID,
+			DeptID:      req.DeptID,
 		},
 	}
 
 	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrDeptCodeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门编码已存在", nil)
+		case errors.Is(err, serviceSystem.ErrPostCodeDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位编码已存在", nil)
 			return
-		case errors.Is(err, serviceSystem.ErrDeptNameParentDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "同级别下已存在相同的部门信息", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptYourParent):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "不能将自己设置为父部门", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptParentNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门信息不存在", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptDisabled):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门已被禁用，无法在其下创建子部门", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptCycleReference):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "不能将子部门设置为父部门，会形成循环引用", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrDeptVersionInconsistency):
+		case errors.Is(err, serviceSystem.ErrPostVersionInconsistency):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新部门信息失败 >>> %v", err.Error()))
-			zap.S().Error("更新部门信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新岗位信息失败 >>> %v", err.Error()))
+			zap.S().Error("更新岗位信息失败 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -387,18 +375,18 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 }
 
 // GetById
-// @Summary 获取部门
-// @Description 获取指定id部门信息
-// @Tags 系统管理/部门管理
+// @Summary 获取岗位
+// @Description 获取指定id岗位信息
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param id path string true "id"
-// @Success 200 {object} domainSystem.Dept
+// @Success 200 {object} domainSystem.Post
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/getById/{id} [get]
+// @Router /v1/system/post/getById/{id} [get]
 // @Security LoginToken
-func (h *deptHandler) GetById(ctx *gin.Context) {
+func (h *postHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, "id不能为空", nil)
@@ -407,12 +395,12 @@ func (h *deptHandler) GetById(ctx *gin.Context) {
 
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
-		if errors.Is(err, serviceSystem.ErrDeptNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门信息不存在", nil)
+		if errors.Is(err, serviceSystem.ErrPostNotFound) {
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位信息不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取部门信息失败 >>> %v", err.Error()))
-		zap.S().Error("获取部门信息失败 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取岗位信息失败 >>> %v", err.Error()))
+		zap.S().Error("获取岗位信息失败 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -420,25 +408,27 @@ func (h *deptHandler) GetById(ctx *gin.Context) {
 	response.NewResponse().Success(ctx, "获取成功", detail)
 }
 
-// GetListTree
-// @Summary 获取部门树形结构
-// @Description 获取部门树形结构信息
-// @Tags 系统管理/部门管理
+// GetListPage
+// @Summary 获取岗位分页列表
+// @Description 获取岗位分页列表
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "部门名称"
-// @Param code query string false "部门编码"
-// @Param dept_type query string false "部门类型"
-// @Param level query int true "层级深度" default(0)
-// @Success 200 {object} serviceSystem.DeptTree
+// @Param name query string false "岗位名称"
+// @Param code query string false "岗位编码"
+// @Param post_type query int false "岗位类型" default(0)
+// @Param level query int true "岗位级别" default(0)
+// @Param dept_id query string true "所属部门ID"
+// @Success 200 {array} []domainSystem.Post
+// @Success 200 {object} PostListPageResponse
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/listTree [get]
+// @Router /v1/system/post/listPage [get]
 // @Security LoginToken
-func (h *deptHandler) GetListTree(ctx *gin.Context) {
+func (h *postHandler) GetListPage(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -455,6 +445,8 @@ func (h *deptHandler) GetListTree(ctx *gin.Context) {
 		return
 	}
 
+	page, _ := strconv.Atoi(ctx.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
 	statusStr := ctx.DefaultQuery("status", "true")
@@ -465,10 +457,11 @@ func (h *deptHandler) GetListTree(ctx *gin.Context) {
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	deptType := ctx.DefaultQuery("dept_type", "")
+	postType, _ := strconv.Atoi(ctx.DefaultQuery("post_type", "0"))
 	level, _ := strconv.Atoi(ctx.DefaultQuery("level", "0"))
+	deptID := ctx.DefaultQuery("dept_id", "")
 
-	filter := domainSystem.DeptFilter{
+	filter := domainSystem.PostFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
@@ -477,40 +470,47 @@ func (h *deptHandler) GetListTree(ctx *gin.Context) {
 		Status:   status,
 		Name:     name,
 		Code:     code,
-		DeptType: dept.Type(deptType),
-		Level:    level,
+		PostType: post.Type(postType),
+		Level:    post.Level(level),
+		DeptID:   deptID,
 	}
 
-	list, err := h.svc.GetListTree(ctx, filter)
+	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取部门树异常 >>> %v", err.Error()))
-		zap.S().Error("获取部门树异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取岗位列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取岗位列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
-	response.NewResponse().Success(ctx, "查询成功", list)
+	response.NewResponse().Success(ctx, "查询成功", PostListPageResponse{
+		List:     list,
+		Total:    total,
+		Page:     page,
+		PageSize: pageSize,
+	})
 }
 
 // GetListAll
-// @Summary 获取所有部门
-// @Description 获取所有部门列表信息
-// @Tags 系统管理/部门管理
+// @Summary 获取所有岗位
+// @Description 获取所有岗位列表信息
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "部门名称"
-// @Param code query string false "部门编码"
-// @Param dept_type query string false "部门类型"
-// @Param level query int true "层级深度" default(0)
-// @Success 200 {array} []domainSystem.Dept
+// @Param name query string false "岗位名称"
+// @Param code query string false "岗位编码"
+// @Param post_type query int false "岗位类型" default(0)
+// @Param level query int true "岗位级别" default(0)
+// @Param dept_id query string true "所属部门ID"
+// @Success 200 {array} []domainSystem.Post
 // @Failure 400 {object} response.Response
-// @Router /v1/system/dept/listAll [get]
+// @Router /v1/system/post/listAll [get]
 // @Security LoginToken
-func (h *deptHandler) GetListAll(ctx *gin.Context) {
+func (h *postHandler) GetListAll(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -537,10 +537,11 @@ func (h *deptHandler) GetListAll(ctx *gin.Context) {
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	deptType := ctx.DefaultQuery("dept_type", "")
+	postType, _ := strconv.Atoi(ctx.DefaultQuery("post_type", "0"))
 	level, _ := strconv.Atoi(ctx.DefaultQuery("level", "0"))
+	deptID := ctx.DefaultQuery("dept_id", "")
 
-	filter := domainSystem.DeptFilter{
+	filter := domainSystem.PostFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
@@ -549,14 +550,15 @@ func (h *deptHandler) GetListAll(ctx *gin.Context) {
 		Status:   status,
 		Name:     name,
 		Code:     code,
-		DeptType: dept.Type(deptType),
-		Level:    level,
+		PostType: post.Type(postType),
+		Level:    post.Level(level),
+		DeptID:   deptID,
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取部门列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取部门列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取岗位列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取岗位列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -565,24 +567,25 @@ func (h *deptHandler) GetListAll(ctx *gin.Context) {
 }
 
 // Export
-// @Summary 导出部门数据
-// @Description 导出部门数据到Excel文件
-// @Tags 系统管理/部门管理
+// @Summary 导出岗位数据
+// @Description 导出岗位数据到Excel文件
+// @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "部门名称"
-// @Param code query string false "部门编码"
-// @Param dept_type query string false "部门类型"
-// @Param level query int true "层级深度" default(0)
+// @Param name query string false "岗位名称"
+// @Param code query string false "岗位编码"
+// @Param post_type query int false "岗位类型" default(0)
+// @Param level query int true "岗位级别" default(0)
+// @Param dept_id query string true "所属部门ID"
 // @Success 200 {file} file "Excel文件"
 // @Failure 500 {object} response.Response
 // @Router /v1/system/post/export [get]
 // @Security LoginToken
-func (h *deptHandler) Export(ctx *gin.Context) {
+func (h *postHandler) Export(ctx *gin.Context) {
 	// TODO implement me
 	panic("implement me")
 }

@@ -40,6 +40,8 @@ type User struct {
 
 	DeptID *string `gorm:"size:110;index;column:dept_id;comment:部门ID" json:"dept_id"`                   // 部门ID
 	Dept   *Dept   `gorm:"foreignKey:DeptID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"dept"` // 部门
+	// User -> Post
+	Posts []*Post `gorm:"many2many:careful_system_user_post;constraint:OnDelete:CASCADE;"` // 关联岗位
 }
 
 func NewUser() *User {
@@ -57,6 +59,9 @@ func (u *User) AutoMigrate(db *gorm.DB) {
 	if err != nil {
 		zap.L().Error("User表模型迁移失败", zap.Error(err))
 	}
+
+	// 迁移中间表并设置备注
+	u.migrateManyToManyTable(db, "careful_system_user_post", "用户-关联岗位表")
 }
 
 // Validate 验证用户数据
@@ -84,4 +89,17 @@ func (u *User) Validate() error {
 	}
 
 	return nil
+}
+
+// 迁移many2many中间表并设置表备注
+func (u *User) migrateManyToManyTable(db *gorm.DB, tableName string, comment string) {
+	err := db.Exec(fmt.Sprintf(
+		"ALTER TABLE %s COMMENT = '%s'",
+		tableName,
+		comment,
+	)).Error
+
+	if err != nil {
+		zap.L().Error(fmt.Sprintf("%s表备注设置失败", tableName), zap.Error(err))
+	}
 }

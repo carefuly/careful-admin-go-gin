@@ -18,7 +18,7 @@ const (
 	TypeOther      Type = "other"      // 其他
 )
 
-// TypeMapping 字典类型映射
+// TypeMapping 部门类型映射
 var TypeMapping = map[Type]string{
 	TypeCompany:    "公司",
 	TypeDepartment: "部门",
@@ -26,7 +26,7 @@ var TypeMapping = map[Type]string{
 	TypeOther:      "其他",
 }
 
-// TypeImportMapping 字典类型映射
+// TypeImportMapping 部门类型映射
 var TypeImportMapping = map[string]Type{
 	"公司": TypeCompany,
 	"部门": TypeDepartment,

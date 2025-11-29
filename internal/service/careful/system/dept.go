@@ -38,6 +38,7 @@ type DeptTree struct {
 
 type DeptService interface {
 	Create(ctx context.Context, domain domainSystem.Dept) error
+	Import(ctx context.Context)
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, domain domainSystem.Dept) error
@@ -113,6 +114,11 @@ func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) er
 	return nil
 }
 
+// Import 导入
+func (svc *deptService) Import(ctx context.Context) {
+
+}
+
 // Delete 删除
 func (svc *deptService) Delete(ctx context.Context, id string) error {
 	canDelete, err := svc.canDelete(ctx, id)
@@ -123,11 +129,11 @@ func (svc *deptService) Delete(ctx context.Context, id string) error {
 	if !canDelete {
 		leaf, _ := svc.isLeaf(ctx, id)
 		if !leaf {
-			return ErrDeptHasChildren
+			return repositorySystem.ErrDeptHasChildren
 		}
 		count, _ := svc.GetUserCount(ctx, id)
 		if count > 0 {
-			return ErrDeptHasUsers
+			return repositorySystem.ErrDeptHasUsers
 		}
 	}
 
