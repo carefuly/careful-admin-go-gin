@@ -34,7 +34,7 @@ type PostRepository interface {
 	Update(ctx context.Context, domain domainSystem.Post) error
 
 	GetById(ctx context.Context, id string) (domainSystem.Post, error)
-	GetUserCount(ctx context.Context, id string) (int64, error)
+	GetUserCount(ctx context.Context, id string) int64
 	GetListPage(ctx context.Context, filters domainSystem.PostFilter) ([]domainSystem.Post, int64, error)
 	GetListAll(ctx context.Context, filters domainSystem.PostFilter) ([]domainSystem.Post, error)
 
@@ -145,7 +145,7 @@ func (repo *postRepository) GetById(ctx context.Context, id string) (domainSyste
 }
 
 // GetUserCount 获取岗位下的用户数量
-func (repo *postRepository) GetUserCount(ctx context.Context, id string) (int64, error) {
+func (repo *postRepository) GetUserCount(ctx context.Context, id string) int64 {
 	return repo.dao.FindUserCount(ctx, id)
 }
 

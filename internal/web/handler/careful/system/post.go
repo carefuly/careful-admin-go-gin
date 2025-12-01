@@ -339,8 +339,9 @@ func (h *postHandler) Update(ctx *gin.Context) {
 	domain := domainSystem.Post{
 		Post: modelSystem.Post{
 			CoreModels: models.CoreModels{
+				Id:         req.Id,
 				Sort:       req.Sort,
-				Creator:    user.Id,
+				Timestamp:  req.Timestamp,
 				Modifier:   user.Id,
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
@@ -415,6 +416,8 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
+// @Param page query int true "页码" default(1)
+// @Param pageSize query int true "每页数量" default(10)
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
@@ -462,6 +465,10 @@ func (h *postHandler) GetListPage(ctx *gin.Context) {
 	deptID := ctx.DefaultQuery("dept_id", "")
 
 	filter := domainSystem.PostFilter{
+		Pagination: filters.Pagination{
+			Page:     page,
+			PageSize: pageSize,
+		},
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,

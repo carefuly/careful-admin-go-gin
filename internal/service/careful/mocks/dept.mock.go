@@ -123,6 +123,18 @@ func (mr *MockDeptServiceMockRecorder) GetListTree(ctx, filters interface{}) *go
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListTree", reflect.TypeOf((*MockDeptService)(nil).GetListTree), ctx, filters)
 }
 
+// Import mocks base method.
+func (m *MockDeptService) Import(ctx context.Context) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "Import", ctx)
+}
+
+// Import indicates an expected call of Import.
+func (mr *MockDeptServiceMockRecorder) Import(ctx interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockDeptService)(nil).Import), ctx)
+}
+
 // Update mocks base method.
 func (m *MockDeptService) Update(ctx context.Context, domain system.Dept) error {
 	m.ctrl.T.Helper()

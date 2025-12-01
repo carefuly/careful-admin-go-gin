@@ -73,7 +73,7 @@ func (svc *postService) Import(ctx context.Context) {
 
 // Delete 删除
 func (svc *postService) Delete(ctx context.Context, id string) error {
-	count, _ := svc.repo.GetUserCount(ctx, id)
+	count := svc.repo.GetUserCount(ctx, id)
 	if count > 0 {
 		return repositorySystem.ErrPostHasUsers
 	}
@@ -85,7 +85,7 @@ func (svc *postService) BatchDelete(ctx context.Context, ids []string) error {
 	var failedIds []string
 
 	for _, id := range ids {
-		count, _ := svc.repo.GetUserCount(ctx, id)
+		count := svc.repo.GetUserCount(ctx, id)
 		if count == 0 {
 			failedIds = append(failedIds, id)
 			continue

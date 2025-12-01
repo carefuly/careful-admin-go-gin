@@ -32,7 +32,7 @@ type PostDAO interface {
 	Update(ctx context.Context, model system.Post) error
 
 	FindById(ctx context.Context, id string) (*system.Post, error)
-	FindUserCount(ctx context.Context, id string) (int64, error)
+	FindUserCount(ctx context.Context, id string) int64
 	FindListPage(ctx context.Context, filter domainSystem.PostFilter) ([]*system.Post, int64, error)
 	FindListAll(ctx context.Context, filter domainSystem.PostFilter) ([]*system.Post, error)
 
@@ -112,14 +112,14 @@ func (dao *GORMPostDAO) FindById(ctx context.Context, id string) (*system.Post, 
 }
 
 // FindUserCount 获取岗位下的用户数量
-func (dao *GORMPostDAO) FindUserCount(ctx context.Context, id string) (int64, error) {
+func (dao *GORMPostDAO) FindUserCount(ctx context.Context, id string) int64 {
 	var userCount int64
-	err := dao.db.WithContext(ctx).
+	userCount = dao.db.WithContext(ctx).
 		Model(&system.Post{}).
-		Preload("Users").
-		Count(&userCount).
-		Error
-	return userCount, err
+		Where("id = ?", id).
+		Association("Users").
+		Count()
+	return userCount
 }
 
 // FindListPage 分页查询

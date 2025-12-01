@@ -1523,6 +1523,18 @@ paths:
       - application/json
       description: 获取岗位分页列表
       parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
       - description: 创建人
         in: query
         name: creator
