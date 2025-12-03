@@ -36,6 +36,7 @@ type DeptDAO interface {
 	Update(ctx context.Context, model system.Dept) error
 
 	FindById(ctx context.Context, id string) (*system.Dept, error)
+	FindByCode(ctx context.Context, code string) (*system.Dept, error)
 	FindByParentId(ctx context.Context, parentId string) (*system.Dept, error)
 	FindUserCount(ctx context.Context, id string) (int64, error)
 	FindChildCount(ctx context.Context, id string) (int64, error)
@@ -119,6 +120,13 @@ func (dao *GORMDeptDAO) FindById(ctx context.Context, id string) (*system.Dept, 
 		Where("id = ?", id).
 		First(&model).
 		Error
+	return &model, err
+}
+
+// FindByCode 根据code获取详情
+func (dao *GORMDeptDAO) FindByCode(ctx context.Context, code string) (*system.Dept, error) {
+	var model system.Dept
+	err := dao.db.WithContext(ctx).Where("code = ?", code).First(&model).Error
 	return &model, err
 }
 

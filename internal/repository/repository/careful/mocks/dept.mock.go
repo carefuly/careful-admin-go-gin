@@ -123,6 +123,21 @@ func (mr *MockDeptRepositoryMockRecorder) GetAncestors(ctx, model interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAncestors", reflect.TypeOf((*MockDeptRepository)(nil).GetAncestors), ctx, model)
 }
 
+// GetByCode mocks base method.
+func (m *MockDeptRepository) GetByCode(ctx context.Context, code string) (system.Dept, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetByCode", ctx, code)
+	ret0, _ := ret[0].(system.Dept)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetByCode indicates an expected call of GetByCode.
+func (mr *MockDeptRepositoryMockRecorder) GetByCode(ctx, code interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByCode", reflect.TypeOf((*MockDeptRepository)(nil).GetByCode), ctx, code)
+}
+
 // GetById mocks base method.
 func (m *MockDeptRepository) GetById(ctx context.Context, id string) (system.Dept, error) {
 	m.ctrl.T.Helper()

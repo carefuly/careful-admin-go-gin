@@ -38,6 +38,7 @@ type DeptRepository interface {
 	Update(ctx context.Context, domain domainSystem.Dept) error
 
 	GetById(ctx context.Context, id string) (domainSystem.Dept, error)
+	GetByCode(ctx context.Context, code string) (domainSystem.Dept, error)
 	GetByParentId(ctx context.Context, parentId string) (domainSystem.Dept, error)
 	GetUserCount(ctx context.Context, id string) (int64, error)
 	GetChildCount(ctx context.Context, id string) (int64, error)
@@ -149,6 +150,15 @@ func (repo *deptRepository) GetById(ctx context.Context, id string) (domainSyste
 	}
 
 	return toDomain, nil
+}
+
+// GetByCode 根据code获取详情
+func (repo *deptRepository) GetByCode(ctx context.Context, code string) (domainSystem.Dept, error) {
+	model, err := repo.dao.FindByCode(ctx, code)
+	if err != nil {
+		return domainSystem.Dept{}, err
+	}
+	return repo.toDomain(model), nil
 }
 
 // GetByParentId 根据parent_id获取详情

@@ -1,21 +1,22 @@
 /**
  * Description：
- * FileName：post.go
+ * FileName：dict.go
  * Author：CJiaの用心
- * Create：2025/11/30 00:57:00
+ * Create：2025/12/3 11:37:34
  * Remark：
  */
 
-package system
+package tools
 
 import (
 	"errors"
 	"fmt"
 	"github.com/carefuly/careful-admin-go-gin/config"
-	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
-	modelSystem "github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
+	domainTools "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/tools"
+	modelTools "github.com/carefuly/careful-admin-go-gin/internal/model/careful/tools"
 	serviceSystem "github.com/carefuly/careful-admin-go-gin/internal/service/careful/system"
-	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system/post"
+	serviceTools "github.com/carefuly/careful-admin-go-gin/internal/service/careful/tools"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/tools/dict"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
@@ -32,48 +33,41 @@ import (
 	"time"
 )
 
-// CreatePostRequest 创建
-type CreatePostRequest struct {
-	Status      bool       `json:"status" binding:"omitempty" default:"true"`      // 状态【true-启用 false-停用】
-	Name        string     `json:"name" binding:"required,max=50" default:""`      // 岗位名称
-	Code        string     `json:"code" binding:"required,max=50" default:""`      // 岗位编码
-	PostType    post.Type  `json:"post_type" binding:"omitempty" default:"5"`      // 岗位类型
-	Level       post.Level `json:"level" binding:"omitempty" default:"4"`          // 岗位级别
-	Description string     `json:"description" binding:"omitempty" default:""`     // 岗位描述
-	DeptID      *string    `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
-	Sort        int        `json:"sort" binding:"omitempty" default:"1"`           // 排序
-	Remark      string     `json:"remark" binding:"omitempty,max=255" default:""`  // 备注
+// CreateDictRequest 创建
+type CreateDictRequest struct {
+	Status    bool           `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
+	Name      string         `json:"name" binding:"required,max=100" default:""`    // 字典名称
+	Code      string         `json:"code" binding:"required,max=100" default:""`    // 字典编码
+	Type      dict.Type      `json:"type" binding:"omitempty" default:"1"`          // 字典分类
+	ValueType dict.ValueType `json:"value_type" binding:"omitempty" default:"1"`    // 字典值类型
+	Sort      int            `json:"sort" binding:"omitempty" default:"1"`          // 排序
+	Remark    string         `json:"remark" binding:"omitempty,max=255" default:""` // 备注
 }
 
-// ImportPostRequest 导入
-type ImportPostRequest struct {
-	File *multipart.FileHeader `form:"file" binding:"required"` // 文件
+// ImportDictRequest 导入
+type ImportDictRequest struct {
+	File *multipart.FileHeader `form:"file" binding:"required"`
 }
 
-// UpdatePostRequest 更新
-type UpdatePostRequest struct {
-	Id          string     `json:"id" binding:"required" default:""`               // 主键ID
-	Status      bool       `json:"status" binding:"omitempty" default:"true"`      // 状态【true-启用 false-停用】
-	Name        string     `json:"name" binding:"required,max=50" default:""`      // 岗位名称
-	Code        string     `json:"code" binding:"required,max=50" default:""`      // 岗位编码
-	PostType    post.Type  `json:"post_type" binding:"omitempty" default:"5"`      // 岗位类型
-	Level       post.Level `json:"level" binding:"omitempty" default:"4"`          // 岗位级别
-	Description string     `json:"description" binding:"omitempty" default:""`     // 岗位描述
-	DeptID      *string    `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
-	Sort        int        `json:"sort" binding:"omitempty" default:"1"`           // 排序
-	Timestamp   int64      `json:"timestamp" binding:"omitempty"`                  // 版本
-	Remark      string     `json:"remark" binding:"omitempty,max=255" default:""`  // 备注
+// UpdateDictRequest 更新
+type UpdateDictRequest struct {
+	Id        string `json:"id" binding:"required" default:""`              // 主键ID
+	Status    bool   `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
+	Code      string `json:"code" binding:"required,max=100" default:""`    // 字典编码
+	Sort      int    `json:"sort" binding:"omitempty" default:"1"`          // 排序
+	Timestamp int64  `json:"timestamp" binding:"omitempty"`                 // 版本
+	Remark    string `json:"remark" binding:"omitempty,max=255" default:""` // 备注
 }
 
-// PostListPageResponse 列表分页响应
-type PostListPageResponse struct {
-	List     []domainSystem.Post `json:"list"`     // 列表
-	Total    int64               `json:"total"`    // 总数
-	Page     int                 `json:"page"`     // 页码
-	PageSize int                 `json:"pageSize"` // 每页数量
+// DictListPageResponse 列表分页响应
+type DictListPageResponse struct {
+	List     []domainTools.Dict `json:"list"`     // 列表
+	Total    int64              `json:"total"`    // 总数
+	Page     int                `json:"page"`     // 页码
+	PageSize int                `json:"pageSize"` // 每页数量
 }
 
-type PostHandler interface {
+type DictHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	Import(ctx *gin.Context)
@@ -86,22 +80,23 @@ type PostHandler interface {
 	Export(ctx *gin.Context)
 }
 
-type postHandler struct {
+type dictHandler struct {
 	rely    config.RelyConfig
-	svc     serviceSystem.PostService
+	svc     serviceTools.DictService
 	userSvc serviceSystem.UserService
 }
 
-func NewPostHandler(rely config.RelyConfig, svc serviceSystem.PostService, userSvc serviceSystem.UserService) PostHandler {
-	return &postHandler{
+func NewDictHandler(rely config.RelyConfig, svc serviceTools.DictService, userSvc serviceSystem.UserService) DictHandler {
+	return &dictHandler{
 		rely:    rely,
 		svc:     svc,
 		userSvc: userSvc,
 	}
 }
 
-func (h *postHandler) RegisterRoutes(router *gin.RouterGroup) {
-	base := router.Group("/post")
+// RegisterRoutes 注册路由
+func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
+	base := router.Group("/dict")
 	base.POST("/create", h.Create)
 	base.POST("/import", h.Import)
 	base.DELETE("/delete/:id", h.Delete)
@@ -114,18 +109,18 @@ func (h *postHandler) RegisterRoutes(router *gin.RouterGroup) {
 }
 
 // Create
-// @Summary 创建岗位
-// @Description 创建岗位信息
-// @Tags 系统管理/岗位管理
+// @Summary 创建字典
+// @Description 创建字典信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
-// @Param CreatePostRequest body CreatePostRequest true "请求"
+// @Param CreateDictRequest body CreateDictRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/create [post]
+// @Router /v1/tools/dict/create [post]
 // @Security LoginToken
-func (h *postHandler) Create(ctx *gin.Context) {
+func (h *dictHandler) Create(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -142,32 +137,31 @@ func (h *postHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req CreatePostRequest
+	var req CreateDictRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
 	}
 
 	// 校验参数
-	typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
-	converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
-	_, err = converter.FromEnum(req.PostType)
+	typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
+	converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+	_, err = converter.FromEnum(req.Type)
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
-
-	levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
-	levelConverter := enumconv.NewEnumConverter(post.LevelMapping, post.LevelImportMapping, levelValidValues, "岗位级别")
-	_, err = levelConverter.FromEnum(req.Level)
+	valueTypeValidValues := []string{"字符串", "整型", "布尔"}
+	valueTypeConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, valueTypeValidValues, "数据类型")
+	_, err = valueTypeConverter.FromEnum(req.ValueType)
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	// 转换为领域模型
-	domain := domainSystem.Post{
-		Post: modelSystem.Post{
+	domain := domainTools.Dict{
+		Dict: modelTools.Dict{
 			CoreModels: models.CoreModels{
 				Sort:       req.Sort,
 				Creator:    user.Id,
@@ -175,24 +169,25 @@ func (h *postHandler) Create(ctx *gin.Context) {
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
 			},
-			Status:      req.Status,
-			Name:        req.Name,
-			Code:        req.Code,
-			PostType:    req.PostType,
-			Level:       req.Level,
-			Description: req.Description,
-			DeptID:      req.DeptID,
+			Status:    req.Status,
+			Name:      req.Name,
+			Code:      req.Code,
+			Type:      req.Type,
+			ValueType: req.ValueType,
 		},
 	}
 
 	if err := h.svc.Create(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrPostCodeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位编码已存在", nil)
+		case errors.Is(err, serviceTools.ErrDictNameDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典名称已存在", nil)
+			return
+		case errors.Is(err, serviceTools.ErrDictCodeDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典编码已存在", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建岗位信息失败 >>> %v", err.Error()))
-			zap.S().Error("创建岗位信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("创建数据字典异常 >>> %v", err.Error()))
+			zap.S().Error("创建数据字典异常 >>> ", zap.Error(err))
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -202,18 +197,18 @@ func (h *postHandler) Create(ctx *gin.Context) {
 }
 
 // Import
-// @Summary 导入岗位
-// @Description 导入岗位信息
-// @Tags 系统管理/岗位管理
+// @Summary 导入字典
+// @Description 导入字典信息
+// @Tags 系统工具/字典管理
 // @Accept multipart/form-data
 // @Produce application/json
 // @Security BearerAuth
 // @Param file formData file true "文件(支持xlsx/csv格式)"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/import [post]
+// @Router /v1/tools/dict/import [post]
 // @Security LoginToken
-func (h *postHandler) Import(ctx *gin.Context) {
+func (h *dictHandler) Import(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -230,7 +225,7 @@ func (h *postHandler) Import(ctx *gin.Context) {
 		return
 	}
 
-	var req ImportPostRequest
+	var req ImportDictRequest
 	if err := ctx.ShouldBind(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
@@ -245,7 +240,7 @@ func (h *postHandler) Import(ctx *gin.Context) {
 	}
 
 	// 读取Excel文件
-	read, err := xlsx.NewXlsxFile(filePath).ReadSheetByName("岗位模板")
+	read, err := xlsx.NewXlsxFile(filePath).ReadSheetByName("字典模板")
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
@@ -257,18 +252,18 @@ func (h *postHandler) Import(ctx *gin.Context) {
 }
 
 // Delete
-// @Summary 删除岗位
-// @Description 删除指定id岗位信息
-// @Tags 系统管理/岗位管理
+// @Summary 删除字典
+// @Description 删除指定id字典信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param id path string true "id"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/delete/{id} [delete]
+// @Router /v1/tools/dict/delete/{id} [delete]
 // @Security LoginToken
-func (h *postHandler) Delete(ctx *gin.Context) {
+func (h *dictHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, "ID不能为空", nil)
@@ -276,37 +271,32 @@ func (h *postHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		switch {
-		case errors.Is(err, serviceSystem.ErrPostNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位信息不存在", nil)
-			return
-		case errors.Is(err, serviceSystem.ErrPostHasUsers):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位下仍有用户，无法删除", nil)
-			return
-		default:
-			ctx.Set("internalError", fmt.Sprintf("删除岗位信息异常 >>> %v", err.Error()))
-			zap.S().Error("删除岗位信息异常 >>> ", zap.Error(err))
-			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		if errors.Is(err, serviceTools.ErrDictNotFound) {
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
 			return
 		}
+		ctx.Set("internalError", fmt.Sprintf("删除数据字典异常 >>> %v", err.Error()))
+		zap.S().Error("删除数据字典异常 >>> ", zap.Error(err))
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
 	}
 
 	response.NewResponse().Success(ctx, "删除成功", nil)
 }
 
 // BatchDelete
-// @Summary 批量删除岗位
-// @Description 批量删除岗位信息
-// @Tags 系统管理/岗位管理
+// @Summary 批量删除字典
+// @Description 批量删除字典信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param ids body []string true "id数组"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/batchDelete [post]
+// @Router /v1/tools/dict/batchDelete [post]
 // @Security LoginToken
-func (h *postHandler) BatchDelete(ctx *gin.Context) {
+func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 	var ids []string
 	if err := ctx.ShouldBindJSON(&ids); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
@@ -315,8 +305,8 @@ func (h *postHandler) BatchDelete(ctx *gin.Context) {
 
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
-		ctx.Set("internal", err.Error())
-		zap.L().Error("批量删除岗位异常", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("批量删除字典异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除字典异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -325,18 +315,18 @@ func (h *postHandler) BatchDelete(ctx *gin.Context) {
 }
 
 // Update
-// @Summary 更新岗位
-// @Description 更新岗位信息
-// @Tags 系统管理/岗位管理
+// @Summary 更新字典
+// @Description 更新字典信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
-// @Param UpdatePostRequest body UpdatePostRequest true "请求"
+// @Param UpdateDictRequest body UpdateDictRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/update [put]
+// @Router /v1/tools/dict/update [put]
 // @Security LoginToken
-func (h *postHandler) Update(ctx *gin.Context) {
+func (h *dictHandler) Update(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -353,32 +343,15 @@ func (h *postHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var req UpdatePostRequest
+	var req UpdateDictRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
 	}
 
-	// 校验参数
-	typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
-	converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
-	_, err = converter.FromEnum(req.PostType)
-	if err != nil {
-		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-
-	levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
-	levelConverter := enumconv.NewEnumConverter(post.LevelMapping, post.LevelImportMapping, levelValidValues, "岗位级别")
-	_, err = levelConverter.FromEnum(req.Level)
-	if err != nil {
-		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-
 	// 转换为领域模型
-	domain := domainSystem.Post{
-		Post: modelSystem.Post{
+	domain := domainTools.Dict{
+		Dict: modelTools.Dict{
 			CoreModels: models.CoreModels{
 				Id:         req.Id,
 				Sort:       req.Sort,
@@ -387,27 +360,25 @@ func (h *postHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
 			},
-			Status:      req.Status,
-			Name:        req.Name,
-			Code:        req.Code,
-			PostType:    req.PostType,
-			Level:       req.Level,
-			Description: req.Description,
-			DeptID:      req.DeptID,
+			Status: req.Status,
+			Code:   req.Code,
 		},
 	}
 
 	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrPostCodeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位编码已存在", nil)
+		case errors.Is(err, serviceTools.ErrDictNameDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典名称已存在", nil)
 			return
-		case errors.Is(err, serviceSystem.ErrPostVersionInconsistency):
+		case errors.Is(err, serviceTools.ErrDictCodeDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典编码已存在", nil)
+			return
+		case errors.Is(err, serviceTools.ErrDictVersionInconsistency):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新岗位信息失败 >>> %v", err.Error()))
-			zap.S().Error("更新岗位信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新数据字典异常 >>> %v", err.Error()))
+			zap.S().Error("更新数据字典异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -417,18 +388,18 @@ func (h *postHandler) Update(ctx *gin.Context) {
 }
 
 // GetById
-// @Summary 获取岗位
-// @Description 获取指定id岗位信息
-// @Tags 系统管理/岗位管理
+// @Summary 获取字典
+// @Description 获取指定id字典信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param id path string true "id"
-// @Success 200 {object} domainSystem.Post
+// @Success 200 {object} domainTools.Dict
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/getById/{id} [get]
+// @Router /v1/tools/dict/getById/{id} [get]
 // @Security LoginToken
-func (h *postHandler) GetById(ctx *gin.Context) {
+func (h *dictHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, "id不能为空", nil)
@@ -437,12 +408,12 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
-		if errors.Is(err, serviceSystem.ErrPostNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位信息不存在", nil)
+		if errors.Is(err, serviceTools.ErrDictNotFound) {
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取岗位信息失败 >>> %v", err.Error()))
-		zap.S().Error("获取岗位信息失败 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -451,9 +422,9 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 }
 
 // GetListPage
-// @Summary 获取岗位分页列表
-// @Description 获取岗位分页列表信息
-// @Tags 系统管理/岗位管理
+// @Summary 获取字典分页列表
+// @Description 获取字典分页列表信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
@@ -462,17 +433,15 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "岗位名称"
-// @Param code query string false "岗位编码"
-// @Param post_type query int false "岗位类型" default(0)
-// @Param level query int true "岗位级别" default(0)
-// @Param dept_id query string true "所属部门ID"
-// @Success 200 {array} []domainSystem.Post
-// @Success 200 {object} PostListPageResponse
+// @Param name query string false "字典名称"
+// @Param code query string false "字典编码"
+// @Param type query int true "字典分类" default(0)
+// @Param value_type query int true "数据类型" default(0)
+// @Success 200 {object} DictListPageResponse
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/listPage [get]
+// @Router /v1/tools/dict/listPage [get]
 // @Security LoginToken
-func (h *postHandler) GetListPage(ctx *gin.Context) {
+func (h *dictHandler) GetListPage(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -493,45 +462,39 @@ func (h *postHandler) GetListPage(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	statusStr := ctx.DefaultQuery("status", "true")
-	status, err := strconv.ParseBool(statusStr)
-	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
-		status = true
-	}
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	postType, _ := strconv.Atoi(ctx.DefaultQuery("post_type", "0"))
-	level, _ := strconv.Atoi(ctx.DefaultQuery("level", "0"))
-	deptID := ctx.DefaultQuery("dept_id", "")
+	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	valueType, _ := strconv.Atoi(ctx.DefaultQuery("value_type", "0"))
 
-	filter := domainSystem.PostFilter{
-		Pagination: filters.Pagination{
-			Page:     page,
-			PageSize: pageSize,
-		},
+	filter := domainTools.DictFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
 			BelongDept: *user.DeptID,
 		},
-		Status:   status,
-		Name:     name,
-		Code:     code,
-		PostType: post.Type(postType),
-		Level:    post.Level(level),
-		DeptID:   deptID,
+		Pagination: filters.Pagination{
+			Page:     page,
+			PageSize: pageSize,
+		},
+		Status:    status,
+		Name:      name,
+		Code:      code,
+		Type:      dict.Type(dictType),
+		ValueType: dict.ValueType(valueType),
 	}
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取岗位分页列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取岗位分页列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典分页列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典分页列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
-	response.NewResponse().Success(ctx, "查询成功", PostListPageResponse{
+	response.NewResponse().Success(ctx, "查询成功", DictListPageResponse{
 		List:     list,
 		Total:    total,
 		Page:     page,
@@ -540,25 +503,24 @@ func (h *postHandler) GetListPage(ctx *gin.Context) {
 }
 
 // GetListAll
-// @Summary 获取所有岗位
-// @Description 获取所有岗位列表信息
-// @Tags 系统管理/岗位管理
+// @Summary 获取所有字典
+// @Description 获取所有字典列表信息
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "岗位名称"
-// @Param code query string false "岗位编码"
-// @Param post_type query int false "岗位类型" default(0)
-// @Param level query int true "岗位级别" default(0)
-// @Param dept_id query string true "所属部门ID"
-// @Success 200 {array} []domainSystem.Post
+// @Param name query string false "字典名称"
+// @Param code query string false "字典编码"
+// @Param type query int true "字典分类" default(0)
+// @Param value_type query int true "数据类型" default(0)
+// @Success 200 {array} []domainTools.Dict
 // @Failure 400 {object} response.Response
-// @Router /v1/system/post/listAll [get]
+// @Router /v1/tools/dict/listAll [get]
 // @Security LoginToken
-func (h *postHandler) GetListAll(ctx *gin.Context) {
+func (h *dictHandler) GetListAll(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -577,36 +539,30 @@ func (h *postHandler) GetListAll(ctx *gin.Context) {
 
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	statusStr := ctx.DefaultQuery("status", "true")
-	status, err := strconv.ParseBool(statusStr)
-	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
-		status = true
-	}
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	postType, _ := strconv.Atoi(ctx.DefaultQuery("post_type", "0"))
-	level, _ := strconv.Atoi(ctx.DefaultQuery("level", "0"))
-	deptID := ctx.DefaultQuery("dept_id", "")
+	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	valueType, _ := strconv.Atoi(ctx.DefaultQuery("value_type", "0"))
 
-	filter := domainSystem.PostFilter{
+	filter := domainTools.DictFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
 			BelongDept: *user.DeptID,
 		},
-		Status:   status,
-		Name:     name,
-		Code:     code,
-		PostType: post.Type(postType),
-		Level:    post.Level(level),
-		DeptID:   deptID,
+		Status:    status,
+		Name:      name,
+		Code:      code,
+		Type:      dict.Type(dictType),
+		ValueType: dict.ValueType(valueType),
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取岗位列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取岗位列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -615,25 +571,24 @@ func (h *postHandler) GetListAll(ctx *gin.Context) {
 }
 
 // Export
-// @Summary 导出岗位数据
-// @Description 导出岗位数据到Excel文件
-// @Tags 系统管理/岗位管理
+// @Summary 导出字典数据
+// @Description 导出字典数据到Excel文件
+// @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "岗位名称"
-// @Param code query string false "岗位编码"
-// @Param post_type query int false "岗位类型" default(0)
-// @Param level query int true "岗位级别" default(0)
-// @Param dept_id query string true "所属部门ID"
+// @Param name query string false "字典名称"
+// @Param code query string false "字典编码"
+// @Param type query int true "字典分类" default(0)
+// @Param value_type query int true "数据类型" default(0)
 // @Success 200 {file} file "Excel文件"
 // @Failure 500 {object} response.Response
-// @Router /v1/system/post/export [get]
+// @Router /v1/tools/dict/export [get]
 // @Security LoginToken
-func (h *postHandler) Export(ctx *gin.Context) {
+func (h *dictHandler) Export(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -652,73 +607,65 @@ func (h *postHandler) Export(ctx *gin.Context) {
 
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	statusStr := ctx.DefaultQuery("status", "true")
-	status, err := strconv.ParseBool(statusStr)
-	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
-		status = true
-	}
+	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
 
 	name := ctx.DefaultQuery("name", "")
 	code := ctx.DefaultQuery("code", "")
-	postType, _ := strconv.Atoi(ctx.DefaultQuery("post_type", "0"))
-	level, _ := strconv.Atoi(ctx.DefaultQuery("level", "0"))
-	deptID := ctx.DefaultQuery("dept_id", "")
+	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	valueType, _ := strconv.Atoi(ctx.DefaultQuery("value_type", "0"))
 
-	filter := domainSystem.PostFilter{
+	filter := domainTools.DictFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
 			BelongDept: *user.DeptID,
 		},
-		Status:   status,
-		Name:     name,
-		Code:     code,
-		PostType: post.Type(postType),
-		Level:    post.Level(level),
-		DeptID:   deptID,
+		Status:    status,
+		Name:      name,
+		Code:      code,
+		Type:      dict.Type(dictType),
+		ValueType: dict.ValueType(valueType),
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取岗位列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取岗位列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
 	// 准备导出配置
-	filename := fmt.Sprintf("岗位信息导出_%s.xlsx", time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("数据字典导出_%s.xlsx", time.Now().Format("20060102150405"))
 	cfg := excelutil.ExcelExportConfig{
-		SheetName:  "岗位信息",
+		SheetName:  "数据字典",
 		FileName:   filename,
 		StreamMode: true,
 		Columns: []excelutil.ExcelColumn{
-			{Title: "岗位名称", Field: "Name", Width: 20},
-			{Title: "岗位编码", Field: "Code", Width: 20},
+			{Title: "字典名称", Field: "Name", Width: 22},
+			{Title: "字典编码", Field: "Code", Width: 17},
 			{
-				Title: "岗位类型",
-				Field: "PostType",
+				Title: "字典编码",
+				Field: "Type",
 				Width: 15,
 				Formatter: func(value interface{}) string {
-					typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
-					converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
-					str, _ := converter.FromEnum(value.(post.Type))
+					typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
+					converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+					str, _ := converter.FromEnum(value.(dict.Type))
 					return str
 				},
 			},
 			{
-				Title: "岗位级别",
-				Field: "Level",
+				Title: "数据类型",
+				Field: "ValueType",
 				Width: 15,
 				Formatter: func(value interface{}) string {
-					levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
-					levelConverter := enumconv.NewEnumConverter(post.LevelMapping, post.LevelImportMapping, levelValidValues, "岗位级别")
-					str, _ := levelConverter.FromEnum(value.(post.Level))
+					typeValueValidValues := []string{"字符串", "整型", "布尔"}
+					typeValueConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, typeValueValidValues, "数据类型")
+					str, _ := typeValueConverter.FromEnum(value.(dict.ValueType))
 					return str
 				},
 			},
-			{Title: "岗位描述", Field: "Description", Width: 25},
-			{Title: "部门名称", Field: "Dept.Name", Width: 20},
 			{
 				Title: "状态",
 				Field: "Status",
@@ -745,8 +692,8 @@ func (h *postHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("导出岗位信息异常 >>> %v", err.Error()))
-		zap.S().Error("导出岗位信息异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("导出数据字典异常 >>> %v", err.Error()))
+		zap.S().Error("导出数据字典异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

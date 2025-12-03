@@ -11,9 +11,17 @@ package system
 import (
 	"context"
 	"errors"
+	"fmt"
 	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
+	modelSystem "github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
 	repositorySystem "github.com/carefuly/careful-admin-go-gin/internal/repository/repository/careful/system"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/system/post"
+	"github.com/carefuly/careful-admin-go-gin/pkg/models"
+	_string "github.com/carefuly/careful-admin-go-gin/pkg/utils/common/string"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/enumconv"
+	_import "github.com/carefuly/careful-admin-go-gin/pkg/utils/import"
 	"github.com/go-sql-driver/mysql"
+	"strconv"
 )
 
 var (
@@ -25,7 +33,7 @@ var (
 
 type PostService interface {
 	Create(ctx context.Context, domain domainSystem.Post) error
-	Import(ctx context.Context)
+	Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
 	Update(ctx context.Context, domain domainSystem.Post) error
@@ -36,12 +44,14 @@ type PostService interface {
 }
 
 type postService struct {
-	repo repositorySystem.PostRepository
+	repo     repositorySystem.PostRepository
+	deptRepo repositorySystem.DeptRepository
 }
 
-func NewPostService(repo repositorySystem.PostRepository) PostService {
+func NewPostService(repo repositorySystem.PostRepository, deptRepo repositorySystem.DeptRepository) PostService {
 	return &postService{
-		repo: repo,
+		repo:     repo,
+		deptRepo: deptRepo,
 	}
 }
 
@@ -67,8 +77,110 @@ func (svc *postService) Create(ctx context.Context, domain domainSystem.Post) er
 }
 
 // Import 导入
-func (svc *postService) Import(ctx context.Context) {
+func (svc *postService) Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult {
+	result := _import.ImportResult{}
 
+	// 遍历数据
+	for _, list := range listMap {
+		// 数据清洗
+		name := _string.CleanInputString(list["岗位名称"])
+		code := _string.CleanInputString(list["岗位编码"])
+		// 字段校验
+		if name == "" {
+			list["导入状态"] = "400"
+			list["导入结果"] = "【岗位名称】不能为空"
+			continue
+		}
+		if code == "" {
+			list["导入状态"] = "400"
+			list["导入结果"] = "【岗位编码】不能为空"
+			continue
+		}
+		// 校验参数
+		typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
+		converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
+		postType, err := converter.ToEnum(list["岗位类型"])
+		if err != nil {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("【岗位类型】转换失败：%s", err.Error())
+			continue
+		}
+		levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
+		levelConverter := enumconv.NewEnumConverter(post.LevelMapping, post.LevelImportMapping, levelValidValues, "岗位级别")
+		level, err := levelConverter.ToEnum(list["岗位级别"])
+		if err != nil {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("【岗位级别】转换失败：%s", err.Error())
+			continue
+		}
+		// 唯一性校验
+		exists, err := svc.repo.CheckExistByCode(ctx, code, "")
+		if err != nil {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("检查【岗位编码：%s】唯一性失败：%s", code, err.Error())
+			continue
+		}
+		if exists {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("岗位编码【%s】已存在", code)
+			continue
+		}
+		// 处理所属部门
+		var deptId *string
+		dept, err := svc.deptRepo.GetByCode(ctx, list["部门编码"])
+		if err != nil {
+			deptId = nil
+			if errors.Is(err, repositorySystem.ErrDeptNotFound) {
+				list["导入状态"] = "400"
+				list["导入结果"] = fmt.Sprintf("【部门编码】不存在%s", err.Error())
+			}
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("【部门编码】查询异常%s", err.Error())
+		}
+		if dept.Id == "" {
+			deptId = nil
+			list["导入状态"] = "400"
+			list["导入结果"] = "【部门编码】不存在"
+		}
+		deptId = &dept.Id
+		// 处理字段
+		var sort int
+		if list["排序"] == "" {
+			sort = 1
+		} else {
+			sort, _ = strconv.Atoi(list["排序"])
+		}
+		// 构建领域模型
+		domain := domainSystem.Post{
+			Post: modelSystem.Post{
+				CoreModels: models.CoreModels{
+					Sort:       sort,
+					Creator:    user.Id,
+					Modifier:   user.Id,
+					BelongDept: user.DeptID,
+					Remark:     list["备注"],
+				},
+				Status:      true,
+				Name:        name,
+				Code:        code,
+				PostType:    postType,
+				Level:       level,
+				Description: list["描述"],
+				DeptID:      deptId,
+			},
+		}
+
+		// 创建记录
+		if _, err = svc.repo.Create(ctx, domain); err != nil {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("创建失败：%s", err.Error())
+			continue
+		}
+	}
+
+	result.Result = listMap
+
+	return result
 }
 
 // Delete 删除

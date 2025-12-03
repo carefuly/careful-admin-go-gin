@@ -59,7 +59,7 @@ func (r *SystemRouter) RegisterRouter() {
 	postCacheLoggingDecorator := cacheDecoratorSystem.NewPostCacheLoggingDecorator(postCache, postCacheLogger)
 	postDAO := daoSystem.NewGORMPostDAO(r.rely.Db.Careful)
 	postRepository := repositorySystem.NewPostRepository(postDAO, postCacheLoggingDecorator)
-	postService := serviceSystem.NewPostService(postRepository)
+	postService := serviceSystem.NewPostService(postRepository, deptRepository)
 	postHandler := handlerSystem.NewPostHandler(r.rely, postService, userService)
 	postHandler.RegisterRoutes(baseRouter)
 }

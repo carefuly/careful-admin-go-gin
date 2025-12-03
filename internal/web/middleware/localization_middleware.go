@@ -44,6 +44,7 @@ func (l *Storage) Build() gin.HandlerFunc {
 			"health",
 			"swagger",
 			"static",
+			"export",
 		) {
 			c.Next()
 		} else {

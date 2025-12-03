@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	system "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
+	_import "github.com/carefuly/careful-admin-go-gin/pkg/utils/import"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -124,15 +125,17 @@ func (mr *MockPostServiceMockRecorder) GetListPage(ctx, filters interface{}) *go
 }
 
 // Import mocks base method.
-func (m *MockPostService) Import(ctx context.Context) {
+func (m *MockPostService) Import(ctx context.Context, user system.User, listMap []map[string]string) _import.ImportResult {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Import", ctx)
+	ret := m.ctrl.Call(m, "Import", ctx, user, listMap)
+	ret0, _ := ret[0].(_import.ImportResult)
+	return ret0
 }
 
 // Import indicates an expected call of Import.
-func (mr *MockPostServiceMockRecorder) Import(ctx interface{}) *gomock.Call {
+func (mr *MockPostServiceMockRecorder) Import(ctx, user, listMap interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockPostService)(nil).Import), ctx)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Import", reflect.TypeOf((*MockPostService)(nil).Import), ctx, user, listMap)
 }
 
 // Update mocks base method.

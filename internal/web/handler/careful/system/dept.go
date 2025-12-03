@@ -41,7 +41,7 @@ type CreateDeptRequest struct {
 	Description string    `json:"description" binding:"omitempty" default:""`                // 部门描述
 	ParentID    *string   `json:"parent_id" binding:"omitempty,max=110" default:""`          // 父部门ID
 	Sort        int       `json:"sort" binding:"omitempty" default:"1"`                      // 排序
-	Remark      string    `json:"remark" binding:"omitempty,max=255"`                        // 备注
+	Remark      string    `json:"remark" binding:"omitempty,max=255" default:""`             // 备注
 }
 
 // ImportDeptRequest 导入
@@ -63,7 +63,7 @@ type UpdateDeptRequest struct {
 	ParentID    *string   `json:"parent_id" binding:"omitempty,max=110" default:""`          // 父部门ID
 	Sort        int       `json:"sort" binding:"omitempty" default:"1"`                      // 排序
 	Timestamp   int64     `json:"timestamp" binding:"omitempty"`                             // 版本
-	Remark      string    `json:"remark" binding:"omitempty,max=255"`                        // 备注
+	Remark      string    `json:"remark" binding:"omitempty,max=255" default:""`             // 备注
 }
 
 type DeptHandler interface {
