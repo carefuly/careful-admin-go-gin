@@ -59,12 +59,12 @@ func (r *ToolsRouter) RegisterRouter() {
 	dictHandler.RegisterRoutes(baseRouter)
 
 	// 字典项
-	// dictTypeCache := cacheTools.NewRedisDictTypeCache(r.rely.Redis)
-	// dictTypeCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
-	// dictTypeDAO := daoTools.NewGORMDictTypeDAO(r.rely.Db.Careful)
-	// dictTypeCacheLoggingDecorator := cacheDecoratorTools.NewDictTypeCacheLoggingDecorator(dictTypeCache, dictTypeCacheLogger)
-	// dictTypeRepository := repositoryTools.NewDictTypeRepository(dictTypeDAO, dictTypeCacheLoggingDecorator)
-	// dictTypeService := serviceTools.NewDictTypeService(dictTypeRepository, dictRepository)
-	// dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService, userService)
-	// dictTypeHandler.RegisterRoutes(baseRouter)
+	dictTypeCache := cacheTools.NewRedisDictTypeCache(r.rely.Redis)
+	dictTypeCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	dictTypeDAO := daoTools.NewGORMDictTypeDAO(r.rely.Db.Careful)
+	dictTypeCacheLoggingDecorator := cacheDecoratorTools.NewDictTypeCacheLoggingDecorator(dictTypeCache, dictTypeCacheLogger)
+	dictTypeRepository := repositoryTools.NewDictTypeRepository(dictTypeDAO, dictTypeCacheLoggingDecorator)
+	dictTypeService := serviceTools.NewDictTypeService(dictTypeRepository, dictRepository)
+	dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService, userService)
+	dictTypeHandler.RegisterRoutes(baseRouter)
 }

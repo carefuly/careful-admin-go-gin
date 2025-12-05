@@ -1,8 +1,8 @@
 /**
  * Description：
- * FileName：dict.go
+ * FileName：dict_type.go
  * Author：CJiaの用心
- * Create：2025/12/3 11:37:34
+ * Create：2025/10/19 15:28:27
  * Remark：
  */
 
@@ -17,6 +17,7 @@ import (
 	serviceSystem "github.com/carefuly/careful-admin-go-gin/internal/service/careful/system"
 	serviceTools "github.com/carefuly/careful-admin-go-gin/internal/service/careful/tools"
 	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/tools/dict"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/tools/dict_type"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/filters"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
@@ -33,41 +34,51 @@ import (
 	"time"
 )
 
-// CreateDictRequest 创建
-type CreateDictRequest struct {
-	Status    bool           `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
-	Name      string         `json:"name" binding:"required,max=100" default:""`    // 字典名称
-	Code      string         `json:"code" binding:"required,max=100" default:""`    // 字典编码
-	Type      dict.Type      `json:"type" binding:"omitempty" default:"1"`          // 字典分类
-	ValueType dict.ValueType `json:"value_type" binding:"omitempty" default:"1"`    // 字典值类型
-	Sort      int            `json:"sort" binding:"omitempty" default:"1"`          // 排序
-	Remark    string         `json:"remark" binding:"omitempty,max=255" default:""` // 备注
+// CreateDictTypeRequest 创建
+type CreateDictTypeRequest struct {
+	Status    bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
+	Name      string            `json:"name" binding:"required,max=50" default:""`             // 字典项名称
+	StrValue  string            `json:"str_value" binding:"omitempty,max=50" default:""`       // 字符串-字典项值
+	IntValue  int64             `json:"int_value" binding:"omitempty"`                         // 整型-字典项值
+	BoolValue bool              `json:"bool_value" binding:"omitempty"`                        // 布尔-字典项值
+	DictTag   dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
+	DictColor string            `json:"dict_color" binding:"omitempty,max=50" default:""`      // 标签颜色
+	DictID    string            `json:"dict_id" binding:"required,max=100" default:""`         // 所属字典ID
+	Sort      int               `json:"sort" binding:"omitempty" default:"1"`                  // 排序
+	Remark    string            `json:"remark" binding:"omitempty,max=255" default:""`         // 备注
 }
 
-// ImportDictRequest 导入
-type ImportDictRequest struct {
+// ImportDictTypeRequest 导入
+type ImportDictTypeRequest struct {
 	File *multipart.FileHeader `form:"file" binding:"required"`
 }
 
-// UpdateDictRequest 更新
-type UpdateDictRequest struct {
-	Id        string `json:"id" binding:"required" default:""`              // 主键ID
-	Status    bool   `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
-	Code      string `json:"code" binding:"required,max=100" default:""`    // 字典编码
-	Sort      int    `json:"sort" binding:"omitempty" default:"1"`          // 排序
-	Timestamp int64  `json:"timestamp" binding:"omitempty"`                 // 版本
-	Remark    string `json:"remark" binding:"omitempty,max=255" default:""` // 备注
+// UpdateDictTypeRequest 更新
+type UpdateDictTypeRequest struct {
+	Id        string            `json:"id" binding:"required" default:""`                      // 主键ID
+	Status    bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
+	Name      string            `json:"name" binding:"required,max=50" default:""`             // 字典项名称
+	DictTag   dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
+	DictColor string            `json:"dict_color" binding:"omitempty,max=50" default:""`      // 标签颜色
+	DictID    string            `json:"dict_id" binding:"required,max=100" default:""`         // 所属字典ID
+	Sort      int               `json:"sort" binding:"omitempty" default:"1"`                  // 排序
+	Timestamp int64             `json:"timestamp" binding:"omitempty"`                         // 版本
+	Remark    string            `json:"remark" binding:"omitempty,max=255" default:""`         // 备注
 }
 
-// DictListPageResponse 列表分页响应
-type DictListPageResponse struct {
-	List     []domainTools.Dict `json:"list"`     // 列表
-	Total    int64              `json:"total"`    // 总数
-	Page     int                `json:"page"`     // 页码
-	PageSize int                `json:"pageSize"` // 每页数量
+type ListByDictNamesRequest struct {
+	DictNames []string `json:"dictNames"` // 数组参数格式: ?dictNames=性别&dictNames=计量单位
 }
 
-type DictHandler interface {
+// DictTypeListPageResponse 列表分页响应
+type DictTypeListPageResponse struct {
+	List     []domainTools.DictType `json:"list"`     // 列表
+	Total    int64                  `json:"total"`    // 总数
+	Page     int                    `json:"page"`     // 页码
+	PageSize int                    `json:"pageSize"` // 每页数量
+}
+
+type DictTypeHandler interface {
 	RegisterRoutes(router *gin.RouterGroup)
 	Create(ctx *gin.Context)
 	Import(ctx *gin.Context)
@@ -75,52 +86,53 @@ type DictHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
+	GetListByDictNames(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 	Export(ctx *gin.Context)
 }
 
-type dictHandler struct {
+type dictTypeHandler struct {
 	rely    config.RelyConfig
-	svc     serviceTools.DictService
+	svc     serviceTools.DictTypeService
 	userSvc serviceSystem.UserService
 }
 
-func NewDictHandler(rely config.RelyConfig, svc serviceTools.DictService, userSvc serviceSystem.UserService) DictHandler {
-	return &dictHandler{
+func NewDictTypeHandler(rely config.RelyConfig, svc serviceTools.DictTypeService, userSvc serviceSystem.UserService) DictTypeHandler {
+	return &dictTypeHandler{
 		rely:    rely,
 		svc:     svc,
 		userSvc: userSvc,
 	}
 }
 
-// RegisterRoutes 注册路由
-func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
-	base := router.Group("/dict")
+func (h *dictTypeHandler) RegisterRoutes(router *gin.RouterGroup) {
+	base := router.Group("/dictType")
 	base.POST("/create", h.Create)
 	base.POST("/import", h.Import)
 	base.DELETE("/delete/:id", h.Delete)
 	base.POST("/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
+	base.POST("/listByDictNames", h.GetListByDictNames)
 	base.GET("/listPage", h.GetListPage)
 	base.GET("/listAll", h.GetListAll)
 	base.GET("/export", h.Export)
 }
 
 // Create
-// @Summary 创建字典
-// @Description 创建字典信息
-// @Tags 系统工具/字典管理
+// @Summary 创建字典项信息
+// @Description 创建字典项信息
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
-// @Param CreateDictRequest body CreateDictRequest true "请求"
+// @Param CreateDictTypeRequest body CreateDictTypeRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/create [post]
+// @Router /v1/tools/dictType/create [post]
 // @Security LoginToken
-func (h *dictHandler) Create(ctx *gin.Context) {
+func (h *dictTypeHandler) Create(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -137,31 +149,24 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 		return
 	}
 
-	var req CreateDictRequest
+	var req CreateDictTypeRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
 	}
 
 	// 校验参数
-	typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
-	converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
-	_, err = converter.FromEnum(req.Type)
-	if err != nil {
-		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
-		return
-	}
-	valueTypeValidValues := []string{"字符串", "整型", "布尔"}
-	valueTypeConverter := enumconv.NewEnumConverter(dict.TypeValueMapping, dict.TypeValueImportMapping, valueTypeValidValues, "数据类型")
-	_, err = valueTypeConverter.FromEnum(req.ValueType)
+	dictTagValues := []string{"primary", "success", "warning", "danger", "info"}
+	converter := enumconv.NewEnumConverter(dict_type.DictTagMapping, dict_type.DictTagImportMapping, dictTagValues, "标签类型")
+	_, err = converter.FromEnum(req.DictTag)
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
 	}
 
 	// 转换为领域模型
-	domain := domainTools.Dict{
-		Dict: modelTools.Dict{
+	domain := domainTools.DictType{
+		DictType: modelTools.DictType{
 			CoreModels: models.CoreModels{
 				Sort:       req.Sort,
 				Creator:    user.Id,
@@ -171,23 +176,28 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 			},
 			Status:    req.Status,
 			Name:      req.Name,
-			Code:      req.Code,
-			Type:      req.Type,
-			ValueType: req.ValueType,
+			DictTag:   req.DictTag,
+			DictColor: req.DictColor,
+			DictID:    req.DictID,
 		},
+		StrValue:  req.StrValue,
+		IntValue:  req.IntValue,
+		BoolValue: req.BoolValue,
 	}
 
 	if err := h.svc.Create(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceTools.ErrDictNameDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典名称已存在", nil)
+		case errors.Is(err, serviceTools.ErrDictNotFound):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典信息不存在", nil)
 			return
-		case errors.Is(err, serviceTools.ErrDictCodeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典编码已存在", nil)
+		case errors.Is(err, serviceTools.ErrDictTypeDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "同一字典下存在相同的字典项值", nil)
 			return
+		case errors.Is(err, serviceTools.ErrDictTypeInvalidDictValueType):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "无效的数据类型", nil)
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建数据字典异常 >>> %v", err.Error()))
-			zap.S().Error("创建数据字典异常 >>> ", zap.Error(err))
+			ctx.Set("internalError", fmt.Sprintf("创建字典项信息异常 >>> %v", err.Error()))
+			zap.S().Error("创建字典项信息异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -197,18 +207,18 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 }
 
 // Import
-// @Summary 导入字典
-// @Description 导入字典信息
-// @Tags 系统工具/字典管理
+// @Summary 导入字典项
+// @Description 导入字典项信息
+// @Tags 系统工具/字典项管理
 // @Accept multipart/form-data
 // @Produce application/json
 // @Security BearerAuth
 // @Param file formData file true "文件(支持xlsx/csv格式)"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/import [post]
+// @Router /v1/tools/dictType/import [post]
 // @Security LoginToken
-func (h *dictHandler) Import(ctx *gin.Context) {
+func (h *dictTypeHandler) Import(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -240,7 +250,7 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 	}
 
 	// 读取Excel文件
-	read, err := xlsx.NewXlsxFile(filePath).ReadSheetByName("字典模板")
+	read, err := xlsx.NewXlsxFile(filePath).ReadSheetByName("字典项模板")
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
 		return
@@ -252,18 +262,18 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 }
 
 // Delete
-// @Summary 删除字典
-// @Description 删除指定id字典信息
-// @Tags 系统工具/字典管理
+// @Summary 删除字典项
+// @Description 删除指定id字典项信息
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param id path string true "id"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/delete/{id} [delete]
+// @Router /v1/tools/dictType/delete/{id} [delete]
 // @Security LoginToken
-func (h *dictHandler) Delete(ctx *gin.Context) {
+func (h *dictTypeHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, "ID不能为空", nil)
@@ -271,12 +281,12 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		if errors.Is(err, serviceTools.ErrDictNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
+		if errors.Is(err, serviceTools.ErrDictTypeNotFound) {
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典项不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("删除数据字典异常 >>> %v", err.Error()))
-		zap.S().Error("删除数据字典异常 >>> ", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("删除字典项异常 >>> %v", err.Error()))
+		zap.S().Error("删除字典项异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -285,18 +295,18 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 }
 
 // BatchDelete
-// @Summary 批量删除字典
-// @Description 批量删除字典信息
-// @Tags 系统工具/字典管理
+// @Summary 批量删除字典项
+// @Description 批量删除字典项信息
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param ids body []string true "id数组"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/batchDelete [post]
+// @Router /v1/tools/dictType/batchDelete [post]
 // @Security LoginToken
-func (h *dictHandler) BatchDelete(ctx *gin.Context) {
+func (h *dictTypeHandler) BatchDelete(ctx *gin.Context) {
 	var ids []string
 	if err := ctx.ShouldBindJSON(&ids); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
@@ -305,8 +315,8 @@ func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("批量删除字典异常 >>> %v", err.Error()))
-		zap.S().Error("批量删除字典异常 >>> ", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("批量删除字典项信息异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除字典项信息异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -315,18 +325,18 @@ func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 }
 
 // Update
-// @Summary 更新字典
-// @Description 更新字典信息
-// @Tags 系统工具/字典管理
+// @Summary 更新字典项
+// @Description 更新字典项信息
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
-// @Param UpdateDictRequest body UpdateDictRequest true "请求"
+// @Param UpdateDictTypeRequest body UpdateDictTypeRequest true "请求"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/update [put]
+// @Router /v1/tools/dictType/update [put]
 // @Security LoginToken
-func (h *dictHandler) Update(ctx *gin.Context) {
+func (h *dictTypeHandler) Update(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -343,15 +353,24 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 		return
 	}
 
-	var req UpdateDictRequest
+	var req UpdateDictTypeRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		validate.NewValidatorErrorHandler(h.rely.Trans).Handle(ctx, err)
 		return
 	}
 
+	// 校验参数
+	dictTagValues := []string{"primary", "success", "warning", "danger", "info"}
+	converter := enumconv.NewEnumConverter(dict_type.DictTagMapping, dict_type.DictTagImportMapping, dictTagValues, "标签类型")
+	_, err = converter.FromEnum(req.DictTag)
+	if err != nil {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
+		return
+	}
+
 	// 转换为领域模型
-	domain := domainTools.Dict{
-		Dict: modelTools.Dict{
+	domain := domainTools.DictType{
+		DictType: modelTools.DictType{
 			CoreModels: models.CoreModels{
 				Id:         req.Id,
 				Sort:       req.Sort,
@@ -360,25 +379,30 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
 			},
-			Status: req.Status,
-			Code:   req.Code,
+			Status:    req.Status,
+			Name:      req.Name,
+			DictTag:   req.DictTag,
+			DictColor: req.DictColor,
+			DictID:    req.DictID,
 		},
 	}
 
 	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
-		case errors.Is(err, serviceTools.ErrDictNameDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典名称已存在", nil)
+		case errors.Is(err, serviceTools.ErrDictNotFound):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典信息不存在", nil)
 			return
-		case errors.Is(err, serviceTools.ErrDictCodeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典编码已存在", nil)
+		case errors.Is(err, serviceTools.ErrDictTypeDuplicate):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "同一字典下存在相同的字典项值", nil)
 			return
-		case errors.Is(err, serviceTools.ErrDictVersionInconsistency):
+		case errors.Is(err, serviceTools.ErrDictTypeInvalidDictValueType):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "无效的数据类型", nil)
+		case errors.Is(err, serviceTools.ErrDictTypeVersionInconsistency):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新数据字典异常 >>> %v", err.Error()))
-			zap.S().Error("更新数据字典异常 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新字典项信息异常 >>> %v", err.Error()))
+			zap.S().Error("更新字典项信息异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -388,18 +412,18 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 }
 
 // GetById
-// @Summary 获取字典
-// @Description 获取指定id字典信息
-// @Tags 系统工具/字典管理
+// @Summary 获取字典项
+// @Description 获取指定id字典项信息
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param id path string true "id"
-// @Success 200 {object} domainTools.Dict
+// @Success 200 {object} domainTools.DictType
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/getById/{id} [get]
+// @Router /v1/tools/dictType/getById/{id} [get]
 // @Security LoginToken
-func (h *dictHandler) GetById(ctx *gin.Context) {
+func (h *dictTypeHandler) GetById(ctx *gin.Context) {
 	id := ctx.Param("id")
 	if id == "" || len(id) == 0 {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, "id不能为空", nil)
@@ -408,12 +432,12 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
-		if errors.Is(err, serviceTools.ErrDictNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典不存在", nil)
+		if errors.Is(err, serviceTools.ErrDictTypeNotFound) {
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典项信息不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取字典异常 >>> %v", err.Error()))
-		zap.S().Error("获取字典异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项信息异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项信息异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -421,10 +445,39 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 	response.NewResponse().Success(ctx, "获取成功", detail)
 }
 
+// GetListByDictNames
+// @Summary 根据字典名称批量查询字典项
+// @Description 返回分层结构的字典项映射
+// @Tags 系统工具/字典项管理
+// @Accept application/json
+// @Produce application/json
+// @Security BearerAuth
+// @Param dictNames body []string true "字典名称数组"
+// @Success 200 {object} map[string][]domainTools.DictType
+// @Failure 400 {object} response.Response
+// @Router /v1/tools/dictType/listByDictNames [post]
+// @Security LoginToken
+func (h *dictTypeHandler) GetListByDictNames(ctx *gin.Context) {
+	// var req []string
+	// if err := ctx.ShouldBindJSON(&req); err != nil {
+	// 	validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
+	// 	return
+	// }
+	//
+	// list, err := h.svc.GetByDictNames(ctx, req)
+	// if err != nil {
+	// 	zap.L().Error("获取字典名称批量查询字典项异常", zap.Error(err))
+	// 	response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
+	// 	return
+	// }
+	//
+	// response.NewResponse().SuccessResponse(ctx, "查询成功", list)
+}
+
 // GetListPage
-// @Summary 获取字典分页列表
-// @Description 获取字典分页列表信息
-// @Tags 系统工具/字典管理
+// @Summary 获取字典项分页列表
+// @Description 获取字典项信息分页列表
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
@@ -433,16 +486,16 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "字典名称"
-// @Param code query string false "字典编码"
-// @Param type query int true "字典分类" default(0)
+// @Param name query string false "字典项名称"
+// @Param dict_tag query string false "标签类型" default(primary)
+// @Param dict_name query string false "字典名称"
 // @Param value_type query int true "数据类型" default(0)
-// @Param dict_id query string false "字典编码"
-// @Success 200 {object} DictListPageResponse
+// @Param dict_id query string false "所属字典ID"
+// @Success 200 {object} DictTypeListPageResponse
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/listPage [get]
+// @Router /v1/tools/dictType/listPage [get]
 // @Security LoginToken
-func (h *dictHandler) GetListPage(ctx *gin.Context) {
+func (h *dictTypeHandler) GetListPage(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -463,14 +516,19 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 	pageSize, _ := strconv.Atoi(ctx.DefaultQuery("pageSize", "10"))
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+	statusStr := ctx.DefaultQuery("status", "true")
+	status, err := strconv.ParseBool(statusStr)
+	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
+		status = true
+	}
 
 	name := ctx.DefaultQuery("name", "")
-	code := ctx.DefaultQuery("code", "")
-	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	dictTag := ctx.DefaultQuery("dict_tag", "")
+	dictName := ctx.DefaultQuery("dict_name", "")
 	valueType, _ := strconv.Atoi(ctx.DefaultQuery("value_type", "0"))
+	dictId := ctx.DefaultQuery("dict_id", "")
 
-	filter := domainTools.DictFilter{
+	filter := domainTools.DictTypeFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
@@ -482,20 +540,21 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 		},
 		Status:    status,
 		Name:      name,
-		Code:      code,
-		Type:      dict.Type(dictType),
+		DictTag:   dictTag,
+		DictName:  dictName,
 		ValueType: dict.ValueType(valueType),
+		DictID:    dictId,
 	}
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典分页列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典分页列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项信息分页列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项信息分页列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
-	response.NewResponse().Success(ctx, "查询成功", DictListPageResponse{
+	response.NewResponse().Success(ctx, "查询成功", DictTypeListPageResponse{
 		List:     list,
 		Total:    total,
 		Page:     page,
@@ -504,24 +563,25 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 }
 
 // GetListAll
-// @Summary 获取所有字典
-// @Description 获取所有字典列表信息
-// @Tags 系统工具/字典管理
+// @Summary 获取所有字典项
+// @Description 获取所有字典项列表信息
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "字典名称"
-// @Param code query string false "字典编码"
-// @Param type query int true "字典分类" default(0)
+// @Param name query string false "字典项名称"
+// @Param dict_tag query string false "标签类型" default(primary)
+// @Param dict_name query string false "字典名称"
 // @Param value_type query int true "数据类型" default(0)
-// @Success 200 {array} []domainTools.Dict
+// @Param dict_id query string false "所属字典ID"
+// @Success 200 {array} []domainTools.DictType
 // @Failure 400 {object} response.Response
-// @Router /v1/tools/dict/listAll [get]
+// @Router /v1/tools/dictType/listAll [get]
 // @Security LoginToken
-func (h *dictHandler) GetListAll(ctx *gin.Context) {
+func (h *dictTypeHandler) GetListAll(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -540,14 +600,19 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+	statusStr := ctx.DefaultQuery("status", "true")
+	status, err := strconv.ParseBool(statusStr)
+	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
+		status = true
+	}
 
 	name := ctx.DefaultQuery("name", "")
-	code := ctx.DefaultQuery("code", "")
-	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	dictTag := ctx.DefaultQuery("dict_tag", "")
+	dictName := ctx.DefaultQuery("dict_name", "")
 	valueType, _ := strconv.Atoi(ctx.DefaultQuery("value_type", "0"))
+	dictId := ctx.DefaultQuery("dict_id", "")
 
-	filter := domainTools.DictFilter{
+	filter := domainTools.DictTypeFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
@@ -555,15 +620,16 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 		},
 		Status:    status,
 		Name:      name,
-		Code:      code,
-		Type:      dict.Type(dictType),
+		DictTag:   dictTag,
+		DictName:  dictName,
 		ValueType: dict.ValueType(valueType),
+		DictID:    dictId,
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项信息列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项信息列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -572,24 +638,25 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 }
 
 // Export
-// @Summary 导出字典数据
-// @Description 导出字典数据到Excel文件
-// @Tags 系统工具/字典管理
+// @Summary 导出字典项
+// @Description 导出字典项信息到Excel文件
+// @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param name query string false "字典名称"
-// @Param code query string false "字典编码"
-// @Param type query int true "字典分类" default(0)
+// @Param name query string false "字典项名称"
+// @Param dict_tag query string false "标签类型" default(primary)
+// @Param dict_name query string false "字典名称"
 // @Param value_type query int true "数据类型" default(0)
+// @Param dict_id query string false "所属字典ID"
 // @Success 200 {file} file "Excel文件"
 // @Failure 500 {object} response.Response
-// @Router /v1/tools/dict/export [get]
+// @Router /v1/tools/dictType/export [get]
 // @Security LoginToken
-func (h *dictHandler) Export(ctx *gin.Context) {
+func (h *dictTypeHandler) Export(ctx *gin.Context) {
 	// 从上下文中获取登录信息
 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
 	if !ok {
@@ -608,14 +675,19 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 
 	creator := ctx.DefaultQuery("creator", "")
 	modifier := ctx.DefaultQuery("modifier", "")
-	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
+	statusStr := ctx.DefaultQuery("status", "true")
+	status, err := strconv.ParseBool(statusStr)
+	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
+		status = true
+	}
 
 	name := ctx.DefaultQuery("name", "")
-	code := ctx.DefaultQuery("code", "")
-	dictType, _ := strconv.Atoi(ctx.DefaultQuery("type", "0"))
+	dictTag := ctx.DefaultQuery("dict_tag", "")
+	dictName := ctx.DefaultQuery("dict_name", "")
 	valueType, _ := strconv.Atoi(ctx.DefaultQuery("value_type", "0"))
+	dictId := ctx.DefaultQuery("dict_id", "")
 
-	filter := domainTools.DictFilter{
+	filter := domainTools.DictTypeFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
 			Modifier:   modifier,
@@ -623,39 +695,44 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 		},
 		Status:    status,
 		Name:      name,
-		Code:      code,
-		Type:      dict.Type(dictType),
+		DictTag:   dictTag,
+		DictName:  dictName,
 		ValueType: dict.ValueType(valueType),
+		DictID:    dictId,
 	}
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项信息列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项信息列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
 	// 准备导出配置
-	filename := fmt.Sprintf("数据字典导出_%s.xlsx", time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("字典项导出_%s.xlsx", time.Now().Format("20060102150405"))
 	cfg := excelutil.ExcelExportConfig{
 		SheetName:  "数据字典",
 		FileName:   filename,
 		StreamMode: true,
 		Columns: []excelutil.ExcelColumn{
-			{Title: "字典名称", Field: "Name", Width: 22},
-			{Title: "字典编码", Field: "Code", Width: 17},
+			{Title: "字典项名称", Field: "Name", Width: 22},
+			{Title: "字符串值", Field: "StrValue", Width: 22},
+			{Title: "整型值", Field: "IntValue", Width: 22},
+			{Title: "布尔值", Field: "BoolValue", Width: 22},
 			{
-				Title: "字典编码",
-				Field: "Type",
+				Title: "标签类型",
+				Field: "DictTag",
 				Width: 15,
 				Formatter: func(value interface{}) string {
-					typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
-					converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
-					str, _ := converter.FromEnum(value.(dict.Type))
+					dictTagValues := []string{"primary", "success", "warning", "danger", "info"}
+					converter := enumconv.NewEnumConverter(dict_type.DictTagMapping, dict_type.DictTagImportMapping, dictTagValues, "标签类型")
+					str, _ := converter.FromEnum(value.(dict_type.DictTag))
 					return str
 				},
 			},
+			{Title: "标签颜色", Field: "DictColor", Width: 22},
+			{Title: "字典名称", Field: "DictName", Width: 22},
 			{
 				Title: "数据类型",
 				Field: "ValueType",
@@ -693,8 +770,8 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("导出数据字典异常 >>> %v", err.Error()))
-		zap.S().Error("导出数据字典异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("导出字典项异常 >>> %v", err.Error()))
+		zap.S().Error("导出字典项异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

@@ -29,7 +29,8 @@ func initSystem(db *gorm.DB) {
 }
 
 func initTools(db *gorm.DB) {
-	tools.NewDict().AutoMigrate(db) // 字典表
+	tools.NewDict().AutoMigrate(db)     // 字典表
+	tools.NewDictType().AutoMigrate(db) // 字典项表
 }
 
 func initLogger(db *gorm.DB) {
