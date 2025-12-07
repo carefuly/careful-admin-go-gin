@@ -24,6 +24,7 @@ func AutoMigrate(db *gorm.DB) {
 
 func initSystem(db *gorm.DB) {
 	system.NewDept().AutoMigrate(db) // 部门表
+	system.NewMenu().AutoMigrate(db) // 菜单表
 	system.NewPost().AutoMigrate(db) // 岗位表
 	system.NewUser().AutoMigrate(db) // 用户表
 }

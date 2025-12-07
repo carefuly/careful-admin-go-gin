@@ -43,6 +43,26 @@ func (r *SystemRouter) RegisterRouter() {
 	userRepository := repositorySystem.NewUserRepository(userDAO, userCacheLoggingDecorator)
 	userService := serviceSystem.NewUserService(userRepository)
 
+	// 菜单按钮
+	menuButtonCache := cacheSystem.NewRedisMenuButtonCache(r.rely.Redis)
+	menuButtonCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	menuButtonCacheLoggingDecorator := cacheDecoratorSystem.NewMenuButtonCacheLoggingDecorator(menuButtonCache, menuButtonCacheLogger)
+	menuButtonDAO := daoSystem.NewGORMMenuButtonDAO(r.rely.Db.Careful)
+	menuButtonRepository := repositorySystem.NewMenuButtonRepository(menuButtonDAO, menuButtonCacheLoggingDecorator)
+
+	// 菜单
+	menuCache := cacheSystem.NewRedisMenuCache(r.rely.Redis)
+	menuCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	menuCacheLoggingDecorator := cacheDecoratorSystem.NewMenuCacheLoggingDecorator(menuCache, menuCacheLogger)
+	menuDAO := daoSystem.NewGORMMenuDAO(r.rely.Db.Careful)
+	menuRepository := repositorySystem.NewMenuRepository(menuDAO, menuCacheLoggingDecorator)
+	menuService := serviceSystem.NewMenuService(menuRepository, menuButtonRepository)
+	menuHandler := handlerSystem.NewMenuHandler(r.rely, menuService, userService)
+	menuHandler.RegisterRoutes(baseRouter)
+
+	// 菜单按钮
+	// menuButtonService := serviceSystem.NewMenuButtonService(menuButtonRepository)
+
 	// 部门
 	deptCache := cacheSystem.NewRedisDeptCache(r.rely.Redis)
 	deptCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
