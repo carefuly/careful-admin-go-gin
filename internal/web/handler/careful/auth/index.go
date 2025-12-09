@@ -33,9 +33,10 @@ type LoginRequest struct {
 
 // LoginResponse 登录响应
 type LoginResponse struct {
-	Token  string            `json:"token"`  // JWT令牌
-	Expire int               `json:"expire"` // 过期时间(秒)
-	User   domainSystem.User `json:"user"`   // 用户信息
+	Token        string            `json:"token"`        // JWT令牌
+	RefreshToken string            `json:"refreshToken"` // 长JWT令牌
+	Expire       int               `json:"expire"`       // 过期时间(秒)
+	User         domainSystem.User `json:"user"`         // 用户信息
 }
 
 // RefreshTokenRequest 刷新令牌请求

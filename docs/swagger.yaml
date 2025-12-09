@@ -21,6 +21,9 @@ definitions:
       expire:
         description: 过期时间(秒)
         type: integer
+      refreshToken:
+        description: 长JWT令牌
+        type: string
       token:
         description: JWT令牌
         type: string
@@ -167,6 +170,105 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
+      updateTime:
+        description: 更新时间
+        type: string
+    type: object
+  github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Menu:
+    properties:
+      activePath:
+        description: 激活菜单路径
+        type: string
+      authMark:
+        description: 权限标识
+        type: string
+      belong_dept:
+        description: 数据归属部门
+        type: string
+      children:
+        description: 子菜单
+        items:
+          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Menu'
+        type: array
+      component:
+        description: 组件地址
+        type: string
+      createTime:
+        description: 创建时间
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      fixedTab:
+        description: 是否固定标签页
+        type: boolean
+      icon:
+        description: 路由图标
+        type: string
+      id:
+        description: 主键ID(自增)
+        type: string
+      isAuthButton:
+        description: 是否为权限按钮行
+        type: boolean
+      isFirstLevel:
+        description: 是否为一级菜单
+        type: boolean
+      isFullPage:
+        description: 是否为全屏页面
+        type: boolean
+      isHide:
+        description: 是否在菜单中隐藏
+        type: boolean
+      isHideTab:
+        description: 是否在标签页中隐藏
+        type: boolean
+      isIframe:
+        description: 是否为iframe
+        type: boolean
+      keepAlive:
+        description: 是否缓存页面
+        type: boolean
+      link:
+        description: 外部链接【不填写默认没有外链】
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 菜单名称
+        type: string
+      parent:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu'
+        description: 上级菜单
+      parent_id:
+        description: 上级菜单
+        type: string
+      path:
+        description: 路由地址
+        type: string
+      remark:
+        description: 备注
+        type: string
+      showBadge:
+        description: 是否显示徽章
+        type: boolean
+      showTextBadge:
+        description: 文本徽章
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      title:
+        description: 路由标题
+        type: string
       updateTime:
         description: 更新时间
         type: string
@@ -327,7 +429,7 @@ definitions:
       code:
         description: 字典编码
         type: string
-      createTime:
+      create_time:
         description: 创建时间
         type: string
       creator:
@@ -358,7 +460,7 @@ definitions:
         allOf:
         - $ref: '#/definitions/dict.Type'
         description: 字典类型
-      updateTime:
+      update_time:
         description: 更新时间
         type: string
       value_type:
@@ -498,6 +600,99 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
+    type: object
+  github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu:
+    properties:
+      activePath:
+        description: 激活菜单路径
+        type: string
+      authMark:
+        description: 权限标识
+        type: string
+      belong_dept:
+        description: 数据归属部门
+        type: string
+      children:
+        description: 子菜单列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu'
+        type: array
+      component:
+        description: 组件地址
+        type: string
+      creator:
+        description: 创建人
+        type: string
+      fixedTab:
+        description: 是否固定标签页
+        type: boolean
+      icon:
+        description: 路由图标
+        type: string
+      id:
+        description: 主键ID(自增)
+        type: string
+      isAuthButton:
+        description: 是否为权限按钮行
+        type: boolean
+      isFirstLevel:
+        description: 是否为一级菜单
+        type: boolean
+      isFullPage:
+        description: 是否为全屏页面
+        type: boolean
+      isHide:
+        description: 是否在菜单中隐藏
+        type: boolean
+      isHideTab:
+        description: 是否在标签页中隐藏
+        type: boolean
+      isIframe:
+        description: 是否为iframe
+        type: boolean
+      keepAlive:
+        description: 是否缓存页面
+        type: boolean
+      link:
+        description: 外部链接【不填写默认没有外链】
+        type: string
+      modifier:
+        description: 修改人
+        type: string
+      name:
+        description: 菜单名称
+        type: string
+      parent:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu'
+        description: 上级菜单
+      parent_id:
+        description: 上级菜单
+        type: string
+      path:
+        description: 路由地址
+        type: string
+      remark:
+        description: 备注
+        type: string
+      showBadge:
+        description: 是否显示徽章
+        type: boolean
+      showTextBadge:
+        description: 文本徽章
+        type: string
+      sort:
+        description: 显示排序
+        type: integer
+      status:
+        description: 状态
+        type: boolean
+      timestamp:
+        description: 版本号(时间戳)
+        type: integer
+      title:
+        description: 路由标题
+        type: string
     type: object
   github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post:
     properties:
@@ -676,6 +871,26 @@ definitions:
         - $ref: '#/definitions/dict.ValueType'
         description: 数据类型
     type: object
+  menu.Method:
+    enum:
+    - 1
+    - 2
+    - 3
+    - 4
+    - 5
+    type: integer
+    x-enum-comments:
+      MethodDELETE: DELETE
+      MethodGET: GET
+      MethodPATCH: DELETE
+      MethodPOST: POST
+      MethodPUT: PUT
+    x-enum-varnames:
+    - MethodGET
+    - MethodPOST
+    - MethodPUT
+    - MethodDELETE
+    - MethodPATCH
   post.Level:
     enum:
     - 1
@@ -782,6 +997,148 @@ definitions:
     required:
     - code
     - name
+    type: object
+  system.CreateMenuButtonRequest:
+    properties:
+      api:
+        description: 接口地址
+        maxLength: 255
+        type: string
+      auth_mark:
+        description: 权限值
+        maxLength: 64
+        type: string
+      menu_id:
+        description: 菜单ID
+        maxLength: 110
+        type: string
+      method:
+        allOf:
+        - $ref: '#/definitions/menu.Method'
+        default: 1
+        description: 方法类型
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      title:
+        description: 名称
+        maxLength: 64
+        type: string
+    required:
+    - api
+    - auth_mark
+    - menu_id
+    - method
+    - title
+    type: object
+  system.CreateMenuRequest:
+    properties:
+      active_path:
+        description: 激活菜单路径
+        maxLength: 128
+        type: string
+      auth_mark:
+        description: 权限标识
+        maxLength: 128
+        type: string
+      component:
+        description: 组件地址
+        maxLength: 128
+        type: string
+      fixed_tab:
+        default: false
+        description: 是否固定标签页
+        type: boolean
+      icon:
+        description: 路由图标
+        maxLength: 64
+        type: string
+      is_auth_button:
+        default: false
+        description: 是否为权限按钮行
+        type: boolean
+      is_create_button:
+        default: false
+        description: 是否自动创建按钮
+        type: boolean
+      is_first_level:
+        default: false
+        description: 是否为一级菜单
+        type: boolean
+      is_full_page:
+        default: false
+        description: 是否为全屏页面
+        type: boolean
+      is_hide:
+        default: false
+        description: 是否在菜单中隐藏
+        type: boolean
+      is_hide_tab:
+        default: false
+        description: 是否在标签页中隐藏
+        type: boolean
+      is_iframe:
+        default: false
+        description: 是否为iframe
+        type: boolean
+      keep_alive:
+        default: false
+        description: 是否缓存页面
+        type: boolean
+      link:
+        description: 外部链接【不填写默认没有外链】
+        maxLength: 255
+        type: string
+      name:
+        description: 菜单名称
+        maxLength: 64
+        type: string
+      parent_id:
+        description: 上级菜单
+        maxLength: 110
+        type: string
+      path:
+        description: 路由地址
+        maxLength: 128
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      show_badge:
+        default: false
+        description: 是否显示徽章
+        type: boolean
+      show_text_badge:
+        description: 文本徽章
+        maxLength: 64
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      title:
+        description: 路由标题
+        maxLength: 64
+        type: string
+    required:
+    - component
+    - name
+    - path
+    - title
     type: object
   system.CreatePostRequest:
     properties:
@@ -973,6 +1330,162 @@ definitions:
     - code
     - id
     - name
+    type: object
+  system.UpdateMenuButtonRequest:
+    properties:
+      api:
+        description: 接口地址
+        maxLength: 255
+        type: string
+      auth_mark:
+        description: 权限值
+        maxLength: 64
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      menu_id:
+        description: 菜单ID
+        maxLength: 110
+        type: string
+      method:
+        allOf:
+        - $ref: '#/definitions/menu.Method'
+        default: 1
+        description: 方法类型
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      timestamp:
+        description: 版本
+        type: integer
+      title:
+        description: 名称
+        maxLength: 64
+        type: string
+    required:
+    - api
+    - auth_mark
+    - id
+    - menu_id
+    - method
+    - title
+    type: object
+  system.UpdateMenuRequest:
+    properties:
+      active_path:
+        description: 激活菜单路径
+        maxLength: 128
+        type: string
+      auth_mark:
+        description: 权限标识
+        maxLength: 128
+        type: string
+      component:
+        description: 组件地址
+        maxLength: 128
+        type: string
+      fixed_tab:
+        default: false
+        description: 是否固定标签页
+        type: boolean
+      icon:
+        description: 路由图标
+        maxLength: 64
+        type: string
+      id:
+        description: 主键ID
+        type: string
+      is_auth_button:
+        default: false
+        description: 是否为权限按钮行
+        type: boolean
+      is_create_button:
+        default: false
+        description: 是否自动创建按钮
+        type: boolean
+      is_first_level:
+        default: false
+        description: 是否为一级菜单
+        type: boolean
+      is_full_page:
+        default: false
+        description: 是否为全屏页面
+        type: boolean
+      is_hide:
+        default: false
+        description: 是否在菜单中隐藏
+        type: boolean
+      is_hide_tab:
+        default: false
+        description: 是否在标签页中隐藏
+        type: boolean
+      is_iframe:
+        default: false
+        description: 是否为iframe
+        type: boolean
+      keep_alive:
+        default: false
+        description: 是否缓存页面
+        type: boolean
+      link:
+        description: 外部链接【不填写默认没有外链】
+        maxLength: 255
+        type: string
+      name:
+        description: 菜单名称
+        maxLength: 64
+        type: string
+      parent_id:
+        description: 上级菜单
+        maxLength: 110
+        type: string
+      path:
+        description: 路由地址
+        maxLength: 128
+        type: string
+      remark:
+        description: 备注
+        maxLength: 255
+        type: string
+      show_badge:
+        default: false
+        description: 是否显示徽章
+        type: boolean
+      show_text_badge:
+        description: 文本徽章
+        maxLength: 64
+        type: string
+      sort:
+        default: 1
+        description: 排序
+        type: integer
+      status:
+        default: true
+        description: 状态【true-启用 false-停用】
+        type: boolean
+      timestamp:
+        description: 版本
+        type: integer
+      title:
+        description: 路由标题
+        maxLength: 64
+        type: string
+    required:
+    - component
+    - id
+    - name
+    - path
+    - title
     type: object
   system.UpdatePostRequest:
     properties:
@@ -1643,6 +2156,388 @@ paths:
       summary: 更新部门
       tags:
       - 系统管理/部门管理
+  /v1/system/menu/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除菜单信息
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 批量删除菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建菜单信息
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateMenuRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 创建菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id菜单信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 删除菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出菜单信息到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 菜单标题
+        in: query
+        name: title
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 导出菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id菜单信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Menu'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有菜单列表信息
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 菜单标题
+        in: query
+        name: title
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Menu'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取所有菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/listRouteTree:
+    get:
+      consumes:
+      - application/json
+      description: 获取菜单路由树形结构
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取菜单路由树形结构
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menu/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新菜单信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateMenuRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateMenuRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 更新菜单
+      tags:
+      - 系统管理/菜单管理
+  /v1/system/menuButton/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建菜单按钮信息
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateMenuButtonRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateMenuButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 创建菜单按钮
+      tags:
+      - 系统管理/菜单按钮管理
+  /v1/system/menuButton/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id菜单按钮信息
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 删除菜单按钮
+      tags:
+      - 系统管理/菜单按钮管理
+  /v1/system/menuButton/delete/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除菜单按钮信息
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 批量删除菜单按钮
+      tags:
+      - 系统管理/菜单按钮管理
+  /v1/system/menuButton/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新菜单按钮信息
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateMenuButtonRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateMenuButtonRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 更新菜单按钮
+      tags:
+      - 系统管理/菜单按钮管理
   /v1/system/post/batchDelete:
     post:
       consumes:
@@ -2016,7 +2911,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 批量删除字典信息
+      description: 批量删除字典
       parameters:
       - description: id数组
         in: body
@@ -2047,7 +2942,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 创建字典信息
+      description: 创建字典
       parameters:
       - description: 请求
         in: body
@@ -2076,7 +2971,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: 删除指定id字典信息
+      description: 删除指定id字典
       parameters:
       - description: id
         in: path
@@ -2104,7 +2999,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 导出字典数据到Excel文件
+      description: 导出字典到Excel文件
       parameters:
       - description: 创建人
         in: query
@@ -2153,14 +3048,14 @@ paths:
       security:
       - BearerAuth: []
       - LoginToken: []
-      summary: 导出字典数据
+      summary: 导出字典
       tags:
       - 系统工具/字典管理
   /v1/tools/dict/getById/{id}:
     get:
       consumes:
       - application/json
-      description: 获取指定id字典信息
+      description: 获取指定id字典
       parameters:
       - description: id
         in: path
@@ -2188,7 +3083,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: 导入字典信息
+      description: 导入字典
       parameters:
       - description: 文件(支持xlsx/csv格式)
         in: formData
@@ -2216,7 +3111,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取所有字典列表信息
+      description: 获取所有字典列表
       parameters:
       - description: 创建人
         in: query
@@ -2269,14 +3164,14 @@ paths:
       security:
       - BearerAuth: []
       - LoginToken: []
-      summary: 获取所有字典
+      summary: 获取所有字典列表
       tags:
       - 系统工具/字典管理
   /v1/tools/dict/listPage:
     get:
       consumes:
       - application/json
-      description: 获取字典分页列表信息
+      description: 获取字典分页列表
       parameters:
       - default: 1
         description: 页码
@@ -2323,10 +3218,6 @@ paths:
         name: value_type
         required: true
         type: integer
-      - description: 字典编码
-        in: query
-        name: dict_id
-        type: string
       produces:
       - application/json
       responses:
@@ -2348,7 +3239,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: 更新字典信息
+      description: 更新字典
       parameters:
       - description: 请求
         in: body

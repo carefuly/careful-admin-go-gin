@@ -312,7 +312,7 @@ func Test_dictService_GetById(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "字典不存在",
+			name: "数据字典不存在",
 			mock: func(ctrl *gomock.Controller) repositoryTools.DictRepository {
 				repo := repomocks.NewMockDictRepository(ctrl)
 				repo.EXPECT().GetById(gomock.Any(), "1").

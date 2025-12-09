@@ -17,6 +17,7 @@ import (
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
 	"github.com/carefuly/careful-admin-go-gin/pkg/utils/json_format"
 	"github.com/go-sql-driver/mysql"
+	"sort"
 )
 
 var (
@@ -28,18 +29,18 @@ var (
 	ErrMenuVersionInconsistency = repositorySystem.ErrMenuVersionInconsistency
 )
 
-// // MenuRouteTree 菜单路由结构
-// type MenuRouteTree struct {
-// 	Id        string          `json:"id"`        // 主键ID
-// 	Name      string          `json:"name"`      // 菜单名称
-// 	Path      string          `json:"path"`      // 路由地址
-// 	Component string          `json:"component"` // 组件地址
-// 	Meta      map[string]any  `json:"meta"`      // 元信息
-// 	Sort      int             `json:"sort"`      // 排序
-// 	Status    bool            `json:"status"`    // 状态
-// 	ParentId  string          `json:"parent_id"` // 上级菜单
-// 	Children  []MenuRouteTree `json:"children"`  // 子菜单
-// }
+// MenuRouteTree 菜单路由结构
+type MenuRouteTree struct {
+	Id        string          `json:"id"`        // 主键ID
+	Name      string          `json:"name"`      // 菜单名称
+	Path      string          `json:"path"`      // 路由地址
+	Component string          `json:"component"` // 组件地址
+	Meta      map[string]any  `json:"meta"`      // 元信息
+	Sort      int             `json:"sort"`      // 排序
+	Status    bool            `json:"status"`    // 状态
+	ParentID  string          `json:"parent_id"` // 上级菜单
+	Children  []MenuRouteTree `json:"children"`  // 子菜单
+}
 
 type MenuService interface {
 	Create(ctx context.Context, domain domainSystem.Menu, isCreateButton bool, user domainSystem.User) error
@@ -48,6 +49,7 @@ type MenuService interface {
 	Update(ctx context.Context, domain domainSystem.Menu) error
 
 	GetById(ctx context.Context, id string) (domainSystem.Menu, error)
+	GetMenuRouteTree(ctx context.Context, filter domainSystem.MenuFilter) ([]MenuRouteTree, error)
 	GetListPage(ctx context.Context, filters domainSystem.MenuFilter) ([]domainSystem.Menu, int64, error)
 	GetListAll(ctx context.Context, filter domainSystem.MenuFilter) ([]domainSystem.Menu, error)
 
@@ -202,6 +204,56 @@ func (svc *menuService) GetById(ctx context.Context, id string) (domainSystem.Me
 	return domain, err
 }
 
+// GetMenuRouteTree 获取菜单路由
+func (svc *menuService) GetMenuRouteTree(ctx context.Context, filter domainSystem.MenuFilter) ([]MenuRouteTree, error) {
+	listAll, err := svc.repo.GetListAll(ctx, filter)
+	if err != nil {
+		return []MenuRouteTree{}, err
+	}
+
+	var listRoute []MenuRouteTree
+
+	for _, l := range listAll {
+		route := MenuRouteTree{
+			Id:        l.Id,
+			Name:      l.Name,
+			Path:      l.Path,
+			Component: l.Component,
+			Meta: map[string]any{
+				"title":         l.Title,
+				"icon":          l.Icon,
+				"showBadge":     l.ShowBadge,
+				"showTextBadge": l.ShowTextBadge,
+				"isHide":        l.IsHide,
+				"isHideTab":     l.IsHideTab,
+				"link":          l.Link,
+				"isIframe":      l.IsIframe,
+				"keepAlive":     l.KeepAlive,
+				"isFirstLevel":  l.IsFirstLevel,
+				"fixedTab":      l.FixedTab,
+				"activePath":    l.ActivePath,
+				"isFullPage":    l.IsFullPage,
+				"isAuthButton":  l.IsAuthButton,
+				"authMark":      l.AuthMark,
+			},
+			Sort:     l.Sort,
+			Status:   l.Status,
+			ParentID: "",
+			Children: []MenuRouteTree{},
+		}
+		if *l.ParentID == "root" {
+			route.ParentID = ""
+		} else {
+			route.ParentID = *l.ParentID
+		}
+
+		listRoute = append(listRoute, route)
+	}
+
+	// 顶级菜单ParentID为root
+	return svc.buildMenuRouteTree(listRoute, ""), nil
+}
+
 // GetListPage 分页查询列表
 func (svc *menuService) GetListPage(ctx context.Context, filters domainSystem.MenuFilter) ([]domainSystem.Menu, int64, error) {
 	return svc.repo.GetListPage(ctx, filters)
@@ -296,39 +348,39 @@ func (svc *menuService) publicMenuButton(ctx context.Context, menu domainSystem.
 	}
 }
 
-// ----------------------------------------------
-
 // buildMenuRouteTree 递归构建菜单路由
-// func (svc *menuService) buildMenuRouteTree(menus []MenuRouteTree, ParentId string) []MenuRouteTree {
-// 	var tree []MenuRouteTree
-//
-// 	// 筛选当前父ID的子菜单
-// 	for _, menu := range menus {
-// 		if menu.ParentId == ParentId {
-// 			// 递归查询子菜单
-// 			children := svc.buildMenuRouteTree(menus, menu.Id)
-// 			if len(children) == 0 {
-// 				menu.Children = []MenuRouteTree{}
-// 			} else {
-// 				menu.Children = children
-// 			}
-//
-// 			// 按Sort排序
-// 			sort.Slice(children, func(i, j int) bool {
-// 				return children[i].Sort < children[j].Sort
-// 			})
-//
-// 			tree = append(tree, menu)
-// 		}
-// 	}
-//
-// 	// 按Sort排序当前层级
-// 	sort.Slice(tree, func(i, j int) bool {
-// 		return tree[i].Sort < tree[j].Sort
-// 	})
-//
-// 	return tree
-// }
+func (svc *menuService) buildMenuRouteTree(menus []MenuRouteTree, ParentId string) []MenuRouteTree {
+	var tree []MenuRouteTree
+
+	// 筛选当前父ID的子菜单
+	for _, menu := range menus {
+		if menu.ParentID == ParentId {
+			// 递归查询子菜单
+			children := svc.buildMenuRouteTree(menus, menu.Id)
+			if len(children) == 0 {
+				menu.Children = []MenuRouteTree{}
+			} else {
+				menu.Children = children
+			}
+
+			// 按Sort排序
+			sort.Slice(children, func(i, j int) bool {
+				return children[i].Sort < children[j].Sort
+			})
+
+			tree = append(tree, menu)
+		}
+	}
+
+	// 按Sort排序当前层级
+	sort.Slice(tree, func(i, j int) bool {
+		return tree[i].Sort < tree[j].Sort
+	})
+
+	return tree
+}
+
+// ----------------------------------------------
 
 // buildMenuTree 递归构建菜单树
 // func (svc *menuService) buildMenuTree(menus []domainSystem.Menu, ParentId string) []domainSystem.Menu {

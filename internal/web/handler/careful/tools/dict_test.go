@@ -244,7 +244,7 @@ func Test_dictHandler_Create(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -272,18 +272,6 @@ func Test_dictHandler_Delete(t *testing.T) {
 			wantMsg:  "删除成功",
 		},
 		{
-			name: "数据字典不存在",
-			mock: func(ctrl *gomock.Controller) serviceTools.DictService {
-				dictService := svcmocks.NewMockDictService(ctrl)
-				dictService.EXPECT().Delete(gomock.Any(), "1").
-					Return(serviceTools.ErrDictNotFound)
-				return dictService
-			},
-			id:       "1",
-			wantCode: http.StatusBadRequest,
-			wantMsg:  "数据字典不存在",
-		},
-		{
 			name: "服务器异常",
 			mock: func(ctrl *gomock.Controller) serviceTools.DictService {
 				dictService := svcmocks.NewMockDictService(ctrl)
@@ -308,13 +296,13 @@ func Test_dictHandler_Delete(t *testing.T) {
 					UserID: "1", // 避免uuid开销过大
 				})
 			})
-			router := server.Group("/dev-api/v1")
+			router := server.Group("/api/v1")
 			service := tc.mock(ctrl)
 			h := NewDictHandler(c, service, nil)
 			h.RegisterRoutes(router)
 
 			req, err := http.NewRequest(http.MethodDelete,
-				"/dev-api/v1/dict/delete/"+tc.id,
+				"/api/v1/dict/delete/"+tc.id,
 				bytes.NewBuffer([]byte("")))
 			require.NoError(t, err)
 			// 数据是 JSON 格式
@@ -326,7 +314,7 @@ func Test_dictHandler_Delete(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -528,7 +516,7 @@ func Test_dictHandler_Update(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -561,7 +549,7 @@ func Test_dictHandler_GetById(t *testing.T) {
 			wantMsg:  "获取成功",
 		},
 		{
-			name: "字典不存在",
+			name: "数据字典不存在",
 			mock: func(ctrl *gomock.Controller) serviceTools.DictService {
 				dictService := svcmocks.NewMockDictService(ctrl)
 				dictService.EXPECT().GetById(gomock.Any(), "1").
@@ -570,7 +558,7 @@ func Test_dictHandler_GetById(t *testing.T) {
 			},
 			id:       "1",
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "字典不存在",
+			wantMsg:  "数据字典不存在",
 		},
 		{
 			name: "服务器异常",
@@ -616,7 +604,7 @@ func Test_dictHandler_GetById(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}

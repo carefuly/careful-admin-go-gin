@@ -110,7 +110,7 @@ func (h *dictHandler) RegisterRoutes(router *gin.RouterGroup) {
 
 // Create
 // @Summary 创建字典
-// @Description 创建字典信息
+// @Description 创建字典
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -198,7 +198,7 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 
 // Import
 // @Summary 导入字典
-// @Description 导入字典信息
+// @Description 导入字典
 // @Tags 系统工具/字典管理
 // @Accept multipart/form-data
 // @Produce application/json
@@ -253,7 +253,7 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 
 // Delete
 // @Summary 删除字典
-// @Description 删除指定id字典信息
+// @Description 删除指定id字典
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -271,10 +271,6 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		if errors.Is(err, serviceTools.ErrDictNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
-			return
-		}
 		ctx.Set("internalError", fmt.Sprintf("删除数据字典异常 >>> %v", err.Error()))
 		zap.S().Error("删除数据字典异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
@@ -286,7 +282,7 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 
 // BatchDelete
 // @Summary 批量删除字典
-// @Description 批量删除字典信息
+// @Description 批量删除字典
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -305,8 +301,8 @@ func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("批量删除字典异常 >>> %v", err.Error()))
-		zap.S().Error("批量删除字典异常 >>> ", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("批量删除数据字典异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除数据字典异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -316,7 +312,7 @@ func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 
 // Update
 // @Summary 更新字典
-// @Description 更新字典信息
+// @Description 更新字典
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -389,7 +385,7 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 
 // GetById
 // @Summary 获取字典
-// @Description 获取指定id字典信息
+// @Description 获取指定id字典
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -409,11 +405,11 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, serviceTools.ErrDictNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取字典异常 >>> %v", err.Error()))
-		zap.S().Error("获取字典异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取数据字典异常 >>> %v", err.Error()))
+		zap.S().Error("获取数据字典异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -423,7 +419,7 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 
 // GetListPage
 // @Summary 获取字典分页列表
-// @Description 获取字典分页列表信息
+// @Description 获取字典分页列表
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -437,7 +433,6 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 // @Param code query string false "字典编码"
 // @Param type query int true "字典分类" default(0)
 // @Param value_type query int true "数据类型" default(0)
-// @Param dict_id query string false "字典编码"
 // @Success 200 {object} DictListPageResponse
 // @Failure 400 {object} response.Response
 // @Router /v1/tools/dict/listPage [get]
@@ -504,8 +499,8 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 }
 
 // GetListAll
-// @Summary 获取所有字典
-// @Description 获取所有字典列表信息
+// @Summary 获取所有字典列表
+// @Description 获取所有字典列表
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/json
@@ -572,8 +567,8 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 }
 
 // Export
-// @Summary 导出字典数据
-// @Description 导出字典数据到Excel文件
+// @Summary 导出字典
+// @Description 导出字典到Excel文件
 // @Tags 系统工具/字典管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet

@@ -51,9 +51,17 @@ func main() {
 	// 自动迁移表
 	system.NewUser().AutoMigrate(configManager.RelyConfig.Db.Careful)
 	system.NewDept().AutoMigrate(configManager.RelyConfig.Db.Careful)
+	system.NewMenu().AutoMigrate(configManager.RelyConfig.Db.Careful)
+
+	// 创建菜单
+	err := ensureDefaultMenu(configManager.RelyConfig.Db.Careful)
+	if err != nil {
+		fmt.Printf("创建菜单失败: %v\n", err)
+		os.Exit(1)
+	}
 
 	// 创建部门
-	err := ensureDefaultDept(configManager.RelyConfig.Db.Careful)
+	err = ensureDefaultDept(configManager.RelyConfig.Db.Careful)
 	if err != nil {
 		fmt.Printf("创建部门失败: %v\n", err)
 		os.Exit(1)
@@ -66,6 +74,65 @@ func main() {
 	}
 
 	fmt.Println("超级用户创建成功！")
+}
+
+// ensureDefaultMenu 创建根菜单
+func ensureDefaultMenu(db *gorm.DB) error {
+	var count int64
+	if err := db.Model(&system.Menu{}).Count(&count).Error; err != nil {
+		return fmt.Errorf("检查菜单表失败: %v", err)
+	}
+
+	// 如果没有菜单，创建根菜单
+	if count == 0 {
+		// -------------------------- 1. 初始化根菜单 (ID = "root") --------------------------
+		var rootMenu system.Menu
+		rootMenuID := "root" // 根菜单的固定ID
+		// 先查询ID为 "root" 的菜单是否存在
+		if err := db.Where("id = ?", rootMenuID).First(&rootMenu).Error; err != nil {
+			// 如果不存在，则创建根菜单
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				rootMenu = system.Menu{
+					CoreModels: models.CoreModels{
+						Id:        rootMenuID, // 直接指定ID为 "root"
+						Timestamp: generateTimestamp(),
+						Remark:    "根菜单",
+					},
+					Status:        true,
+					Name:          "Root",
+					Path:          "root",
+					Component:     "root",
+					Title:         "root",
+					Icon:          "",
+					ShowBadge:     false,
+					ShowTextBadge: "",
+					IsHide:        false,
+					IsHideTab:     false,
+					Link:          "",
+					IsIframe:      false,
+					KeepAlive:     false,
+					IsFirstLevel:  false,
+					FixedTab:      false,
+					ActivePath:    "",
+					IsFullPage:    false,
+					IsAuthButton:  false,
+					AuthMark:      "",
+					ParentID:      nil,
+				}
+				rootMenu.Id = "root"
+				if err := db.Create(&rootMenu).Error; err != nil {
+					// 创建根菜单失败
+					return err
+				}
+			} else {
+				// 查询过程中发生未知错误
+				return err
+			}
+		}
+		fmt.Println("已创建根菜单")
+	}
+
+	return nil
 }
 
 // ensureDefaultDept 创建根部门

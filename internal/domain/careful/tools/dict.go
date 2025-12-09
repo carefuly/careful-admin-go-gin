@@ -19,8 +19,8 @@ import (
 type Dict struct {
 	tools.Dict
 
-	CreateTime string `json:"createTime"` // 创建时间
-	UpdateTime string `json:"updateTime"` // 更新时间
+	CreateTime string `json:"create_time"` // 创建时间
+	UpdateTime string `json:"update_time"` // 更新时间
 }
 
 type DictFilter struct {

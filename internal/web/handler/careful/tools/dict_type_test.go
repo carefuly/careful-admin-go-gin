@@ -199,7 +199,7 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			// 设置登录凭证
 			server.Use(func(ctx *gin.Context) {
 				ctx.Set("claims", &ijwt.Claims{
-					UserId: "1", // 避免uuid开销过大
+					UserID: "1", // 避免uuid开销过大
 				})
 			})
 			router := server.Group("/dev-api/v1")
@@ -282,7 +282,7 @@ func Test_dictTypeHandler_Delete(t *testing.T) {
 			// 设置登录凭证
 			server.Use(func(ctx *gin.Context) {
 				ctx.Set("claims", &ijwt.Claims{
-					UserId: "1", // 避免uuid开销过大
+					UserID: "1", // 避免uuid开销过大
 				})
 			})
 			router := server.Group("/dev-api/v1")
@@ -473,7 +473,7 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 			// 设置登录凭证
 			server.Use(func(ctx *gin.Context) {
 				ctx.Set("claims", &ijwt.Claims{
-					UserId: "1", // 避免uuid开销过大
+					UserID: "1", // 避免uuid开销过大
 				})
 			})
 			router := server.Group("/dev-api/v1")
@@ -561,7 +561,7 @@ func Test_dictTypeHandler_GetById(t *testing.T) {
 			// 设置登录凭证
 			server.Use(func(ctx *gin.Context) {
 				ctx.Set("claims", &ijwt.Claims{
-					UserId: "1", // 避免uuid开销过大
+					UserID: "1", // 避免uuid开销过大
 				})
 			})
 			router := server.Group("/dev-api/v1")

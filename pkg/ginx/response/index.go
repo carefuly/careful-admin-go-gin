@@ -87,7 +87,7 @@ func (r *Response) WithRequestID(ctx *gin.Context) *Response {
 
 // ToJSON 生成JSON响应
 func (r *Response) ToJSON(ctx *gin.Context) {
-	ctx.JSON(r.Code, gin.H{
+	ctx.JSON(http.StatusOK, gin.H{
 		"status":     r.Status,
 		"code":       r.Code,
 		"msg":        r.Message,

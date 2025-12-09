@@ -9,7 +9,7 @@
 package _import
 
 type ImportResult struct {
-	Result []map[string]string // 导入数据信息
+	Result []map[string]string `json:"result"` // 导入数据信息
 }
 
 // type ImportError struct {

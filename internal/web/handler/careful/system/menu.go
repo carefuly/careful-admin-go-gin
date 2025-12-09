@@ -99,9 +99,9 @@ type MenuHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
+	GetMenuRouteTree(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 	Export(ctx *gin.Context)
-	// GetMenuRouteTree(ctx *gin.Context)
 	// GetMenuTree(ctx *gin.Context)
 }
 
@@ -127,9 +127,9 @@ func (h *menuHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
+	base.GET("/listRouteTree", h.GetMenuRouteTree)
 	base.GET("/listAll", h.GetListAll)
 	base.GET("/export", h.Export)
-	// base.GET("/listRouteTree", h.GetMenuRouteTree)
 	// base.GET("/listTree", h.GetMenuTree)
 }
 
@@ -412,6 +412,65 @@ func (h *menuHandler) GetById(ctx *gin.Context) {
 	}
 
 	response.NewResponse().Success(ctx, "获取成功", detail)
+}
+
+// GetMenuRouteTree
+// @Summary 获取菜单路由树形结构
+// @Description 获取菜单路由树形结构
+// @Tags 系统管理/菜单管理
+// @Accept application/json
+// @Produce application/json
+// @Security BearerAuth
+// @Param creator query string false "创建人"
+// @Param modifier query string false "修改人"
+// @Param status query bool false "状态" default(true)
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/system/menu/listRouteTree [get]
+// @Security LoginToken
+func (h *menuHandler) GetMenuRouteTree(ctx *gin.Context) {
+	// 从上下文中获取登录信息
+	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
+	if !ok {
+		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserID)))
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, claims.UserID)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取用户信息异常 >>> %v", err.Error()))
+		zap.S().Error("获取用户信息异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	statusStr := ctx.DefaultQuery("status", "true")
+	status, err := strconv.ParseBool(statusStr)
+	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
+		status = true
+	}
+
+	filter := domainSystem.MenuFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: *user.DeptID,
+		},
+		Status: status,
+	}
+
+	list, err := h.svc.GetMenuRouteTree(ctx, filter)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取菜单路由异常 >>> %v", err.Error()))
+		zap.S().Error("获取菜单路由异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().Success(ctx, "查询成功", list)
 }
 
 // GetListAll
@@ -710,60 +769,6 @@ func (h *menuHandler) Export(ctx *gin.Context) {
 }
 
 // --------------------------------------------------
-
-// // GetMenuRouteTree 获取菜单路由
-// // @Summary 获取菜单路由树形结构
-// // @Description 获取菜单路由树形结构
-// // @Tags 系统管理/菜单管理
-// // @Accept application/json
-// // @Produce application/json
-// // @Param creator query string false "创建人"
-// // @Param modifier query string false "修改人"
-// // @Param status query bool false "状态" default(true)
-// // @Success 200 {object} response.Response
-// // @Failure 400 {object} response.Response
-// // @Router /v1/system/menu/listRouteTree [get]
-// // @Security LoginToken
-// func (h *menuHandler) GetMenuRouteTree(ctx *gin.Context) {
-// 	// 从上下文中获取登录信息
-// 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
-// 	if !ok {
-// 		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserId)))
-// 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-// 		return
-// 	}
-//
-// 	user, err := h.userSvc.GetById(ctx, claims.UserId)
-// 	if err != nil {
-// 		ctx.Set("internalError", fmt.Sprintf("获取用户信息异常 >>> %v", err.Error()))
-// 		zap.S().Error("获取用户信息异常 >>> ", err.Error())
-// 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-// 		return
-// 	}
-//
-// 	creator := ctx.DefaultQuery("creator", "")
-// 	modifier := ctx.DefaultQuery("modifier", "")
-// 	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
-//
-// 	filter := domainSystem.MenuFilter{
-// 		Filters: filters.Filters{
-// 			Creator:    creator,
-// 			Modifier:   modifier,
-// 			BelongDept: user.DeptId,
-// 		},
-// 		Status: status,
-// 	}
-//
-// 	list, err := h.svc.GetMenuRouteTree(ctx, filter)
-// 	if err != nil {
-// 		ctx.Set("internalError", fmt.Sprintf("获取菜单路由异常 >>> %v", err.Error()))
-// 		zap.S().Error("获取菜单路由异常 >>> ", err.Error())
-// 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-// 		return
-// 	}
-//
-// 	response.NewResponse().Success(ctx, "查询成功", list)
-// }
 
 // // GetMenuTree 获取菜单树形结构
 // // @Summary 获取菜单树形结构
