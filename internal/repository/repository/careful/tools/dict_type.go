@@ -25,6 +25,7 @@ var (
 	ErrDictTypeInvalidDictValueType = daoTools.ErrDictTypeInvalidDictValueType
 	ErrDictTypeNotFound             = daoTools.ErrDictTypeNotFound
 	ErrDictTypeDuplicate            = daoTools.ErrDictTypeDuplicate
+	ErrDictDisabled                 = daoTools.ErrDictDisabled
 	ErrDictTypeVersionInconsistency = daoTools.ErrDictTypeVersionInconsistency
 )
 
@@ -35,7 +36,6 @@ type DictTypeRepository interface {
 	Update(ctx context.Context, domain domainTools.DictType) error
 
 	GetById(ctx context.Context, id string) (domainTools.DictType, error)
-	GetByDictNames(ctx context.Context, dictNames []string) ([]domainTools.DictType, error)
 	GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error)
 	GetListAll(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, error)
 }
@@ -153,26 +153,6 @@ func (repo *dictTypeRepository) GetById(ctx context.Context, id string) (domainT
 	return toDomain, nil
 }
 
-// GetByDictNames 根据多个dictName获取详情
-func (repo *dictTypeRepository) GetByDictNames(ctx context.Context, dictNames []string) ([]domainTools.DictType, error) {
-	// list, err := repo.dao.FindByDictNames(ctx, dictNames)
-	// if err != nil {
-	// 	return []domainTools.DictType{}, err
-	// }
-	//
-	// if len(list) == 0 {
-	// 	return []domainTools.DictType{}, nil
-	// }
-	//
-	// var domains []domainTools.DictType
-	// for _, v := range list {
-	// 	domains = append(domains, repo.toDomain(v))
-	// }
-	//
-	// return domains, nil
-	return nil, nil
-}
-
 // GetListPage 分页查询列表
 func (repo *dictTypeRepository) GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error) {
 	list, row, err := repo.dao.FindListPage(ctx, filters)
@@ -266,9 +246,19 @@ func (repo *dictTypeRepository) toEntity(domain domainTools.DictType) (modelTool
 func (repo *dictTypeRepository) toDomain(entity *modelTools.DictType) domainTools.DictType {
 	model := domainTools.DictType{
 		DictType:  *entity,
+		Label:     entity.Name,
 		StrValue:  entity.StrValue.String,
 		IntValue:  entity.IntValue.Int64,
 		BoolValue: entity.BoolValue.Bool,
+	}
+
+	switch entity.ValueType {
+	case 1: // 字符串
+		model.Value = entity.StrValue.String
+	case 2: // 整型
+		model.Value = entity.IntValue.Int64
+	case 3: // 布尔
+		model.Value = entity.BoolValue.Bool
 	}
 
 	if entity.CreateTime != nil {

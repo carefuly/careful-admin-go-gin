@@ -2425,7 +2425,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "批量删除字典项信息",
+                "description": "批量删除字典项",
                 "consumes": [
                     "application/json"
                 ],
@@ -2476,7 +2476,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "创建字典项信息",
+                "description": "创建字典项",
                 "consumes": [
                     "application/json"
                 ],
@@ -2486,7 +2486,7 @@ const docTemplate = `{
                 "tags": [
                     "系统工具/字典项管理"
                 ],
-                "summary": "创建字典项信息",
+                "summary": "创建字典项",
                 "parameters": [
                     {
                         "description": "请求",
@@ -2524,7 +2524,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "删除指定id字典项信息",
+                "description": "删除指定id字典项",
                 "consumes": [
                     "application/json"
                 ],
@@ -2570,7 +2570,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导出字典项信息到Excel文件",
+                "description": "导出字典项到Excel文件",
                 "consumes": [
                     "application/json"
                 ],
@@ -2661,7 +2661,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取指定id字典项信息",
+                "description": "获取指定id字典项",
                 "consumes": [
                     "application/json"
                 ],
@@ -2707,7 +2707,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导入字典项信息",
+                "description": "导入字典项",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -2753,7 +2753,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取所有字典项列表信息",
+                "description": "获取所有字典项列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -2840,63 +2840,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/tools/dictType/listByDictNames": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    },
-                    {
-                        "LoginToken": []
-                    }
-                ],
-                "description": "返回分层结构的字典项映射",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "系统工具/字典项管理"
-                ],
-                "summary": "根据字典名称批量查询字典项",
-                "parameters": [
-                    {
-                        "description": "字典名称数组",
-                        "name": "dictNames",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "array",
-                                "items": {
-                                    "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
         "/v1/tools/dictType/listPage": {
             "get": {
                 "security": [
@@ -2907,7 +2850,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取字典项信息分页列表",
+                "description": "获取字典项分页列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -3014,7 +2957,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "更新字典项信息",
+                "description": "更新字典项",
                 "consumes": [
                     "application/json"
                 ],
@@ -3723,7 +3666,7 @@ const docTemplate = `{
                     "description": "布尔-字典项值",
                     "type": "boolean"
                 },
-                "createTime": {
+                "create_time": {
                     "description": "创建时间",
                     "type": "string"
                 },
@@ -3799,7 +3742,7 @@ const docTemplate = `{
                     "description": "版本号(时间戳)",
                     "type": "integer"
                 },
-                "updateTime": {
+                "update_time": {
                     "description": "更新时间",
                     "type": "string"
                 },
@@ -5383,6 +5326,10 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "bool_value": {
+                    "description": "布尔-字典项值",
+                    "type": "boolean"
+                },
                 "dict_color": {
                     "description": "标签颜色",
                     "type": "string",
@@ -5407,6 +5354,10 @@ const docTemplate = `{
                     "description": "主键ID",
                     "type": "string"
                 },
+                "int_value": {
+                    "description": "整型-字典项值",
+                    "type": "integer"
+                },
                 "name": {
                     "description": "字典项名称",
                     "type": "string",
@@ -5426,6 +5377,11 @@ const docTemplate = `{
                     "description": "状态【true-启用 false-停用】",
                     "type": "boolean",
                     "default": true
+                },
+                "str_value": {
+                    "description": "字符串-字典项值",
+                    "type": "string",
+                    "maxLength": 50
                 },
                 "timestamp": {
                     "description": "版本",

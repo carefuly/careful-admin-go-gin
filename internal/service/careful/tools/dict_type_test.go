@@ -39,6 +39,7 @@ func Test_dictTypeService_Create(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Create(gomock.Any(), domainTools.DictType{
@@ -63,7 +64,7 @@ func Test_dictTypeService_Create(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "字典不存在",
+			name: "数据字典不存在",
 			mock: func(ctrl *gomock.Controller) (repositoryTools.DictTypeRepository, repositoryTools.DictRepository) {
 				repo := repomocks.NewMockDictTypeRepository(ctrl)
 				dictRepo := repomocks.NewMockDictRepository(ctrl)
@@ -80,6 +81,30 @@ func Test_dictTypeService_Create(t *testing.T) {
 			wantErr: repositoryTools.ErrDictNotFound,
 		},
 		{
+			name: "字典已被禁用，无法在其下创建字典项",
+			mock: func(ctrl *gomock.Controller) (repositoryTools.DictTypeRepository, repositoryTools.DictRepository) {
+				repo := repomocks.NewMockDictTypeRepository(ctrl)
+				dictRepo := repomocks.NewMockDictRepository(ctrl)
+				dictRepo.EXPECT().GetById(gomock.Any(), "1").
+					Return(domainTools.Dict{
+						Dict: tools.Dict{
+							CoreModels: models.CoreModels{
+								Id: "1",
+							},
+							Status: false,
+						},
+					}, nil)
+				return repo, dictRepo
+			},
+			domain: domainTools.DictType{
+				DictType: tools.DictType{
+					Name:   "男",
+					DictID: "1",
+				},
+			},
+			wantErr: repositoryTools.ErrDictDisabled,
+		},
+		{
 			name: "违反唯一约束",
 			mock: func(ctrl *gomock.Controller) (repositoryTools.DictTypeRepository, repositoryTools.DictRepository) {
 				repo := repomocks.NewMockDictTypeRepository(ctrl)
@@ -90,6 +115,7 @@ func Test_dictTypeService_Create(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Create(gomock.Any(), domainTools.DictType{
@@ -119,6 +145,7 @@ func Test_dictTypeService_Create(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Create(gomock.Any(), domainTools.DictType{
@@ -210,6 +237,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Update(gomock.Any(), domainTools.DictType{
@@ -229,7 +257,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "字典不存在",
+			name: "数据字典不存在",
 			mock: func(ctrl *gomock.Controller) (repositoryTools.DictTypeRepository, repositoryTools.DictRepository) {
 				repo := repomocks.NewMockDictTypeRepository(ctrl)
 				dictRepo := repomocks.NewMockDictRepository(ctrl)
@@ -246,7 +274,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 			wantErr: repositoryTools.ErrDictNotFound,
 		},
 		{
-			name: "字典信息不存在",
+			name: "字典已被禁用，无法在其下创建字典项",
 			mock: func(ctrl *gomock.Controller) (repositoryTools.DictTypeRepository, repositoryTools.DictRepository) {
 				repo := repomocks.NewMockDictTypeRepository(ctrl)
 				dictRepo := repomocks.NewMockDictRepository(ctrl)
@@ -256,14 +284,9 @@ func Test_dictTypeService_Update(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: false,
 						},
-					}, nil)
-				repo.EXPECT().Update(gomock.Any(), domainTools.DictType{
-					DictType: tools.DictType{
-						Name:   "男",
-						DictID: "1",
-					},
-				}).Return(repositoryTools.ErrDictTypeNotFound)
+					}, repositoryTools.ErrDictNotFound)
 				return repo, dictRepo
 			},
 			domain: domainTools.DictType{
@@ -272,7 +295,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 					DictID: "1",
 				},
 			},
-			wantErr: repositoryTools.ErrDictTypeNotFound,
+			wantErr: repositoryTools.ErrDictNotFound,
 		},
 		{
 			name: "违反唯一约束",
@@ -285,6 +308,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Update(gomock.Any(), domainTools.DictType{
@@ -314,6 +338,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Update(gomock.Any(), domainTools.DictType{
@@ -343,6 +368,7 @@ func Test_dictTypeService_Update(t *testing.T) {
 							CoreModels: models.CoreModels{
 								Id: "1",
 							},
+							Status: true,
 						},
 					}, nil)
 				repo.EXPECT().Update(gomock.Any(), domainTools.DictType{

@@ -11,11 +11,19 @@ package tools
 import (
 	"context"
 	"errors"
+	"fmt"
 	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	domainTools "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/tools"
+	modelTools "github.com/carefuly/careful-admin-go-gin/internal/model/careful/tools"
 	repositoryTools "github.com/carefuly/careful-admin-go-gin/internal/repository/repository/careful/tools"
+	"github.com/carefuly/careful-admin-go-gin/pkg/constants/careful/tools/dict_type"
+	"github.com/carefuly/careful-admin-go-gin/pkg/models"
+	_string "github.com/carefuly/careful-admin-go-gin/pkg/utils/common/string"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/enumconv"
 	_import "github.com/carefuly/careful-admin-go-gin/pkg/utils/import"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/json_format"
 	"github.com/go-sql-driver/mysql"
+	"strconv"
 )
 
 var (
@@ -33,7 +41,6 @@ type DictTypeService interface {
 	Update(ctx context.Context, domain domainTools.DictType) error
 
 	GetById(ctx context.Context, id string) (domainTools.DictType, error)
-	GetByDictNames(ctx context.Context, dictNames []string) (map[string][]domainTools.DictType, error)
 	GetListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error)
 	GetListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, error)
 }
@@ -65,6 +72,10 @@ func (svc *dictTypeService) Create(ctx context.Context, domain domainTools.DictT
 		return repositoryTools.ErrDictNotFound
 	}
 
+	if !dict.Status {
+		return repositoryTools.ErrDictDisabled
+	}
+
 	// 设置DictName和TypeValue
 	domain.DictName = dict.Name
 	domain.ValueType = dict.ValueType
@@ -84,6 +95,116 @@ func (svc *dictTypeService) Create(ctx context.Context, domain domainTools.DictT
 // Import 导入
 func (svc *dictTypeService) Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult {
 	result := _import.ImportResult{}
+
+	// 遍历数据
+	for index, list := range listMap {
+		// 数据清洗
+		name := _string.CleanInputString(list["字典项名称"])
+		dictName := _string.CleanInputString(list["所属字典"])
+
+		// 字段校验
+		if name == "" {
+			list["导入状态"] = "400"
+			list["导入结果"] = "❌【字典项名称】不能为空"
+			continue
+		}
+		if dictName == "" {
+			list["导入状态"] = "400"
+			list["导入结果"] = "❌【所属字典】不能为空"
+			continue
+		}
+
+		var intValue int
+		if list["整型值"] == "" {
+			intValue = 0
+		} else {
+			intValue, _ = strconv.Atoi(list["整型值"])
+		}
+
+		var boolValue bool
+		if list["布尔值"] == "是" {
+			boolValue = true
+		} else {
+			boolValue = false
+		}
+
+		// 类型转换
+		dictTagValues := []string{"primary", "success", "warning", "danger", "info"}
+		converter := enumconv.NewEnumConverter(dict_type.DictTagMapping, dict_type.DictTagImportMapping, dictTagValues, "标签类型")
+		dictTag, err := converter.ToEnum(list["标签类型"])
+		if err != nil {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("❌【标签类型】转换失败：%s", err.Error())
+			continue
+		}
+
+		// 所属字典校验
+		dict, err := svc.dictRepo.GetByName(ctx, dictName)
+		if err != nil {
+			if errors.Is(err, repositoryTools.ErrDictNotFound) {
+				list["导入状态"] = "400"
+				list["导入结果"] = fmt.Sprintf("❌所属字典【%s】不存在", dictName)
+				continue
+			}
+			list["导入状态"] = "400"
+			list["导入结果"] = err.Error()
+			continue
+		}
+		if dict.Id == "" {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("❌所属字典【%s】不存在", dictName)
+			continue
+		}
+		if !dict.Status {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("❌所属字典【%s】已被禁用，无法在其下创建字典项", dictName)
+			continue
+		}
+
+		// 处理字段
+		var sort int
+		if list["排序"] == "" {
+			sort = 1
+		} else {
+			sort, _ = strconv.Atoi(list["排序"])
+		}
+
+		// 构建领域模型
+		domain := domainTools.DictType{
+			DictType: modelTools.DictType{
+				CoreModels: models.CoreModels{
+					Creator:    user.Id,
+					Modifier:   user.Id,
+					BelongDept: user.DeptID,
+					Sort:       sort,
+					Remark:     list["备注"],
+				},
+				Status:    true,
+				Name:      name,
+				DictTag:   dictTag,
+				DictColor: list["标签颜色"],
+				DictName:  dict.Name,
+				ValueType: dict.ValueType,
+				DictID:    dict.Id,
+			},
+			StrValue:  list["字符串值"],
+			IntValue:  int64(intValue),
+			BoolValue: boolValue,
+		}
+
+		fmt.Println("导入行数据 >>> ", index+2)
+		json_format.PrintFormattedJSON(domain)
+
+		// 创建记录
+		if _, err = svc.repo.Create(ctx, domain); err != nil {
+			list["导入状态"] = "400"
+			list["导入结果"] = fmt.Sprintf("❌创建失败：%s", err.Error())
+			continue
+		}
+
+		list["导入状态"] = "200"
+		list["导入结果"] = "✅创建成功"
+	}
 
 	result.Result = listMap
 
@@ -149,45 +270,6 @@ func (svc *dictTypeService) GetById(ctx context.Context, id string) (domainTools
 		return domain, repositoryTools.ErrDictTypeNotFound
 	}
 	return domain, err
-}
-
-// GetByDictNames 根据多个dictName获取详情
-func (svc *dictTypeService) GetByDictNames(ctx context.Context, dictNames []string) (map[string][]domainTools.DictType, error) {
-	return nil, nil
-	// if len(dictNames) == 0 {
-	// 	return map[string][]domainTools.DictType{}, nil
-	// }
-	//
-	// dictTypes, err := svc.repo.GetByDictNames(ctx, dictNames)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	//
-	// // 按dictName分组
-	// resultMap := make(map[string][]domainTools.DictType)
-	// for _, dt := range dictTypes {
-	// 	switch {
-	// 	case dt.ValueType == 1:
-	// 		dt.Label = dt.Name
-	// 		dt.Value = dt.StrValue
-	// 	case dt.ValueType == 2:
-	// 		dt.Label = dt.Name
-	// 		dt.Value = dt.IntValue
-	// 	case dt.ValueType == 3:
-	// 		dt.Label = dt.Name
-	// 		dt.Value = dt.BoolValue
-	// 	}
-	// 	resultMap[dt.DictName] = append(resultMap[dt.DictName], dt)
-	// }
-	//
-	// // 确保所有请求的键都存在（即使没有数据）
-	// for _, name := range dictNames {
-	// 	if _, ok := resultMap[name]; !ok {
-	// 		resultMap[name] = []domainTools.DictType{}
-	// 	}
-	// }
-	//
-	// return resultMap, nil
 }
 
 // GetListPage 分页查询列表

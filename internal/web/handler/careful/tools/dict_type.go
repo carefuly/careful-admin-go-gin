@@ -58,6 +58,9 @@ type UpdateDictTypeRequest struct {
 	Id        string            `json:"id" binding:"required" default:""`                      // 主键ID
 	Status    bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
 	Name      string            `json:"name" binding:"required,max=50" default:""`             // 字典项名称
+	StrValue  string            `json:"str_value" binding:"omitempty,max=50" default:""`       // 字符串-字典项值
+	IntValue  int64             `json:"int_value" binding:"omitempty"`                         // 整型-字典项值
+	BoolValue bool              `json:"bool_value" binding:"omitempty"`                        // 布尔-字典项值
 	DictTag   dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
 	DictColor string            `json:"dict_color" binding:"omitempty,max=50" default:""`      // 标签颜色
 	DictID    string            `json:"dict_id" binding:"required,max=100" default:""`         // 所属字典ID
@@ -86,7 +89,6 @@ type DictTypeHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
-	GetListByDictNames(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 	Export(ctx *gin.Context)
@@ -114,15 +116,14 @@ func (h *dictTypeHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
-	base.POST("/listByDictNames", h.GetListByDictNames)
 	base.GET("/listPage", h.GetListPage)
 	base.GET("/listAll", h.GetListAll)
 	base.GET("/export", h.Export)
 }
 
 // Create
-// @Summary 创建字典项信息
-// @Description 创建字典项信息
+// @Summary 创建字典项
+// @Description 创建字典项
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -188,16 +189,20 @@ func (h *dictTypeHandler) Create(ctx *gin.Context) {
 	if err := h.svc.Create(ctx, domain); err != nil {
 		switch {
 		case errors.Is(err, serviceTools.ErrDictNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典信息不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
+			return
+		case errors.Is(err, serviceTools.ErrDictDisabled):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典已被禁用，无法在其下创建字典项", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictTypeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "同一字典下存在相同的字典项值", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "同一字典下存在相同的字典项/值", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictTypeInvalidDictValueType):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "无效的数据类型", nil)
+			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建字典项信息异常 >>> %v", err.Error()))
-			zap.S().Error("创建字典项信息异常 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("创建字典项异常 >>> %v", err.Error()))
+			zap.S().Error("创建字典项异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -208,7 +213,7 @@ func (h *dictTypeHandler) Create(ctx *gin.Context) {
 
 // Import
 // @Summary 导入字典项
-// @Description 导入字典项信息
+// @Description 导入字典项
 // @Tags 系统工具/字典项管理
 // @Accept multipart/form-data
 // @Produce application/json
@@ -263,7 +268,7 @@ func (h *dictTypeHandler) Import(ctx *gin.Context) {
 
 // Delete
 // @Summary 删除字典项
-// @Description 删除指定id字典项信息
+// @Description 删除指定id字典项
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -281,10 +286,6 @@ func (h *dictTypeHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		if errors.Is(err, serviceTools.ErrDictTypeNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典项不存在", nil)
-			return
-		}
 		ctx.Set("internalError", fmt.Sprintf("删除字典项异常 >>> %v", err.Error()))
 		zap.S().Error("删除字典项异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
@@ -296,7 +297,7 @@ func (h *dictTypeHandler) Delete(ctx *gin.Context) {
 
 // BatchDelete
 // @Summary 批量删除字典项
-// @Description 批量删除字典项信息
+// @Description 批量删除字典项
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -315,8 +316,8 @@ func (h *dictTypeHandler) BatchDelete(ctx *gin.Context) {
 
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("批量删除字典项信息异常 >>> %v", err.Error()))
-		zap.S().Error("批量删除字典项信息异常 >>> ", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("批量删除字典项异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除字典项异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -326,7 +327,7 @@ func (h *dictTypeHandler) BatchDelete(ctx *gin.Context) {
 
 // Update
 // @Summary 更新字典项
-// @Description 更新字典项信息
+// @Description 更新字典项
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -385,24 +386,31 @@ func (h *dictTypeHandler) Update(ctx *gin.Context) {
 			DictColor: req.DictColor,
 			DictID:    req.DictID,
 		},
+		StrValue:  req.StrValue,
+		IntValue:  req.IntValue,
+		BoolValue: req.BoolValue,
 	}
 
 	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
 		case errors.Is(err, serviceTools.ErrDictNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典信息不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
+			return
+		case errors.Is(err, serviceTools.ErrDictDisabled):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典已被禁用，无法在其下创建字典项", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictTypeDuplicate):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "同一字典下存在相同的字典项值", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "同一字典下存在相同的字典项/值", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictTypeInvalidDictValueType):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "无效的数据类型", nil)
+			return
 		case errors.Is(err, serviceTools.ErrDictTypeVersionInconsistency):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新字典项信息异常 >>> %v", err.Error()))
-			zap.S().Error("更新字典项信息异常 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新字典项异常 >>> %v", err.Error()))
+			zap.S().Error("更新字典项异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -413,7 +421,7 @@ func (h *dictTypeHandler) Update(ctx *gin.Context) {
 
 // GetById
 // @Summary 获取字典项
-// @Description 获取指定id字典项信息
+// @Description 获取指定id字典项
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -433,11 +441,11 @@ func (h *dictTypeHandler) GetById(ctx *gin.Context) {
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, serviceTools.ErrDictTypeNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典项信息不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典项不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取字典项信息异常 >>> %v", err.Error()))
-		zap.S().Error("获取字典项信息异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -445,38 +453,9 @@ func (h *dictTypeHandler) GetById(ctx *gin.Context) {
 	response.NewResponse().Success(ctx, "获取成功", detail)
 }
 
-// GetListByDictNames
-// @Summary 根据字典名称批量查询字典项
-// @Description 返回分层结构的字典项映射
-// @Tags 系统工具/字典项管理
-// @Accept application/json
-// @Produce application/json
-// @Security BearerAuth
-// @Param dictNames body []string true "字典名称数组"
-// @Success 200 {object} map[string][]domainTools.DictType
-// @Failure 400 {object} response.Response
-// @Router /v1/tools/dictType/listByDictNames [post]
-// @Security LoginToken
-func (h *dictTypeHandler) GetListByDictNames(ctx *gin.Context) {
-	// var req []string
-	// if err := ctx.ShouldBindJSON(&req); err != nil {
-	// 	validate.NewValidatorError(h.rely.Trans).HandleValidatorError(ctx, err)
-	// 	return
-	// }
-	//
-	// list, err := h.svc.GetByDictNames(ctx, req)
-	// if err != nil {
-	// 	zap.L().Error("获取字典名称批量查询字典项异常", zap.Error(err))
-	// 	response.NewResponse().ErrorResponse(ctx, http.StatusInternalServerError, "服务器异常", nil)
-	// 	return
-	// }
-	//
-	// response.NewResponse().SuccessResponse(ctx, "查询成功", list)
-}
-
 // GetListPage
 // @Summary 获取字典项分页列表
-// @Description 获取字典项信息分页列表
+// @Description 获取字典项分页列表
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -540,7 +519,7 @@ func (h *dictTypeHandler) GetListPage(ctx *gin.Context) {
 		},
 		Status:    status,
 		Name:      name,
-		DictTag:   dictTag,
+		DictTag:   dict_type.DictTag(dictTag),
 		DictName:  dictName,
 		ValueType: dict.ValueType(valueType),
 		DictID:    dictId,
@@ -548,8 +527,8 @@ func (h *dictTypeHandler) GetListPage(ctx *gin.Context) {
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取字典项信息分页列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取字典项信息分页列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项分页列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项分页列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -564,7 +543,7 @@ func (h *dictTypeHandler) GetListPage(ctx *gin.Context) {
 
 // GetListAll
 // @Summary 获取所有字典项
-// @Description 获取所有字典项列表信息
+// @Description 获取所有字典项列表
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/json
@@ -620,7 +599,7 @@ func (h *dictTypeHandler) GetListAll(ctx *gin.Context) {
 		},
 		Status:    status,
 		Name:      name,
-		DictTag:   dictTag,
+		DictTag:   dict_type.DictTag(dictTag),
 		DictName:  dictName,
 		ValueType: dict.ValueType(valueType),
 		DictID:    dictId,
@@ -628,8 +607,8 @@ func (h *dictTypeHandler) GetListAll(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取字典项信息列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取字典项信息列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -639,7 +618,7 @@ func (h *dictTypeHandler) GetListAll(ctx *gin.Context) {
 
 // Export
 // @Summary 导出字典项
-// @Description 导出字典项信息到Excel文件
+// @Description 导出字典项到Excel文件
 // @Tags 系统工具/字典项管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
@@ -695,7 +674,7 @@ func (h *dictTypeHandler) Export(ctx *gin.Context) {
 		},
 		Status:    status,
 		Name:      name,
-		DictTag:   dictTag,
+		DictTag:   dict_type.DictTag(dictTag),
 		DictName:  dictName,
 		ValueType: dict.ValueType(valueType),
 		DictID:    dictId,
@@ -703,8 +682,8 @@ func (h *dictTypeHandler) Export(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取字典项信息列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取字典项信息列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典项列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典项列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -716,10 +695,8 @@ func (h *dictTypeHandler) Export(ctx *gin.Context) {
 		FileName:   filename,
 		StreamMode: true,
 		Columns: []excelutil.ExcelColumn{
-			{Title: "字典项名称", Field: "Name", Width: 22},
-			{Title: "字符串值", Field: "StrValue", Width: 22},
-			{Title: "整型值", Field: "IntValue", Width: 22},
-			{Title: "布尔值", Field: "BoolValue", Width: 22},
+			{Title: "标签", Field: "Label", Width: 22},
+			{Title: "值", Field: "Value", Width: 22},
 			{
 				Title: "标签类型",
 				Field: "DictTag",

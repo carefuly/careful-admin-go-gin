@@ -476,7 +476,7 @@ definitions:
       bool_value:
         description: 布尔-字典项值
         type: boolean
-      createTime:
+      create_time:
         description: 创建时间
         type: string
       creator:
@@ -529,7 +529,7 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
-      updateTime:
+      update_time:
         description: 更新时间
         type: string
       value:
@@ -1683,6 +1683,9 @@ definitions:
     type: object
   tools.UpdateDictTypeRequest:
     properties:
+      bool_value:
+        description: 布尔-字典项值
+        type: boolean
       dict_color:
         description: 标签颜色
         maxLength: 50
@@ -1700,6 +1703,9 @@ definitions:
       id:
         description: 主键ID
         type: string
+      int_value:
+        description: 整型-字典项值
+        type: integer
       name:
         description: 字典项名称
         maxLength: 50
@@ -1716,6 +1722,10 @@ definitions:
         default: true
         description: 状态【true-启用 false-停用】
         type: boolean
+      str_value:
+        description: 字符串-字典项值
+        maxLength: 50
+        type: string
       timestamp:
         description: 版本
         type: integer
@@ -3268,7 +3278,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 批量删除字典项信息
+      description: 批量删除字典项
       parameters:
       - description: id数组
         in: body
@@ -3299,7 +3309,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 创建字典项信息
+      description: 创建字典项
       parameters:
       - description: 请求
         in: body
@@ -3321,14 +3331,14 @@ paths:
       security:
       - BearerAuth: []
       - LoginToken: []
-      summary: 创建字典项信息
+      summary: 创建字典项
       tags:
       - 系统工具/字典项管理
   /v1/tools/dictType/delete/{id}:
     delete:
       consumes:
       - application/json
-      description: 删除指定id字典项信息
+      description: 删除指定id字典项
       parameters:
       - description: id
         in: path
@@ -3356,7 +3366,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 导出字典项信息到Excel文件
+      description: 导出字典项到Excel文件
       parameters:
       - description: 创建人
         in: query
@@ -3415,7 +3425,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取指定id字典项信息
+      description: 获取指定id字典项
       parameters:
       - description: id
         in: path
@@ -3443,7 +3453,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: 导入字典项信息
+      description: 导入字典项
       parameters:
       - description: 文件(支持xlsx/csv格式)
         in: formData
@@ -3471,7 +3481,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取所有字典项列表信息
+      description: 获取所有字典项列表
       parameters:
       - description: 创建人
         in: query
@@ -3530,46 +3540,11 @@ paths:
       summary: 获取所有字典项
       tags:
       - 系统工具/字典项管理
-  /v1/tools/dictType/listByDictNames:
-    post:
-      consumes:
-      - application/json
-      description: 返回分层结构的字典项映射
-      parameters:
-      - description: 字典名称数组
-        in: body
-        name: dictNames
-        required: true
-        schema:
-          items:
-            type: string
-          type: array
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties:
-              items:
-                $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_tools.DictType'
-              type: array
-            type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Response'
-      security:
-      - BearerAuth: []
-      - LoginToken: []
-      summary: 根据字典名称批量查询字典项
-      tags:
-      - 系统工具/字典项管理
   /v1/tools/dictType/listPage:
     get:
       consumes:
       - application/json
-      description: 获取字典项信息分页列表
+      description: 获取字典项分页列表
       parameters:
       - default: 1
         description: 页码
@@ -3640,7 +3615,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: 更新字典项信息
+      description: 更新字典项
       parameters:
       - description: 请求
         in: body

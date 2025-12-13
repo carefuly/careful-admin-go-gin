@@ -22,6 +22,7 @@ var (
 	ErrDictNotFound             = gorm.ErrRecordNotFound
 	ErrDictNameDuplicate        = errors.New("字典名称已存在")
 	ErrDictCodeDuplicate        = errors.New("字典编码已存在")
+	ErrDictDisabled             = errors.New("字典已被禁用，无法在其下创建字典项")
 	ErrDictVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
 )
 

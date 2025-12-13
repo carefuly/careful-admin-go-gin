@@ -31,6 +31,7 @@ var (
 	ErrDictNotFound             = repositoryTools.ErrDictNotFound
 	ErrDictNameDuplicate        = repositoryTools.ErrDictNameDuplicate
 	ErrDictCodeDuplicate        = repositoryTools.ErrDictCodeDuplicate
+	ErrDictDisabled             = repositoryTools.ErrDictDisabled
 	ErrDictVersionInconsistency = repositoryTools.ErrDictVersionInconsistency
 )
 

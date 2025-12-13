@@ -58,11 +58,11 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			reqBody: `
 {
 	"name": "男",
-	"strValue": "",
-	"intValue": 1,
-	"boolValue": false,
-	"dictTag": "primary",
-	"dictColor": "",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -85,11 +85,11 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			reqBody: `
 {
 	"name": "男",
-	"strValue": "",
-	"intValue": 1,
-	"boolValue": false,
-	"dictTag": "primary",
-	"dictColor": "",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -114,11 +114,11 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			reqBody: `
 {
 	"name": "男",
-	"strValue": "",
-	"intValue": 1,
-	"boolValue": false,
-	"dictTag": "primary_",
-	"dictColor": "",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary_",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -127,6 +127,66 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 `,
 			wantCode: http.StatusBadRequest,
 			wantMsg:  "无效的标签类型枚举值: primary_",
+		},
+		{
+			name: "数据字典不存在",
+			mock: func(ctrl *gomock.Controller) (serviceTools.DictTypeService, serviceSystem.UserService) {
+				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
+				userService := svcmocks.NewMockUserService(ctrl)
+				userService.EXPECT().GetById(gomock.Any(), "1").Return(domainSystem.User{
+					User: modelSystem.User{
+						CoreModels: models.CoreModels{Id: "1"},
+					},
+				}, nil)
+				dictTypeService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(serviceTools.ErrDictNotFound)
+				return dictTypeService, userService
+			},
+			reqBody: `
+{
+	"name": "男",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary",
+	"dict_color": "",
+	"dict_id": "1",
+	"sort": 1,
+	"status": true,
+	"remark": ""
+}
+`,
+			wantCode: http.StatusBadRequest,
+			wantMsg:  "数据字典不存在",
+		},
+		{
+			name: "字典已被禁用，无法在其下创建字典项",
+			mock: func(ctrl *gomock.Controller) (serviceTools.DictTypeService, serviceSystem.UserService) {
+				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
+				userService := svcmocks.NewMockUserService(ctrl)
+				userService.EXPECT().GetById(gomock.Any(), "1").Return(domainSystem.User{
+					User: modelSystem.User{
+						CoreModels: models.CoreModels{Id: "1"},
+					},
+				}, nil)
+				dictTypeService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(serviceTools.ErrDictDisabled)
+				return dictTypeService, userService
+			},
+			reqBody: `
+{
+	"name": "男",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary",
+	"dict_color": "",
+	"dict_id": "1",
+	"sort": 1,
+	"status": true,
+	"remark": ""
+}
+`,
+			wantCode: http.StatusBadRequest,
+			wantMsg:  "字典已被禁用，无法在其下创建字典项",
 		},
 		{
 			name: "同一字典下存在相同的字典项/值",
@@ -144,11 +204,11 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			reqBody: `
 {
 	"name": "男",
-	"strValue": "",
-	"intValue": 1,
-	"boolValue": false,
-	"dictTag": "primary",
-	"dictColor": "",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -174,11 +234,11 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			reqBody: `
 {
 	"name": "男",
-	"strValue": "",
-	"intValue": 1,
-	"boolValue": false,
-	"dictTag": "primary",
-	"dictColor": "",
+	"str_value": "",
+	"int_value": 1,
+	"bool_value": false,
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -202,13 +262,13 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 					UserID: "1", // 避免uuid开销过大
 				})
 			})
-			router := server.Group("/dev-api/v1")
+			router := server.Group("/api/v1")
 			service, userService := tc.mock(ctrl)
 			h := NewDictTypeHandler(c, service, userService)
 			h.RegisterRoutes(router)
 
 			req, err := http.NewRequest(http.MethodPost,
-				"/dev-api/v1/dictType/create",
+				"/api/v1/dictType/create",
 				bytes.NewBuffer([]byte(tc.reqBody)))
 			require.NoError(t, err)
 			// 数据是 JSON 格式
@@ -220,7 +280,7 @@ func Test_dictTypeHandler_Create(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -248,29 +308,17 @@ func Test_dictTypeHandler_Delete(t *testing.T) {
 			wantMsg:  "删除成功",
 		},
 		{
-			name: "字典信息不存在",
+			name: "服务器异常",
 			mock: func(ctrl *gomock.Controller) serviceTools.DictTypeService {
 				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
 				dictTypeService.EXPECT().Delete(gomock.Any(), "1").
-					Return(serviceTools.ErrDictTypeNotFound)
+					Return(errors.New("服务器异常"))
 				return dictTypeService
 			},
 			id:       "1",
-			wantCode: http.StatusBadRequest,
-			wantMsg:  "字典信息不存在",
+			wantCode: http.StatusInternalServerError,
+			wantMsg:  "服务器异常",
 		},
-		// {
-		// 	name: "服务器异常",
-		// 	mock: func(ctrl *gomock.Controller) serviceTools.DictTypeService {
-		// 		dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
-		// 		dictTypeService.EXPECT().Delete(gomock.Any(), "1").
-		// 			Return(errors.New("服务器异常"))
-		// 		return dictTypeService
-		// 	},
-		// 	id:       "1",
-		// 	wantCode: http.StatusInternalServerError,
-		// 	wantMsg:  "服务器异常",
-		// },
 	}
 
 	for _, tc := range testCases {
@@ -285,13 +333,13 @@ func Test_dictTypeHandler_Delete(t *testing.T) {
 					UserID: "1", // 避免uuid开销过大
 				})
 			})
-			router := server.Group("/dev-api/v1")
+			router := server.Group("/api/v1")
 			service := tc.mock(ctrl)
 			h := NewDictTypeHandler(c, service, nil)
 			h.RegisterRoutes(router)
 
 			req, err := http.NewRequest(http.MethodDelete,
-				"/dev-api/v1/dictType/delete/"+tc.id,
+				"/api/v1/dictType/delete/"+tc.id,
 				bytes.NewBuffer([]byte("")))
 			require.NoError(t, err)
 			// 数据是 JSON 格式
@@ -303,7 +351,7 @@ func Test_dictTypeHandler_Delete(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -336,8 +384,8 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 {
 	"id": "1",
 	"name": "男",
-	"dictTag": "primary",
-	"dictColor": "",
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -362,8 +410,8 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 {
 	"id": "1",
 	"name": "男",
-	"dictTag": "primary",
-	"dictColor": "",
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -375,7 +423,65 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 			wantMsg:  "服务器异常",
 		},
 		{
-			name: "字典信息已存在",
+			name: "数据字典不存在",
+			mock: func(ctrl *gomock.Controller) (serviceTools.DictTypeService, serviceSystem.UserService) {
+				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
+				userService := svcmocks.NewMockUserService(ctrl)
+				userService.EXPECT().GetById(gomock.Any(), "1").Return(domainSystem.User{
+					User: modelSystem.User{
+						CoreModels: models.CoreModels{Id: "1"},
+					},
+				}, nil)
+				dictTypeService.EXPECT().Update(gomock.Any(), gomock.Any()).Return(serviceTools.ErrDictNotFound)
+				return dictTypeService, userService
+			},
+			reqBody: `
+{
+	"id": "1",
+	"name": "男",
+	"dict_tag": "primary",
+	"dict_color": "",
+	"dict_id": "1",
+	"sort": 1,
+	"status": true,
+	"timestamp": 1,
+	"remark": ""
+}
+`,
+			wantCode: http.StatusBadRequest,
+			wantMsg:  "数据字典不存在",
+		},
+		{
+			name: "字典已被禁用，无法在其下创建字典项",
+			mock: func(ctrl *gomock.Controller) (serviceTools.DictTypeService, serviceSystem.UserService) {
+				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
+				userService := svcmocks.NewMockUserService(ctrl)
+				userService.EXPECT().GetById(gomock.Any(), "1").Return(domainSystem.User{
+					User: modelSystem.User{
+						CoreModels: models.CoreModels{Id: "1"},
+					},
+				}, nil)
+				dictTypeService.EXPECT().Update(gomock.Any(), gomock.Any()).Return(serviceTools.ErrDictDisabled)
+				return dictTypeService, userService
+			},
+			reqBody: `
+{
+	"id": "1",
+	"name": "男",
+	"dict_tag": "primary",
+	"dict_color": "",
+	"dict_id": "1",
+	"sort": 1,
+	"status": true,
+	"timestamp": 1,
+	"remark": ""
+}
+`,
+			wantCode: http.StatusBadRequest,
+			wantMsg:  "字典已被禁用，无法在其下创建字典项",
+		},
+		{
+			name: "同一字典下存在相同的字典项/值",
 			mock: func(ctrl *gomock.Controller) (serviceTools.DictTypeService, serviceSystem.UserService) {
 				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
 				userService := svcmocks.NewMockUserService(ctrl)
@@ -391,8 +497,8 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 {
 	"id": "1",
 	"name": "男",
-	"dictTag": "primary",
-	"dictColor": "",
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -401,7 +507,7 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 }
 `,
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "字典信息已存在",
+			wantMsg:  "同一字典下存在相同的字典项/值",
 		},
 		{
 			name: "数据版本不一致，取消修改，请刷新后重试",
@@ -421,8 +527,8 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 {
 	"id": "1",
 	"name": "男",
-	"dictTag": "primary",
-	"dictColor": "",
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -450,8 +556,8 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 {
 	"id": "1",
 	"name": "男",
-	"dictTag": "primary",
-	"dictColor": "",
+	"dict_tag": "primary",
+	"dict_color": "",
 	"dict_id": "1",
 	"sort": 1,
 	"status": true,
@@ -476,13 +582,13 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 					UserID: "1", // 避免uuid开销过大
 				})
 			})
-			router := server.Group("/dev-api/v1")
+			router := server.Group("/api/v1")
 			service, userService := tc.mock(ctrl)
 			h := NewDictTypeHandler(c, service, userService)
 			h.RegisterRoutes(router)
 
 			req, err := http.NewRequest(http.MethodPut,
-				"/dev-api/v1/dictType/update",
+				"/api/v1/dictType/update",
 				bytes.NewBuffer([]byte(tc.reqBody)))
 			require.NoError(t, err)
 			// 数据是 JSON 格式
@@ -494,7 +600,7 @@ func Test_dictTypeHandler_Update(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -527,7 +633,7 @@ func Test_dictTypeHandler_GetById(t *testing.T) {
 			wantMsg:  "获取成功",
 		},
 		{
-			name: "字典信息不存在",
+			name: "字典项不存在",
 			mock: func(ctrl *gomock.Controller) serviceTools.DictTypeService {
 				dictTypeService := svcmocks.NewMockDictTypeService(ctrl)
 				dictTypeService.EXPECT().GetById(gomock.Any(), "1").
@@ -536,7 +642,7 @@ func Test_dictTypeHandler_GetById(t *testing.T) {
 			},
 			id:       "1",
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "字典信息不存在",
+			wantMsg:  "字典项不存在",
 		},
 		{
 			name: "服务器异常",
@@ -564,13 +670,13 @@ func Test_dictTypeHandler_GetById(t *testing.T) {
 					UserID: "1", // 避免uuid开销过大
 				})
 			})
-			router := server.Group("/dev-api/v1")
+			router := server.Group("/api/v1")
 			service := tc.mock(ctrl)
 			h := NewDictTypeHandler(c, service, nil)
 			h.RegisterRoutes(router)
 
 			req, err := http.NewRequest(http.MethodGet,
-				"/dev-api/v1/dictType/getById/"+tc.id,
+				"/api/v1/dictType/getById/"+tc.id,
 				bytes.NewBuffer([]byte("")))
 			require.NoError(t, err)
 			// 数据是 JSON 格式
@@ -582,7 +688,7 @@ func Test_dictTypeHandler_GetById(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
