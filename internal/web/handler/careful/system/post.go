@@ -40,7 +40,7 @@ type CreatePostRequest struct {
 	PostType    post.Type  `json:"post_type" binding:"omitempty" default:"5"`      // 岗位类型
 	Level       post.Level `json:"level" binding:"omitempty" default:"4"`          // 岗位级别
 	Description string     `json:"description" binding:"omitempty" default:""`     // 岗位描述
-	DeptID      *string    `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
+	DeptID      string     `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
 	Sort        int        `json:"sort" binding:"omitempty" default:"1"`           // 排序
 	Remark      string     `json:"remark" binding:"omitempty,max=255" default:""`  // 备注
 }
@@ -115,7 +115,7 @@ func (h *postHandler) RegisterRoutes(router *gin.RouterGroup) {
 
 // Create
 // @Summary 创建岗位
-// @Description 创建岗位信息
+// @Description 创建岗位
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -165,6 +165,13 @@ func (h *postHandler) Create(ctx *gin.Context) {
 		return
 	}
 
+	var deptId *string
+	if req.DeptID == "" {
+		deptId = nil
+	} else {
+		deptId = &req.DeptID
+	}
+
 	// 转换为领域模型
 	domain := domainSystem.Post{
 		Post: modelSystem.Post{
@@ -181,7 +188,7 @@ func (h *postHandler) Create(ctx *gin.Context) {
 			PostType:    req.PostType,
 			Level:       req.Level,
 			Description: req.Description,
-			DeptID:      req.DeptID,
+			DeptID:      deptId,
 		},
 	}
 
@@ -191,8 +198,8 @@ func (h *postHandler) Create(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位编码已存在", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建岗位信息失败 >>> %v", err.Error()))
-			zap.S().Error("创建岗位信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("创建岗位失败 >>> %v", err.Error()))
+			zap.S().Error("创建岗位失败 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}

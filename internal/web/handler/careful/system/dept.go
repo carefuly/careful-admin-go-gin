@@ -20,6 +20,7 @@ import (
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/response"
 	"github.com/carefuly/careful-admin-go-gin/pkg/models"
 	"github.com/carefuly/careful-admin-go-gin/pkg/utils/enumconv"
+	"github.com/carefuly/careful-admin-go-gin/pkg/utils/excelutil"
 	"github.com/carefuly/careful-admin-go-gin/pkg/utils/jwt"
 	"github.com/carefuly/careful-admin-go-gin/pkg/validate"
 	"github.com/gin-gonic/gin"
@@ -27,6 +28,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 // CreateDeptRequest 创建
@@ -108,7 +110,7 @@ func (h *deptHandler) RegisterRoutes(router *gin.RouterGroup) {
 
 // Create
 // @Summary 创建部门
-// @Description 创建部门信息
+// @Description 创建部门
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -181,14 +183,14 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "同级别下已存在相同的部门信息", nil)
 			return
 		case errors.Is(err, serviceSystem.ErrDeptParentNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门信息不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门不存在", nil)
 			return
 		case errors.Is(err, serviceSystem.ErrDeptDisabled):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "父部门已被禁用，无法在其下创建子部门", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建部门信息失败 >>> %v", err.Error()))
-			zap.S().Error("创建部门信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("创建部门异常 >>> %v", err.Error()))
+			zap.S().Error("创建部门异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -199,7 +201,7 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 
 // Import
 // @Summary 导入部门
-// @Description 导入部门信息
+// @Description 导入部门
 // @Tags 系统管理/部门管理
 // @Accept multipart/form-data
 // @Produce application/json
@@ -211,12 +213,12 @@ func (h *deptHandler) Create(ctx *gin.Context) {
 // @Security LoginToken
 func (h *deptHandler) Import(ctx *gin.Context) {
 	// TODO implement me
-	panic("implement me")
+	response.NewResponse().Success(ctx, "接口已预留，暂未开放使用", nil)
 }
 
 // Delete
 // @Summary 删除部门
-// @Description 删除指定id部门信息
+// @Description 删除指定id部门
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -235,9 +237,6 @@ func (h *deptHandler) Delete(ctx *gin.Context) {
 
 	if err := h.svc.Delete(ctx, id); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrDeptNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门信息不存在", nil)
-			return
 		case errors.Is(err, serviceSystem.ErrDeptHasChildren):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门含有子部门，无法删除", nil)
 			return
@@ -245,8 +244,8 @@ func (h *deptHandler) Delete(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门下仍有用户，无法删除", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("删除部门信息异常 >>> %v", err.Error()))
-			zap.S().Error("删除部门信息异常 >>> ", zap.Error(err))
+			ctx.Set("internalError", fmt.Sprintf("删除部门异常 >>> %v", err.Error()))
+			zap.S().Error("删除部门异常 >>> ", zap.Error(err))
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -257,7 +256,7 @@ func (h *deptHandler) Delete(ctx *gin.Context) {
 
 // BatchDelete
 // @Summary 批量删除部门
-// @Description 批量删除部门信息
+// @Description 批量删除部门
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -276,8 +275,8 @@ func (h *deptHandler) BatchDelete(ctx *gin.Context) {
 
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
-		ctx.Set("internal", err.Error())
-		zap.L().Error("批量删除部门异常", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("批量删除部门异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除部门异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -287,7 +286,7 @@ func (h *deptHandler) BatchDelete(ctx *gin.Context) {
 
 // Update
 // @Summary 更新部门
-// @Description 更新部门信息
+// @Description 更新部门
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -376,8 +375,8 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新部门信息失败 >>> %v", err.Error()))
-			zap.S().Error("更新部门信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新部门异常 >>> %v", err.Error()))
+			zap.S().Error("更新部门异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -388,7 +387,7 @@ func (h *deptHandler) Update(ctx *gin.Context) {
 
 // GetById
 // @Summary 获取部门
-// @Description 获取指定id部门信息
+// @Description 获取指定id部门
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -408,11 +407,11 @@ func (h *deptHandler) GetById(ctx *gin.Context) {
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, serviceSystem.ErrDeptNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门信息不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "部门不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取部门信息失败 >>> %v", err.Error()))
-		zap.S().Error("获取部门信息失败 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取部门异常 >>> %v", err.Error()))
+		zap.S().Error("获取部门异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -421,8 +420,8 @@ func (h *deptHandler) GetById(ctx *gin.Context) {
 }
 
 // GetListTree
-// @Summary 获取部门树形结构
-// @Description 获取部门树形结构信息
+// @Summary 获取部门树
+// @Description 获取部门树
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -493,8 +492,8 @@ func (h *deptHandler) GetListTree(ctx *gin.Context) {
 }
 
 // GetListAll
-// @Summary 获取所有部门
-// @Description 获取所有部门列表信息
+// @Summary 获取所有部门列表
+// @Description 获取所有部门列表
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/json
@@ -565,8 +564,8 @@ func (h *deptHandler) GetListAll(ctx *gin.Context) {
 }
 
 // Export
-// @Summary 导出部门数据
-// @Description 导出部门数据到Excel文件
+// @Summary 导出部门
+// @Description 导出部门到Excel文件
 // @Tags 系统管理/部门管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
@@ -583,6 +582,122 @@ func (h *deptHandler) GetListAll(ctx *gin.Context) {
 // @Router /v1/system/post/export [get]
 // @Security LoginToken
 func (h *deptHandler) Export(ctx *gin.Context) {
-	// TODO implement me
-	panic("implement me")
+	// 从上下文中获取登录信息
+	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
+	if !ok {
+		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserID)))
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, claims.UserID)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取用户信息异常 >>> %v", err.Error()))
+		zap.S().Error("获取用户信息异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	statusStr := ctx.DefaultQuery("status", "true")
+	status, err := strconv.ParseBool(statusStr)
+	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
+		status = true
+	}
+
+	name := ctx.DefaultQuery("name", "")
+	code := ctx.DefaultQuery("code", "")
+	deptType := ctx.DefaultQuery("dept_type", "")
+	level, _ := strconv.Atoi(ctx.DefaultQuery("level", "0"))
+
+	filter := domainSystem.DeptFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: *user.DeptID,
+		},
+		Status:   status,
+		Name:     name,
+		Code:     code,
+		DeptType: dept.Type(deptType),
+		Level:    level,
+	}
+
+	list, err := h.svc.GetListAll(ctx, filter)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取部门列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取部门列表异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 准备导出配置
+	filename := fmt.Sprintf("部门导出_%s.xlsx", time.Now().Format("20060102150405"))
+	cfg := excelutil.ExcelExportConfig{
+		SheetName:  "部门",
+		FileName:   filename,
+		StreamMode: true,
+		Columns: []excelutil.ExcelColumn{
+			{Title: "部门名称", Field: "Name", Width: 22},
+			{Title: "部门编码", Field: "Code", Width: 22},
+			{
+				Title: "部门类型",
+				Field: "DeptType",
+				Width: 15,
+				Formatter: func(value interface{}) string {
+					typeValidValues := []string{"company", "department", "team", "other"}
+					converter := enumconv.NewEnumConverter(dept.TypeMapping, dept.TypeImportMapping, typeValidValues, "部门类型")
+					str, _ := converter.FromEnum(value.(dept.Type))
+					return str
+				},
+			},
+			{Title: "部门负责人", Field: "Owner", Width: 22},
+			{Title: "部门电话", Field: "Phone", Width: 22},
+			{Title: "部门邮箱", Field: "Email", Width: 22},
+			{Title: "部门描述", Field: "Description", Width: 22},
+			{Title: "层级深度", Field: "Level", Width: 22},
+			{Title: "父部门名称", Field: "Parent.Name", Width: 22},
+			{
+				Title: "状态",
+				Field: "Status",
+				Width: 10,
+				Formatter: func(value interface{}) string {
+					if status, ok := value.(bool); ok {
+						if status {
+							return "启用"
+						}
+						return "停用"
+					}
+					return fmt.Sprintf("%v", value)
+				},
+			},
+			{Title: "排序", Field: "Sort", Width: 8},
+			{Title: "创建时间", Field: "CreateTime", Width: 22},
+			{Title: "更新时间", Field: "UpdateTime", Width: 22},
+			{Title: "备注", Field: "Remark", Width: 40},
+		},
+		Data: list,
+	}
+
+	// 创建并执行导出器
+	exporter := excelutil.NewExcelExporter(&cfg)
+	f, err := exporter.Export()
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("导出部门异常 >>> %v", err.Error()))
+		zap.S().Error("导出部门异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 设置响应头
+	ctx.Header("Content-Type", "application/octet-stream")
+	ctx.Header("Content-Disposition", "attachment; filename=export.xlsx")
+	ctx.Header("Pragma", "no-cache")
+	ctx.Header("Cache-Control", "no-store")
+
+	// 流式写入响应
+	if _, err := f.WriteTo(ctx.Writer); err != nil {
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "生成Excel失败", nil)
+	}
 }

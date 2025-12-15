@@ -28,7 +28,7 @@ type Post struct {
 	// 所属部门
 	DeptID *string `gorm:"size:110;column:dept_id;comment:所属部门ID" json:"dept_id"`                       // 所属部门ID
 	Dept   *Dept   `gorm:"foreignKey:DeptID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"Dept"` // 所属部门
-	// Post -> User
+	// 关联用户 Post -> User
 	Users []*User `gorm:"many2many:careful_system_user_post;constraint:OnDelete:CASCADE;"` // 关联用户
 }
 

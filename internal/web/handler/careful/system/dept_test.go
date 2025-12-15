@@ -191,7 +191,7 @@ func Test_deptHandler_Create(t *testing.T) {
 			wantMsg:  "同级别下已存在相同的部门信息",
 		},
 		{
-			name: "父部门信息不存在",
+			name: "父部门不存在",
 			mock: func(ctrl *gomock.Controller) (serviceSystem.DeptService, serviceSystem.UserService) {
 				deptService := svcmocks.NewMockDeptService(ctrl)
 				userService := svcmocks.NewMockUserService(ctrl)
@@ -219,7 +219,7 @@ func Test_deptHandler_Create(t *testing.T) {
 }
 `,
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "父部门信息不存在",
+			wantMsg:  "父部门不存在",
 		},
 		{
 			name: "父部门已被禁用，无法在其下创建子部门",
@@ -315,7 +315,7 @@ func Test_deptHandler_Create(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -341,17 +341,6 @@ func Test_deptHandler_Delete(t *testing.T) {
 			id:       "1",
 			wantCode: http.StatusOK,
 			wantMsg:  "删除成功",
-		},
-		{
-			name: "部门信息不存在",
-			mock: func(ctrl *gomock.Controller) serviceSystem.DeptService {
-				deptService := svcmocks.NewMockDeptService(ctrl)
-				deptService.EXPECT().Delete(gomock.Any(), "1").Return(serviceSystem.ErrDeptNotFound)
-				return deptService
-			},
-			id:       "1",
-			wantCode: http.StatusBadRequest,
-			wantMsg:  "部门信息不存在",
 		},
 		{
 			name: "部门含有子部门，无法删除",
@@ -418,7 +407,7 @@ func Test_deptHandler_Delete(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -793,7 +782,7 @@ func Test_deptHandler_Update(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -826,7 +815,7 @@ func Test_deptHandler_GetById(t *testing.T) {
 			wantMsg:  "获取成功",
 		},
 		{
-			name: "部门信息不存在",
+			name: "部门不存在",
 			mock: func(ctrl *gomock.Controller) serviceSystem.DeptService {
 				deptService := svcmocks.NewMockDeptService(ctrl)
 				deptService.EXPECT().GetById(gomock.Any(), "1").
@@ -839,7 +828,7 @@ func Test_deptHandler_GetById(t *testing.T) {
 			},
 			id:       "1",
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "部门信息不存在",
+			wantMsg:  "部门不存在",
 		},
 		{
 			name: "服务器异常",
@@ -889,7 +878,7 @@ func Test_deptHandler_GetById(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}

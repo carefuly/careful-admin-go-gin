@@ -114,7 +114,7 @@ definitions:
       code:
         description: 部门编码
         type: string
-      createTime:
+      create_time:
         description: 创建时间
         type: string
       creator:
@@ -170,7 +170,7 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
-      updateTime:
+      update_time:
         description: 更新时间
         type: string
     type: object
@@ -330,7 +330,7 @@ definitions:
         description: 更新时间
         type: string
       users:
-        description: Post -> User
+        description: 关联用户 Post -> User
         items:
           $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User'
         type: array
@@ -745,7 +745,7 @@ definitions:
         description: 版本号(时间戳)
         type: integer
       users:
-        description: Post -> User
+        description: 关联用户 Post -> User
         items:
           $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User'
         type: array
@@ -1196,7 +1196,7 @@ definitions:
       code:
         description: 部门编码
         type: string
-      createTime:
+      create_time:
         description: 创建时间
         type: string
       creator:
@@ -1252,7 +1252,7 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
-      updateTime:
+      update_time:
         description: 更新时间
         type: string
     type: object
@@ -1885,7 +1885,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 批量删除部门信息
+      description: 批量删除部门
       parameters:
       - description: id数组
         in: body
@@ -1916,7 +1916,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 创建部门信息
+      description: 创建部门
       parameters:
       - description: 请求
         in: body
@@ -1945,7 +1945,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: 删除指定id部门信息
+      description: 删除指定id部门
       parameters:
       - description: id
         in: path
@@ -1973,7 +1973,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取指定id部门信息
+      description: 获取指定id部门
       parameters:
       - description: id
         in: path
@@ -2001,7 +2001,7 @@ paths:
     post:
       consumes:
       - multipart/form-data
-      description: 导入部门信息
+      description: 导入部门
       parameters:
       - description: 文件(支持xlsx/csv格式)
         in: formData
@@ -2029,7 +2029,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 获取所有部门列表信息
+      description: 获取所有部门列表
       parameters:
       - description: 创建人
         in: query
@@ -2080,14 +2080,14 @@ paths:
       security:
       - BearerAuth: []
       - LoginToken: []
-      summary: 获取所有部门
+      summary: 获取所有部门列表
       tags:
       - 系统管理/部门管理
   /v1/system/dept/listTree:
     get:
       consumes:
       - application/json
-      description: 获取部门树形结构信息
+      description: 获取部门树
       parameters:
       - description: 创建人
         in: query
@@ -2134,14 +2134,14 @@ paths:
       security:
       - BearerAuth: []
       - LoginToken: []
-      summary: 获取部门树形结构
+      summary: 获取部门树
       tags:
       - 系统管理/部门管理
   /v1/system/dept/update:
     put:
       consumes:
       - application/json
-      description: 更新部门信息
+      description: 更新部门
       parameters:
       - description: 请求
         in: body
@@ -2583,7 +2583,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: 创建岗位信息
+      description: 创建岗位
       parameters:
       - description: 请求
         in: body

@@ -59,7 +59,7 @@ func Test_deptService_Create(t *testing.T) {
 						Code:     "部门编码",
 						ParentID: strPtr("root"),
 						Level:    1,
-						Path:     "/root/",
+						Path:     "/",
 					},
 				}).Return(domainSystem.Dept{}, nil)
 				return repo
@@ -157,7 +157,7 @@ func Test_deptService_Create(t *testing.T) {
 						Code:     "部门编码",
 						ParentID: strPtr("root"),
 						Level:    1,
-						Path:     "/root/",
+						Path:     "/",
 					},
 				}).Return(domainSystem.Dept{}, errors.New("数据库异常"))
 				return repo
@@ -461,7 +461,7 @@ func Test_deptService_GetById(t *testing.T) {
 			wantErr: nil,
 		},
 		{
-			name: "部门信息不存在",
+			name: "部门不存在",
 			mock: func(ctrl *gomock.Controller) repositorySystem.DeptRepository {
 				repo := repomocks.NewMockDeptRepository(ctrl)
 				repo.EXPECT().GetById(gomock.Any(), "1").

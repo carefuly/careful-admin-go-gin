@@ -204,7 +204,7 @@ func (dao *GORMDeptDAO) buildQuery(ctx context.Context, filter domainSystem.Dept
 		DeptType: filter.DeptType,
 		Level:    filter.Level,
 	}
-	return builder.QueryFilter(ctx, dao.db.WithContext(ctx).Model(&system.Dept{}))
+	return builder.QueryFilter(ctx, dao.db.WithContext(ctx).Preload("Parent").Model(&system.Dept{}))
 }
 
 // CheckExistByCode 检查code是否存在

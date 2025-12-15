@@ -641,7 +641,7 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 			{Title: "字典名称", Field: "Name", Width: 22},
 			{Title: "字典编码", Field: "Code", Width: 17},
 			{
-				Title: "字典编码",
+				Title: "字典类型",
 				Field: "Type",
 				Width: 15,
 				Formatter: func(value interface{}) string {

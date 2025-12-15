@@ -94,9 +94,14 @@ func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) er
 	if !parent.Status {
 		return repositorySystem.ErrDeptDisabled
 	}
+
 	// 保存时自动计算层级和路径
 	domain.Level = parent.Level + 1
-	domain.Path = parent.Path + parent.Id + "/"
+	if parent.Id == "root" {
+		domain.Path = parent.Path
+	} else {
+		domain.Path = parent.Path + parent.Id + "/"
+	}
 
 	if _, err := svc.repo.Create(ctx, domain); err != nil {
 		// 分析具体冲突字段
@@ -116,7 +121,7 @@ func (svc *deptService) Create(ctx context.Context, domain domainSystem.Dept) er
 
 // Import 导入
 func (svc *deptService) Import(ctx context.Context) {
-
+	// TODO implement me
 }
 
 // Delete 删除
@@ -207,9 +212,14 @@ func (svc *deptService) Update(ctx context.Context, domain domainSystem.Dept) er
 			return ErrDeptCycleReference
 		}
 	}
+
 	// 保存时自动计算层级和路径
 	domain.Level = parent.Level + 1
-	domain.Path = parent.Path + parent.Id + "/"
+	if parent.Id == "root" {
+		domain.Path = parent.Path
+	} else {
+		domain.Path = parent.Path + parent.Id + "/"
+	}
 
 	err = svc.repo.Update(ctx, domain)
 	if err != nil {
@@ -259,6 +269,7 @@ func (svc *deptService) GetListTree(ctx context.Context, filters domainSystem.De
 	if err != nil {
 		return nil, err
 	}
+
 	// 构建树
 	deptMap := make(map[string]*DeptTree)
 	var roots []DeptTree
@@ -274,6 +285,7 @@ func (svc *deptService) GetListTree(ctx context.Context, filters domainSystem.De
 			Children: []*DeptTree{},
 		}
 	}
+
 	// 第二遍遍历，构建树结构
 	for _, dept := range list {
 		node := deptMap[dept.Id]
@@ -307,10 +319,10 @@ func (svc *deptService) IsDuplicateEntryError(err error) (string, bool) {
 
 	// 分析错误消息中的索引名
 	switch {
-	case strings.Contains(mysqlErr.Message, "uni_name_parent"):
-		return "name_parent", true
 	case strings.Contains(mysqlErr.Message, "idx_careful_system_dept_code"):
 		return "code", true
+	case strings.Contains(mysqlErr.Message, "uni_name_parent"):
+		return "name_parent", true
 	default:
 		return "unknown", true // 未知唯一键冲突
 	}

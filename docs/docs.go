@@ -194,7 +194,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "批量删除部门信息",
+                "description": "批量删除部门",
                 "consumes": [
                     "application/json"
                 ],
@@ -245,7 +245,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "创建部门信息",
+                "description": "创建部门",
                 "consumes": [
                     "application/json"
                 ],
@@ -293,7 +293,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "删除指定id部门信息",
+                "description": "删除指定id部门",
                 "consumes": [
                     "application/json"
                 ],
@@ -339,7 +339,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取指定id部门信息",
+                "description": "获取指定id部门",
                 "consumes": [
                     "application/json"
                 ],
@@ -385,7 +385,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导入部门信息",
+                "description": "导入部门",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -431,7 +431,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取所有部门列表信息",
+                "description": "获取所有部门列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -441,7 +441,7 @@ const docTemplate = `{
                 "tags": [
                     "系统管理/部门管理"
                 ],
-                "summary": "获取所有部门",
+                "summary": "获取所有部门列表",
                 "parameters": [
                     {
                         "type": "string",
@@ -521,7 +521,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取部门树形结构信息",
+                "description": "获取部门树",
                 "consumes": [
                     "application/json"
                 ],
@@ -531,7 +531,7 @@ const docTemplate = `{
                 "tags": [
                     "系统管理/部门管理"
                 ],
-                "summary": "获取部门树形结构",
+                "summary": "获取部门树",
                 "parameters": [
                     {
                         "type": "string",
@@ -605,7 +605,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "更新部门信息",
+                "description": "更新部门",
                 "consumes": [
                     "application/json"
                 ],
@@ -1328,7 +1328,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "创建岗位信息",
+                "description": "创建岗位",
                 "consumes": [
                     "application/json"
                 ],
@@ -3148,7 +3148,7 @@ const docTemplate = `{
                     "description": "部门编码",
                     "type": "string"
                 },
-                "createTime": {
+                "create_time": {
                     "description": "创建时间",
                     "type": "string"
                 },
@@ -3228,7 +3228,7 @@ const docTemplate = `{
                     "description": "版本号(时间戳)",
                     "type": "integer"
                 },
-                "updateTime": {
+                "update_time": {
                     "description": "更新时间",
                     "type": "string"
                 }
@@ -3454,7 +3454,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "users": {
-                    "description": "Post -\u003e User",
+                    "description": "关联用户 Post -\u003e User",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User"
@@ -4052,7 +4052,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "users": {
-                    "description": "Post -\u003e User",
+                    "description": "关联用户 Post -\u003e User",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User"
@@ -4662,7 +4662,7 @@ const docTemplate = `{
                     "description": "部门编码",
                     "type": "string"
                 },
-                "createTime": {
+                "create_time": {
                     "description": "创建时间",
                     "type": "string"
                 },
@@ -4742,7 +4742,7 @@ const docTemplate = `{
                     "description": "版本号(时间戳)",
                     "type": "integer"
                 },
-                "updateTime": {
+                "update_time": {
                     "description": "更新时间",
                     "type": "string"
                 }
