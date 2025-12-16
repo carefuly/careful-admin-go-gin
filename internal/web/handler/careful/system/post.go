@@ -59,7 +59,7 @@ type UpdatePostRequest struct {
 	PostType    post.Type  `json:"post_type" binding:"omitempty" default:"5"`      // 岗位类型
 	Level       post.Level `json:"level" binding:"omitempty" default:"4"`          // 岗位级别
 	Description string     `json:"description" binding:"omitempty" default:""`     // 岗位描述
-	DeptID      *string    `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
+	DeptID      string     `json:"dept_id" binding:"omitempty,max=110" default:""` // 所属部门ID
 	Sort        int        `json:"sort" binding:"omitempty" default:"1"`           // 排序
 	Timestamp   int64      `json:"timestamp" binding:"omitempty"`                  // 版本
 	Remark      string     `json:"remark" binding:"omitempty,max=255" default:""`  // 备注
@@ -198,8 +198,8 @@ func (h *postHandler) Create(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位编码已存在", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建岗位失败 >>> %v", err.Error()))
-			zap.S().Error("创建岗位失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("创建岗位异常 >>> %v", err.Error()))
+			zap.S().Error("创建岗位异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -210,7 +210,7 @@ func (h *postHandler) Create(ctx *gin.Context) {
 
 // Import
 // @Summary 导入岗位
-// @Description 导入岗位信息
+// @Description 导入岗位
 // @Tags 系统管理/岗位管理
 // @Accept multipart/form-data
 // @Produce application/json
@@ -265,7 +265,7 @@ func (h *postHandler) Import(ctx *gin.Context) {
 
 // Delete
 // @Summary 删除岗位
-// @Description 删除指定id岗位信息
+// @Description 删除指定id岗位
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -284,15 +284,12 @@ func (h *postHandler) Delete(ctx *gin.Context) {
 
 	if err := h.svc.Delete(ctx, id); err != nil {
 		switch {
-		case errors.Is(err, serviceSystem.ErrPostNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位信息不存在", nil)
-			return
 		case errors.Is(err, serviceSystem.ErrPostHasUsers):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位下仍有用户，无法删除", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("删除岗位信息异常 >>> %v", err.Error()))
-			zap.S().Error("删除岗位信息异常 >>> ", zap.Error(err))
+			ctx.Set("internalError", fmt.Sprintf("删除岗位异常 >>> %v", err.Error()))
+			zap.S().Error("删除岗位异常 >>> ", zap.Error(err))
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -303,7 +300,7 @@ func (h *postHandler) Delete(ctx *gin.Context) {
 
 // BatchDelete
 // @Summary 批量删除岗位
-// @Description 批量删除岗位信息
+// @Description 批量删除岗位
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -322,8 +319,8 @@ func (h *postHandler) BatchDelete(ctx *gin.Context) {
 
 	err := h.svc.BatchDelete(ctx, ids)
 	if err != nil {
-		ctx.Set("internal", err.Error())
-		zap.L().Error("批量删除岗位异常", zap.Error(err))
+		ctx.Set("internalError", fmt.Sprintf("批量删除岗位异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除岗位异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -333,7 +330,7 @@ func (h *postHandler) BatchDelete(ctx *gin.Context) {
 
 // Update
 // @Summary 更新岗位
-// @Description 更新岗位信息
+// @Description 更新岗位
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -383,6 +380,13 @@ func (h *postHandler) Update(ctx *gin.Context) {
 		return
 	}
 
+	var deptId *string
+	if req.DeptID == "" {
+		deptId = nil
+	} else {
+		deptId = &req.DeptID
+	}
+
 	// 转换为领域模型
 	domain := domainSystem.Post{
 		Post: modelSystem.Post{
@@ -400,7 +404,7 @@ func (h *postHandler) Update(ctx *gin.Context) {
 			PostType:    req.PostType,
 			Level:       req.Level,
 			Description: req.Description,
-			DeptID:      req.DeptID,
+			DeptID:      deptId,
 		},
 	}
 
@@ -413,8 +417,8 @@ func (h *postHandler) Update(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新岗位信息失败 >>> %v", err.Error()))
-			zap.S().Error("更新岗位信息失败 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新岗位异常 >>> %v", err.Error()))
+			zap.S().Error("更新岗位异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -425,7 +429,7 @@ func (h *postHandler) Update(ctx *gin.Context) {
 
 // GetById
 // @Summary 获取岗位
-// @Description 获取指定id岗位信息
+// @Description 获取指定id岗位
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -445,11 +449,11 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, serviceSystem.ErrPostNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位信息不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "岗位不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取岗位信息失败 >>> %v", err.Error()))
-		zap.S().Error("获取岗位信息失败 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取岗位异常 >>> %v", err.Error()))
+		zap.S().Error("获取岗位异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -459,7 +463,7 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 
 // GetListPage
 // @Summary 获取岗位分页列表
-// @Description 获取岗位分页列表信息
+// @Description 获取岗位分页列表
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -471,7 +475,7 @@ func (h *postHandler) GetById(ctx *gin.Context) {
 // @Param status query bool false "状态" default(true)
 // @Param name query string false "岗位名称"
 // @Param code query string false "岗位编码"
-// @Param post_type query int false "岗位类型" default(0)
+// @Param post_type query int true "岗位类型" default(0)
 // @Param level query int true "岗位级别" default(0)
 // @Param dept_id query string true "所属部门ID"
 // @Success 200 {array} []domainSystem.Post
@@ -548,7 +552,7 @@ func (h *postHandler) GetListPage(ctx *gin.Context) {
 
 // GetListAll
 // @Summary 获取所有岗位
-// @Description 获取所有岗位列表信息
+// @Description 获取所有岗位列表
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/json
@@ -558,7 +562,7 @@ func (h *postHandler) GetListPage(ctx *gin.Context) {
 // @Param status query bool false "状态" default(true)
 // @Param name query string false "岗位名称"
 // @Param code query string false "岗位编码"
-// @Param post_type query int false "岗位类型" default(0)
+// @Param post_type query int true "岗位类型" default(0)
 // @Param level query int true "岗位级别" default(0)
 // @Param dept_id query string true "所属部门ID"
 // @Success 200 {array} []domainSystem.Post
@@ -622,8 +626,8 @@ func (h *postHandler) GetListAll(ctx *gin.Context) {
 }
 
 // Export
-// @Summary 导出岗位数据
-// @Description 导出岗位数据到Excel文件
+// @Summary 导出岗位
+// @Description 导出岗位到Excel文件
 // @Tags 系统管理/岗位管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
@@ -633,7 +637,7 @@ func (h *postHandler) GetListAll(ctx *gin.Context) {
 // @Param status query bool false "状态" default(true)
 // @Param name query string false "岗位名称"
 // @Param code query string false "岗位编码"
-// @Param post_type query int false "岗位类型" default(0)
+// @Param post_type query int true "岗位类型" default(0)
 // @Param level query int true "岗位级别" default(0)
 // @Param dept_id query string true "所属部门ID"
 // @Success 200 {file} file "Excel文件"
@@ -694,14 +698,14 @@ func (h *postHandler) Export(ctx *gin.Context) {
 	}
 
 	// 准备导出配置
-	filename := fmt.Sprintf("岗位信息导出_%s.xlsx", time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("岗位导出_%s.xlsx", time.Now().Format("20060102150405"))
 	cfg := excelutil.ExcelExportConfig{
-		SheetName:  "岗位信息",
+		SheetName:  "岗位",
 		FileName:   filename,
 		StreamMode: true,
 		Columns: []excelutil.ExcelColumn{
-			{Title: "岗位名称", Field: "Name", Width: 20},
-			{Title: "岗位编码", Field: "Code", Width: 20},
+			{Title: "岗位名称", Field: "Name", Width: 22},
+			{Title: "岗位编码", Field: "Code", Width: 22},
 			{
 				Title: "岗位类型",
 				Field: "PostType",
@@ -724,8 +728,8 @@ func (h *postHandler) Export(ctx *gin.Context) {
 					return str
 				},
 			},
-			{Title: "岗位描述", Field: "Description", Width: 25},
-			{Title: "部门名称", Field: "Dept.Name", Width: 20},
+			{Title: "岗位描述", Field: "Description", Width: 22},
+			{Title: "部门名称", Field: "Dept.Name", Width: 22},
 			{
 				Title: "状态",
 				Field: "Status",
@@ -752,8 +756,8 @@ func (h *postHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("导出岗位信息异常 >>> %v", err.Error()))
-		zap.S().Error("导出岗位信息异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("导出岗位异常 >>> %v", err.Error()))
+		zap.S().Error("导出岗位异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

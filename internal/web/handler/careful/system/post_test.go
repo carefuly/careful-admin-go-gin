@@ -242,7 +242,7 @@ func Test_postHandler_Create(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -268,17 +268,6 @@ func Test_postHandler_Delete(t *testing.T) {
 			id:       "1",
 			wantCode: http.StatusOK,
 			wantMsg:  "删除成功",
-		},
-		{
-			name: "岗位信息不存在",
-			mock: func(ctrl *gomock.Controller) serviceSystem.PostService {
-				postService := svcmocks.NewMockPostService(ctrl)
-				postService.EXPECT().Delete(gomock.Any(), "1").Return(serviceSystem.ErrPostNotFound)
-				return postService
-			},
-			id:       "1",
-			wantCode: http.StatusBadRequest,
-			wantMsg:  "岗位信息不存在",
 		},
 		{
 			name: "岗位下仍有用户，无法删除",
@@ -334,7 +323,7 @@ func Test_postHandler_Delete(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -596,7 +585,7 @@ func Test_postHandler_Update(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}
@@ -629,7 +618,7 @@ func Test_postHandler_GetById(t *testing.T) {
 			wantMsg:  "获取成功",
 		},
 		{
-			name: "岗位信息不存在",
+			name: "岗位不存在",
 			mock: func(ctrl *gomock.Controller) serviceSystem.PostService {
 				postService := svcmocks.NewMockPostService(ctrl)
 				postService.EXPECT().GetById(gomock.Any(), "1").
@@ -642,7 +631,7 @@ func Test_postHandler_GetById(t *testing.T) {
 			},
 			id:       "1",
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "岗位信息不存在",
+			wantMsg:  "岗位不存在",
 		},
 		{
 			name: "服务器异常",
@@ -692,7 +681,7 @@ func Test_postHandler_GetById(t *testing.T) {
 			var res response.Response
 			err = json.Unmarshal(resp.Body.Bytes(), &res)
 			require.NoError(t, err)
-			assert.Equal(t, tc.wantCode, resp.Code)
+			assert.Equal(t, tc.wantCode, res.Code)
 			assert.Equal(t, tc.wantMsg, res.Message)
 		})
 	}

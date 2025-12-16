@@ -78,21 +78,6 @@ func (mr *MockDictTypeRepositoryMockRecorder) Delete(ctx, id interface{}) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockDictTypeRepository)(nil).Delete), ctx, id)
 }
 
-// GetByDictNames mocks base method.
-func (m *MockDictTypeRepository) GetByDictNames(ctx context.Context, dictNames []string) ([]tools.DictType, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetByDictNames", ctx, dictNames)
-	ret0, _ := ret[0].([]tools.DictType)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetByDictNames indicates an expected call of GetByDictNames.
-func (mr *MockDictTypeRepositoryMockRecorder) GetByDictNames(ctx, dictNames interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByDictNames", reflect.TypeOf((*MockDictTypeRepository)(nil).GetByDictNames), ctx, dictNames)
-}
-
 // GetById mocks base method.
 func (m *MockDictTypeRepository) GetById(ctx context.Context, id string) (tools.DictType, error) {
 	m.ctrl.T.Helper()

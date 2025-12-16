@@ -85,24 +85,26 @@ func (svc *postService) Import(ctx context.Context, user domainSystem.User, list
 		// 数据清洗
 		name := _string.CleanInputString(list["岗位名称"])
 		code := _string.CleanInputString(list["岗位编码"])
+
 		// 字段校验
 		if name == "" {
 			list["导入状态"] = "400"
-			list["导入结果"] = "【岗位名称】不能为空"
+			list["导入结果"] = "❌【岗位名称】不能为空"
 			continue
 		}
 		if code == "" {
 			list["导入状态"] = "400"
-			list["导入结果"] = "【岗位编码】不能为空"
+			list["导入结果"] = "❌【岗位编码】不能为空"
 			continue
 		}
+
 		// 校验参数
 		typeValidValues := []string{"管理岗", "技术岗", "业务岗", "职能岗", "其他"}
 		converter := enumconv.NewEnumConverter(post.TypeMapping, post.TypeImportMapping, typeValidValues, "岗位类型")
 		postType, err := converter.ToEnum(list["岗位类型"])
 		if err != nil {
 			list["导入状态"] = "400"
-			list["导入结果"] = fmt.Sprintf("【岗位类型】转换失败：%s", err.Error())
+			list["导入结果"] = fmt.Sprintf("❌【岗位类型】转换失败：%s", err.Error())
 			continue
 		}
 		levelValidValues := []string{"高层", "中层", "基层", "一般员工"}
@@ -110,21 +112,23 @@ func (svc *postService) Import(ctx context.Context, user domainSystem.User, list
 		level, err := levelConverter.ToEnum(list["岗位级别"])
 		if err != nil {
 			list["导入状态"] = "400"
-			list["导入结果"] = fmt.Sprintf("【岗位级别】转换失败：%s", err.Error())
+			list["导入结果"] = fmt.Sprintf("❌【岗位级别】转换失败：%s", err.Error())
 			continue
 		}
+
 		// 唯一性校验
 		exists, err := svc.repo.CheckExistByCode(ctx, code, "")
 		if err != nil {
 			list["导入状态"] = "400"
-			list["导入结果"] = fmt.Sprintf("检查【岗位编码：%s】唯一性失败：%s", code, err.Error())
+			list["导入结果"] = fmt.Sprintf("❌检查【岗位编码：%s】唯一性失败：%s", code, err.Error())
 			continue
 		}
 		if exists {
 			list["导入状态"] = "400"
-			list["导入结果"] = fmt.Sprintf("岗位编码【%s】已存在", code)
+			list["导入结果"] = fmt.Sprintf("❌岗位编码【%s】已存在", code)
 			continue
 		}
+
 		// 处理所属部门
 		var deptId *string
 		dept, err := svc.deptRepo.GetByCode(ctx, list["部门编码"])
@@ -132,17 +136,18 @@ func (svc *postService) Import(ctx context.Context, user domainSystem.User, list
 			deptId = nil
 			if errors.Is(err, repositorySystem.ErrDeptNotFound) {
 				list["导入状态"] = "400"
-				list["导入结果"] = fmt.Sprintf("【部门编码】不存在%s", err.Error())
+				list["导入结果"] = fmt.Sprintf("❌【部门编码】不存在：%s", err.Error())
 			}
 			list["导入状态"] = "400"
-			list["导入结果"] = fmt.Sprintf("【部门编码】查询异常%s", err.Error())
+			list["导入结果"] = fmt.Sprintf("❌【部门编码】查询异常：%s", err.Error())
 		}
 		if dept.Id == "" {
 			deptId = nil
 			list["导入状态"] = "400"
-			list["导入结果"] = "【部门编码】不存在"
+			list["导入结果"] = "❌【部门编码】不存在"
 		}
 		deptId = &dept.Id
+
 		// 处理字段
 		var sort int
 		if list["排序"] == "" {
@@ -150,6 +155,7 @@ func (svc *postService) Import(ctx context.Context, user domainSystem.User, list
 		} else {
 			sort, _ = strconv.Atoi(list["排序"])
 		}
+
 		// 构建领域模型
 		domain := domainSystem.Post{
 			Post: modelSystem.Post{
