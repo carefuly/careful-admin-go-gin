@@ -27,6 +27,7 @@ func initSystem(db *gorm.DB) {
 	system.NewMenu().AutoMigrate(db)       // 菜单表
 	system.NewMenuButton().AutoMigrate(db) // 菜单按钮表
 	system.NewPost().AutoMigrate(db)       // 岗位表
+	system.NewRole().AutoMigrate(db)       // 角色表
 	system.NewUser().AutoMigrate(db)       // 用户表
 }
 
