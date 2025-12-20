@@ -270,13 +270,13 @@ func (svc *deptService) GetListTree(ctx context.Context, filters domainSystem.De
 		return nil, err
 	}
 
-	// 构建树
-	deptMap := make(map[string]*DeptTree)
-	var roots []DeptTree
-
 	if len(list) == 0 {
 		return []DeptTree{}, nil
 	}
+
+	// 构建树
+	deptMap := make(map[string]*DeptTree)
+	var roots []DeptTree
 
 	// 第一遍遍历，创建所有节点
 	for _, dept := range list {

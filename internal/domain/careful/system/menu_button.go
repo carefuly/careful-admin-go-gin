@@ -26,12 +26,12 @@ type MenuButton struct {
 type MenuButtonFilter struct {
 	filters.Filters
 	filters.Pagination
-	Status   bool        `json:"status"`    // 状态
-	Title    string      `json:"title"`     // 按钮名称
-	AuthMark string      `json:"auth_mark"` // 按钮权限值
-	Method   menu.Method `json:"method"`    // 方法类型
-	Api      string      `json:"api"`       // 接口地址
-	MenuID   string      `json:"menu_id"`   // 关联菜单
+	Status   bool        `json:"status"`   // 状态
+	Title    string      `json:"title"`    // 按钮名称
+	AuthMark string      `json:"authMark"` // 按钮权限值
+	Method   menu.Method `json:"method"`   // 方法类型
+	Api      string      `json:"api"`      // 接口地址
+	MenuID   string      `json:"menu_id"`  // 关联菜单
 }
 
 func (f *MenuButtonFilter) QueryFilter(ctx context.Context, query *gorm.DB) *gorm.DB {

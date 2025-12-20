@@ -15,7 +15,7 @@ const (
 	MethodPOST                     // POST
 	MethodPUT                      // PUT
 	MethodDELETE                   // DELETE
-	MethodPATCH                    // DELETE
+	MethodPATCH                    // PATCH
 )
 
 // MethodMapping 接口请求方法映射

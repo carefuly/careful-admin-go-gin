@@ -653,7 +653,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "批量删除菜单信息",
+                "description": "批量删除菜单",
                 "consumes": [
                     "application/json"
                 ],
@@ -704,7 +704,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "创建菜单信息",
+                "description": "创建菜单",
                 "consumes": [
                     "application/json"
                 ],
@@ -752,7 +752,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "删除指定id菜单信息",
+                "description": "删除指定id菜单",
                 "consumes": [
                     "application/json"
                 ],
@@ -798,7 +798,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导出菜单信息到Excel文件",
+                "description": "导出菜单到Excel文件",
                 "consumes": [
                     "application/json"
                 ],
@@ -831,7 +831,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "菜单标题",
+                        "description": "路由标题",
                         "name": "title",
                         "in": "query"
                     }
@@ -862,7 +862,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取指定id菜单信息",
+                "description": "获取指定id菜单",
                 "consumes": [
                     "application/json"
                 ],
@@ -908,7 +908,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取所有菜单列表信息",
+                "description": "获取所有菜单列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -918,7 +918,7 @@ const docTemplate = `{
                 "tags": [
                     "系统管理/菜单管理"
                 ],
-                "summary": "获取所有菜单",
+                "summary": "获取所有菜单列表",
                 "parameters": [
                     {
                         "type": "string",
@@ -941,7 +941,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "菜单标题",
+                        "description": "路由标题",
                         "name": "title",
                         "in": "query"
                     }
@@ -978,7 +978,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取菜单路由树形结构",
+                "description": "获取菜单路由",
                 "consumes": [
                     "application/json"
                 ],
@@ -988,7 +988,7 @@ const docTemplate = `{
                 "tags": [
                     "系统管理/菜单管理"
                 ],
-                "summary": "获取菜单路由树形结构",
+                "summary": "获取菜单路由",
                 "parameters": [
                     {
                         "type": "string",
@@ -1007,6 +1007,76 @@ const docTemplate = `{
                         "default": true,
                         "description": "状态",
                         "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "路由标题",
+                        "name": "title",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menu/listTree": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取菜单树",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单管理"
+                ],
+                "summary": "获取菜单树",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "路由标题",
+                        "name": "title",
                         "in": "query"
                     }
                 ],
@@ -1036,7 +1106,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "更新菜单信息",
+                "description": "更新菜单",
                 "consumes": [
                     "application/json"
                 ],
@@ -1084,7 +1154,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "创建菜单按钮信息",
+                "description": "创建菜单按钮",
                 "consumes": [
                     "application/json"
                 ],
@@ -1132,7 +1202,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "批量删除菜单按钮信息",
+                "description": "批量删除菜单按钮",
                 "consumes": [
                     "application/json"
                 ],
@@ -1183,7 +1253,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "删除指定id菜单按钮信息",
+                "description": "删除指定id菜单按钮",
                 "consumes": [
                     "application/json"
                 ],
@@ -1219,6 +1289,256 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/menuButton/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id菜单按钮",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单按钮管理"
+                ],
+                "summary": "获取菜单按钮",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.MenuButton"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menuButton/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有菜单按钮",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单按钮管理"
+                ],
+                "summary": "获取所有菜单按钮",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按钮名称",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按钮权限值",
+                        "name": "authMark",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "方法类型",
+                        "name": "method",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "接口地址",
+                        "name": "api",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联菜单ID",
+                        "name": "menu_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.MenuButton"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/menuButton/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取菜单按钮分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/菜单按钮管理"
+                ],
+                "summary": "获取菜单按钮分页列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按钮名称",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "按钮权限值",
+                        "name": "authMark",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "方法类型",
+                        "name": "method",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "接口地址",
+                        "name": "api",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "关联菜单ID",
+                        "name": "menu_id",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.MenuButtonListPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/menuButton/update": {
             "put": {
                 "security": [
@@ -1229,7 +1549,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "更新菜单按钮信息",
+                "description": "更新菜单按钮",
                 "consumes": [
                     "application/json"
                 ],
@@ -1277,7 +1597,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "批量删除岗位信息",
+                "description": "批量删除岗位",
                 "consumes": [
                     "application/json"
                 ],
@@ -1376,7 +1696,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "删除指定id岗位信息",
+                "description": "删除指定id岗位",
                 "consumes": [
                     "application/json"
                 ],
@@ -1422,7 +1742,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导出岗位数据到Excel文件",
+                "description": "导出岗位到Excel文件",
                 "consumes": [
                     "application/json"
                 ],
@@ -1432,7 +1752,7 @@ const docTemplate = `{
                 "tags": [
                     "系统管理/岗位管理"
                 ],
-                "summary": "导出岗位数据",
+                "summary": "导出岗位",
                 "parameters": [
                     {
                         "type": "string",
@@ -1470,7 +1790,8 @@ const docTemplate = `{
                         "default": 0,
                         "description": "岗位类型",
                         "name": "post_type",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
@@ -1514,7 +1835,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取指定id岗位信息",
+                "description": "获取指定id岗位",
                 "consumes": [
                     "application/json"
                 ],
@@ -1560,7 +1881,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导入岗位信息",
+                "description": "导入岗位",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -1606,7 +1927,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取所有岗位列表信息",
+                "description": "获取所有岗位列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -1654,7 +1975,8 @@ const docTemplate = `{
                         "default": 0,
                         "description": "岗位类型",
                         "name": "post_type",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
@@ -1704,7 +2026,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "获取岗位分页列表信息",
+                "description": "获取岗位分页列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -1768,7 +2090,8 @@ const docTemplate = `{
                         "default": 0,
                         "description": "岗位类型",
                         "name": "post_type",
-                        "in": "query"
+                        "in": "query",
+                        "required": true
                     },
                     {
                         "type": "integer",
@@ -1812,7 +2135,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "更新岗位信息",
+                "description": "更新岗位",
                 "consumes": [
                     "application/json"
                 ],
@@ -3249,18 +3572,11 @@ const docTemplate = `{
                     "description": "数据归属部门",
                     "type": "string"
                 },
-                "children": {
-                    "description": "子菜单",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Menu"
-                    }
-                },
                 "component": {
                     "description": "组件地址",
                     "type": "string"
                 },
-                "createTime": {
+                "create_time": {
                     "description": "创建时间",
                     "type": "string"
                 },
@@ -3364,6 +3680,83 @@ const docTemplate = `{
                     "description": "路由标题",
                     "type": "string"
                 },
+                "update_time": {
+                    "description": "更新时间",
+                    "type": "string"
+                }
+            }
+        },
+        "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.MenuButton": {
+            "type": "object",
+            "properties": {
+                "api": {
+                    "description": "接口地址",
+                    "type": "string"
+                },
+                "authMark": {
+                    "description": "按钮权限值",
+                    "type": "string"
+                },
+                "belong_dept": {
+                    "description": "数据归属部门",
+                    "type": "string"
+                },
+                "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "creator": {
+                    "description": "创建人",
+                    "type": "string"
+                },
+                "id": {
+                    "description": "主键ID(自增)",
+                    "type": "string"
+                },
+                "menu": {
+                    "description": "菜单",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu"
+                        }
+                    ]
+                },
+                "menu_id": {
+                    "description": "所属菜单",
+                    "type": "string"
+                },
+                "method": {
+                    "description": "方法类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/menu.Method"
+                        }
+                    ]
+                },
+                "modifier": {
+                    "description": "修改人",
+                    "type": "string"
+                },
+                "remark": {
+                    "description": "备注",
+                    "type": "string"
+                },
+                "sort": {
+                    "description": "显示排序",
+                    "type": "integer"
+                },
+                "status": {
+                    "description": "状态",
+                    "type": "boolean"
+                },
+                "timestamp": {
+                    "description": "版本号(时间戳)",
+                    "type": "integer"
+                },
+                "title": {
+                    "description": "按钮名称",
+                    "type": "string"
+                },
                 "updateTime": {
                     "description": "更新时间",
                     "type": "string"
@@ -3373,14 +3766,6 @@ const docTemplate = `{
         "github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.Post": {
             "type": "object",
             "properties": {
-                "Dept": {
-                    "description": "所属部门",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
-                        }
-                    ]
-                },
                 "belong_dept": {
                     "description": "数据归属部门",
                     "type": "string"
@@ -3396,6 +3781,14 @@ const docTemplate = `{
                 "creator": {
                     "description": "创建人",
                     "type": "string"
+                },
+                "dept": {
+                    "description": "所属部门",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
+                        }
+                    ]
                 },
                 "dept_id": {
                     "description": "所属部门",
@@ -3863,13 +4256,6 @@ const docTemplate = `{
                     "description": "数据归属部门",
                     "type": "string"
                 },
-                "children": {
-                    "description": "子菜单列表",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu"
-                    }
-                },
                 "component": {
                     "description": "组件地址",
                     "type": "string"
@@ -3979,14 +4365,6 @@ const docTemplate = `{
         "github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post": {
             "type": "object",
             "properties": {
-                "Dept": {
-                    "description": "所属部门",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
-                        }
-                    ]
-                },
                 "belong_dept": {
                     "description": "数据归属部门",
                     "type": "string"
@@ -3998,6 +4376,14 @@ const docTemplate = `{
                 "creator": {
                     "description": "创建人",
                     "type": "string"
+                },
+                "dept": {
+                    "description": "所属部门",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
+                        }
+                    ]
                 },
                 "dept_id": {
                     "description": "所属部门",
@@ -4405,7 +4791,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "api",
-                "auth_mark",
+                "authMark",
                 "menu_id",
                 "method",
                 "title"
@@ -4416,8 +4802,8 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255
                 },
-                "auth_mark": {
-                    "description": "权限值",
+                "authMark": {
+                    "description": "按钮权限值",
                     "type": "string",
                     "maxLength": 64
                 },
@@ -4458,130 +4844,7 @@ const docTemplate = `{
             }
         },
         "system.CreateMenuRequest": {
-            "type": "object",
-            "required": [
-                "component",
-                "name",
-                "path",
-                "title"
-            ],
-            "properties": {
-                "active_path": {
-                    "description": "激活菜单路径",
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "auth_mark": {
-                    "description": "权限标识",
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "component": {
-                    "description": "组件地址",
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "fixed_tab": {
-                    "description": "是否固定标签页",
-                    "type": "boolean",
-                    "default": false
-                },
-                "icon": {
-                    "description": "路由图标",
-                    "type": "string",
-                    "maxLength": 64
-                },
-                "is_auth_button": {
-                    "description": "是否为权限按钮行",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_create_button": {
-                    "description": "是否自动创建按钮",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_first_level": {
-                    "description": "是否为一级菜单",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_full_page": {
-                    "description": "是否为全屏页面",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_hide": {
-                    "description": "是否在菜单中隐藏",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_hide_tab": {
-                    "description": "是否在标签页中隐藏",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_iframe": {
-                    "description": "是否为iframe",
-                    "type": "boolean",
-                    "default": false
-                },
-                "keep_alive": {
-                    "description": "是否缓存页面",
-                    "type": "boolean",
-                    "default": false
-                },
-                "link": {
-                    "description": "外部链接【不填写默认没有外链】",
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "name": {
-                    "description": "菜单名称",
-                    "type": "string",
-                    "maxLength": 64
-                },
-                "parent_id": {
-                    "description": "上级菜单",
-                    "type": "string",
-                    "maxLength": 110
-                },
-                "path": {
-                    "description": "路由地址",
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "remark": {
-                    "description": "备注",
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "show_badge": {
-                    "description": "是否显示徽章",
-                    "type": "boolean",
-                    "default": false
-                },
-                "show_text_badge": {
-                    "description": "文本徽章",
-                    "type": "string",
-                    "maxLength": 64
-                },
-                "sort": {
-                    "description": "排序",
-                    "type": "integer",
-                    "default": 1
-                },
-                "status": {
-                    "description": "状态【true-启用 false-停用】",
-                    "type": "boolean",
-                    "default": true
-                },
-                "title": {
-                    "description": "路由标题",
-                    "type": "string",
-                    "maxLength": 64
-                }
-            }
+            "type": "object"
         },
         "system.CreatePostRequest": {
             "type": "object",
@@ -4748,6 +5011,30 @@ const docTemplate = `{
                 }
             }
         },
+        "system.MenuButtonListPageResponse": {
+            "type": "object",
+            "properties": {
+                "list": {
+                    "description": "列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.MenuButton"
+                    }
+                },
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "description": "每页数量",
+                    "type": "integer"
+                },
+                "total": {
+                    "description": "总数",
+                    "type": "integer"
+                }
+            }
+        },
         "system.PostListPageResponse": {
             "type": "object",
             "properties": {
@@ -4853,7 +5140,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "api",
-                "auth_mark",
+                "authMark",
                 "id",
                 "menu_id",
                 "method",
@@ -4865,8 +5152,8 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255
                 },
-                "auth_mark": {
-                    "description": "权限值",
+                "authMark": {
+                    "description": "按钮权限值",
                     "type": "string",
                     "maxLength": 64
                 },
@@ -4924,13 +5211,8 @@ const docTemplate = `{
                 "title"
             ],
             "properties": {
-                "active_path": {
+                "activePath": {
                     "description": "激活菜单路径",
-                    "type": "string",
-                    "maxLength": 128
-                },
-                "auth_mark": {
-                    "description": "权限标识",
                     "type": "string",
                     "maxLength": 128
                 },
@@ -4939,7 +5221,7 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 128
                 },
-                "fixed_tab": {
+                "fixedTab": {
                     "description": "是否固定标签页",
                     "type": "boolean",
                     "default": false
@@ -4953,42 +5235,27 @@ const docTemplate = `{
                     "description": "主键ID",
                     "type": "string"
                 },
-                "is_auth_button": {
-                    "description": "是否为权限按钮行",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_create_button": {
-                    "description": "是否自动创建按钮",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_first_level": {
-                    "description": "是否为一级菜单",
-                    "type": "boolean",
-                    "default": false
-                },
-                "is_full_page": {
+                "isFullPage": {
                     "description": "是否为全屏页面",
                     "type": "boolean",
                     "default": false
                 },
-                "is_hide": {
+                "isHide": {
                     "description": "是否在菜单中隐藏",
                     "type": "boolean",
                     "default": false
                 },
-                "is_hide_tab": {
+                "isHideTab": {
                     "description": "是否在标签页中隐藏",
                     "type": "boolean",
                     "default": false
                 },
-                "is_iframe": {
+                "isIframe": {
                     "description": "是否为iframe",
                     "type": "boolean",
                     "default": false
                 },
-                "keep_alive": {
+                "keepAlive": {
                     "description": "是否缓存页面",
                     "type": "boolean",
                     "default": false
@@ -5018,12 +5285,12 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255
                 },
-                "show_badge": {
+                "showBadge": {
                     "description": "是否显示徽章",
                     "type": "boolean",
                     "default": false
                 },
-                "show_text_badge": {
+                "showTextBadge": {
                     "description": "文本徽章",
                     "type": "string",
                     "maxLength": 64

@@ -18,12 +18,8 @@ import (
 type Menu struct {
 	system.Menu
 
-	Children   []Menu `json:"children"`   // 子菜单
-	CreateTime string `json:"createTime"` // 创建时间
-	UpdateTime string `json:"updateTime"` // 更新时间
-
-	// Meta       map[string]any `json:"meta,omitempty"` // 元信息
-	// ParentId   string         `json:"parent_id"`  // 上级菜单
+	CreateTime string `json:"create_time"` // 创建时间
+	UpdateTime string `json:"update_time"` // 更新时间
 }
 
 type MenuFilter struct {

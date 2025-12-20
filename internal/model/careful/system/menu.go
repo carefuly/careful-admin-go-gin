@@ -40,7 +40,6 @@ type Menu struct {
 	// 上级菜单
 	ParentID *string `gorm:"size:110;uniqueIndex:uni_name_path_title_parent;column:parent_id;comment:上级菜单ID" json:"parent_id"` // 上级菜单ID
 	Parent   *Menu   `gorm:"foreignKey:ParentID" json:"parent"`                                                                // 上级菜单
-	Children []*Menu `gorm:"foreignKey:ParentID" json:"children,omitempty"`                                                    // 子菜单列表
 }
 
 func NewMenu() *Menu {

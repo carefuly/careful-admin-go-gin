@@ -30,58 +30,51 @@ import (
 
 // CreateMenuRequest 创建
 type CreateMenuRequest struct {
-	Status         bool    `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
-	Name           string  `json:"name" binding:"required,max=64" default:""`             // 菜单名称
-	Path           string  `json:"path" binding:"required,max=128" default:""`            // 路由地址
-	Component      string  `json:"component" binding:"required,max=128" default:""`       // 组件地址
-	Title          string  `json:"title" binding:"required,max=64" default:""`            // 路由标题
-	Icon           string  `json:"icon" binding:"omitempty,max=64" default:""`            // 路由图标
-	ShowBadge      bool    `json:"show_badge" binding:"omitempty" default:"false"`        // 是否显示徽章
-	ShowTextBadge  string  `json:"show_text_badge" binding:"omitempty,max=64" default:""` // 文本徽章
-	IsHide         bool    `json:"is_hide" binding:"omitempty" default:"false"`           // 是否在菜单中隐藏
-	IsHideTab      bool    `json:"is_hide_tab" binding:"omitempty" default:"false"`       // 是否在标签页中隐藏
-	Link           string  `json:"link" binding:"omitempty,max=255" default:""`           // 外部链接【不填写默认没有外链】
-	IsIframe       bool    `json:"is_iframe" binding:"omitempty" default:"false"`         // 是否为iframe
-	KeepAlive      bool    `json:"keep_alive" binding:"omitempty" default:"false"`        // 是否缓存页面
-	IsFirstLevel   bool    `json:"is_first_level" binding:"omitempty" default:"false"`    // 是否为一级菜单
-	FixedTab       bool    `json:"fixed_tab" binding:"omitempty" default:"false"`         // 是否固定标签页
-	ActivePath     string  `json:"active_path" binding:"omitempty,max=128" default:""`    // 激活菜单路径
-	IsFullPage     bool    `json:"is_full_page" binding:"omitempty" default:"false"`      // 是否为全屏页面
-	IsAuthButton   bool    `json:"is_auth_button" binding:"omitempty" default:"false"`    // 是否为权限按钮行
-	AuthMark       string  `json:"auth_mark" binding:"omitempty,max=128" default:""`      // 权限标识
-	IsCreateButton bool    `json:"is_create_button" binding:"omitempty" default:"false"`  // 是否自动创建按钮
-	ParentID       *string `json:"parent_id" binding:"omitempty,max=110" default:""`      // 上级菜单
-	Sort           int     `json:"sort" binding:"omitempty" default:"1"`                  // 排序
-	Remark         string  `json:"remark" binding:"omitempty,max=255" default:""`         // 备注
+	Status        bool     `json:"status" binding:"omitempty" default:"true"`           // 状态【true-启用 false-停用】
+	Name          string   `json:"name" binding:"required,max=64" default:""`           // 菜单名称
+	Path          string   `json:"path" binding:"required,max=128" default:""`          // 路由地址
+	Component     string   `json:"component" binding:"required,max=128" default:""`     // 组件地址
+	Title         string   `json:"title" binding:"required,max=64" default:""`          // 路由标题
+	Icon          string   `json:"icon" binding:"omitempty,max=64" default:""`          // 路由图标
+	ShowBadge     bool     `json:"showBadge" binding:"omitempty" default:"false"`       // 是否显示徽章
+	ShowTextBadge string   `json:"showTextBadge" binding:"omitempty,max=64" default:""` // 文本徽章
+	IsHide        bool     `json:"isHide" binding:"omitempty" default:"false"`          // 是否在菜单中隐藏
+	IsHideTab     bool     `json:"isHideTab" binding:"omitempty" default:"false"`       // 是否在标签页中隐藏
+	Link          string   `json:"link" binding:"omitempty,max=255" default:""`         // 外部链接【不填写默认没有外链】
+	IsIframe      bool     `json:"isIframe" binding:"omitempty" default:"false"`        // 是否为iframe
+	KeepAlive     bool     `json:"keepAlive" binding:"omitempty" default:"false"`       // 是否缓存页面
+	FixedTab      bool     `json:"fixedTab" binding:"omitempty" default:"false"`        // 是否固定标签页
+	ActivePath    string   `json:"activePath" binding:"omitempty,max=128" default:""`   // 激活菜单路径
+	IsFullPage    bool     `json:"isFullPage" binding:"omitempty" default:"false"`      // 是否为全屏页面
+	MenuButton    []string `json:"menuButton" binding:"omitempty" default:"[]"`         // 菜单按钮
+	ParentID      *string  `json:"parent_id" binding:"omitempty,max=110" default:""`    // 上级菜单
+	Sort          int      `json:"sort" binding:"omitempty" default:"1"`                // 排序
+	Remark        string   `json:"remark" binding:"omitempty,max=255" default:""`       // 备注
 }
 
 // UpdateMenuRequest 更新
 type UpdateMenuRequest struct {
-	Id             string  `json:"id" binding:"required" default:""`                      // 主键ID
-	Status         bool    `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
-	Name           string  `json:"name" binding:"required,max=64" default:""`             // 菜单名称
-	Path           string  `json:"path" binding:"required,max=128" default:""`            // 路由地址
-	Component      string  `json:"component" binding:"required,max=128" default:""`       // 组件地址
-	Title          string  `json:"title" binding:"required,max=64" default:""`            // 路由标题
-	Icon           string  `json:"icon" binding:"omitempty,max=64" default:""`            // 路由图标
-	ShowBadge      bool    `json:"show_badge" binding:"omitempty" default:"false"`        // 是否显示徽章
-	ShowTextBadge  string  `json:"show_text_badge" binding:"omitempty,max=64" default:""` // 文本徽章
-	IsHide         bool    `json:"is_hide" binding:"omitempty" default:"false"`           // 是否在菜单中隐藏
-	IsHideTab      bool    `json:"is_hide_tab" binding:"omitempty" default:"false"`       // 是否在标签页中隐藏
-	Link           string  `json:"link" binding:"omitempty,max=255" default:""`           // 外部链接【不填写默认没有外链】
-	IsIframe       bool    `json:"is_iframe" binding:"omitempty" default:"false"`         // 是否为iframe
-	KeepAlive      bool    `json:"keep_alive" binding:"omitempty" default:"false"`        // 是否缓存页面
-	IsFirstLevel   bool    `json:"is_first_level" binding:"omitempty" default:"false"`    // 是否为一级菜单
-	FixedTab       bool    `json:"fixed_tab" binding:"omitempty" default:"false"`         // 是否固定标签页
-	ActivePath     string  `json:"active_path" binding:"omitempty,max=128" default:""`    // 激活菜单路径
-	IsFullPage     bool    `json:"is_full_page" binding:"omitempty" default:"false"`      // 是否为全屏页面
-	IsAuthButton   bool    `json:"is_auth_button" binding:"omitempty" default:"false"`    // 是否为权限按钮行
-	AuthMark       string  `json:"auth_mark" binding:"omitempty,max=128" default:""`      // 权限标识
-	IsCreateButton bool    `json:"is_create_button" binding:"omitempty" default:"false"`  // 是否自动创建按钮
-	ParentID       *string `json:"parent_id" binding:"omitempty,max=110" default:""`      // 上级菜单
-	Sort           int     `json:"sort" binding:"omitempty" default:"1"`                  // 排序
-	Timestamp      int64   `json:"timestamp" binding:"omitempty"`                         // 版本
-	Remark         string  `json:"remark" binding:"omitempty,max=255"`                    // 备注
+	Id            string  `json:"id" binding:"required" default:""`                    // 主键ID
+	Status        bool    `json:"status" binding:"omitempty" default:"true"`           // 状态【true-启用 false-停用】
+	Name          string  `json:"name" binding:"required,max=64" default:""`           // 菜单名称
+	Path          string  `json:"path" binding:"required,max=128" default:""`          // 路由地址
+	Component     string  `json:"component" binding:"required,max=128" default:""`     // 组件地址
+	Title         string  `json:"title" binding:"required,max=64" default:""`          // 路由标题
+	Icon          string  `json:"icon" binding:"omitempty,max=64" default:""`          // 路由图标
+	ShowBadge     bool    `json:"showBadge" binding:"omitempty" default:"false"`       // 是否显示徽章
+	ShowTextBadge string  `json:"showTextBadge" binding:"omitempty,max=64" default:""` // 文本徽章
+	IsHide        bool    `json:"isHide" binding:"omitempty" default:"false"`          // 是否在菜单中隐藏
+	IsHideTab     bool    `json:"isHideTab" binding:"omitempty" default:"false"`       // 是否在标签页中隐藏
+	Link          string  `json:"link" binding:"omitempty,max=255" default:""`         // 外部链接【不填写默认没有外链】
+	IsIframe      bool    `json:"isIframe" binding:"omitempty" default:"false"`        // 是否为iframe
+	KeepAlive     bool    `json:"keepAlive" binding:"omitempty" default:"false"`       // 是否缓存页面
+	FixedTab      bool    `json:"fixedTab" binding:"omitempty" default:"false"`        // 是否固定标签页
+	ActivePath    string  `json:"activePath" binding:"omitempty,max=128" default:""`   // 激活菜单路径
+	IsFullPage    bool    `json:"isFullPage" binding:"omitempty" default:"false"`      // 是否为全屏页面
+	ParentID      *string `json:"parent_id" binding:"omitempty,max=110" default:""`    // 上级菜单
+	Sort          int     `json:"sort" binding:"omitempty" default:"1"`                // 排序
+	Timestamp     int64   `json:"timestamp" binding:"omitempty"`                       // 版本
+	Remark        string  `json:"remark" binding:"omitempty,max=255"`                  // 备注
 }
 
 // MenuListPageResponse 列表分页响应
@@ -100,9 +93,9 @@ type MenuHandler interface {
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
 	GetMenuRouteTree(ctx *gin.Context)
+	GetMenuTree(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 	Export(ctx *gin.Context)
-	// GetMenuTree(ctx *gin.Context)
 }
 
 type menuHandler struct {
@@ -128,14 +121,14 @@ func (h *menuHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
 	base.GET("/listRouteTree", h.GetMenuRouteTree)
+	base.GET("/listTree", h.GetMenuTree)
 	base.GET("/listAll", h.GetListAll)
 	base.GET("/export", h.Export)
-	// base.GET("/listTree", h.GetMenuTree)
 }
 
 // Create
 // @Summary 创建菜单
-// @Description 创建菜单信息
+// @Description 创建菜单
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -191,17 +184,14 @@ func (h *menuHandler) Create(ctx *gin.Context) {
 			Link:          req.Link,
 			IsIframe:      req.IsIframe,
 			KeepAlive:     req.KeepAlive,
-			IsFirstLevel:  req.IsFirstLevel,
 			FixedTab:      req.FixedTab,
 			ActivePath:    req.ActivePath,
 			IsFullPage:    req.IsFullPage,
-			IsAuthButton:  req.IsAuthButton,
-			AuthMark:      req.AuthMark,
 			ParentID:      req.ParentID,
 		},
 	}
 
-	if err := h.svc.Create(ctx, domain, req.IsCreateButton, user); err != nil {
+	if err := h.svc.Create(ctx, domain, req.MenuButton, user); err != nil {
 		switch {
 		case errors.Is(err, serviceSystem.ErrMenuDuplicate):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "同级别下已存在相同的菜单信息", nil)
@@ -225,7 +215,7 @@ func (h *menuHandler) Create(ctx *gin.Context) {
 
 // Delete
 // @Summary 删除菜单
-// @Description 删除指定id菜单信息
+// @Description 删除指定id菜单
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -258,7 +248,7 @@ func (h *menuHandler) Delete(ctx *gin.Context) {
 
 // BatchDelete
 // @Summary 批量删除菜单
-// @Description 批量删除菜单信息
+// @Description 批量删除菜单
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -288,7 +278,7 @@ func (h *menuHandler) BatchDelete(ctx *gin.Context) {
 
 // Update
 // @Summary 更新菜单
-// @Description 更新菜单信息
+// @Description 更新菜单
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -345,12 +335,9 @@ func (h *menuHandler) Update(ctx *gin.Context) {
 			Link:          req.Link,
 			IsIframe:      req.IsIframe,
 			KeepAlive:     req.KeepAlive,
-			IsFirstLevel:  req.IsFirstLevel,
 			FixedTab:      req.FixedTab,
 			ActivePath:    req.ActivePath,
 			IsFullPage:    req.IsFullPage,
-			IsAuthButton:  req.IsAuthButton,
-			AuthMark:      req.AuthMark,
 			ParentID:      req.ParentID,
 		},
 	}
@@ -382,7 +369,7 @@ func (h *menuHandler) Update(ctx *gin.Context) {
 
 // GetById
 // @Summary 获取菜单
-// @Description 获取指定id菜单信息
+// @Description 获取指定id菜单
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -415,8 +402,8 @@ func (h *menuHandler) GetById(ctx *gin.Context) {
 }
 
 // GetMenuRouteTree
-// @Summary 获取菜单路由树形结构
-// @Description 获取菜单路由树形结构
+// @Summary 获取菜单路由
+// @Description 获取菜单路由
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -424,6 +411,7 @@ func (h *menuHandler) GetById(ctx *gin.Context) {
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
+// @Param title query string false "路由标题"
 // @Success 200 {object} response.Response
 // @Failure 400 {object} response.Response
 // @Router /v1/system/menu/listRouteTree [get]
@@ -453,6 +441,8 @@ func (h *menuHandler) GetMenuRouteTree(ctx *gin.Context) {
 		status = true
 	}
 
+	title := ctx.DefaultQuery("title", "")
+
 	filter := domainSystem.MenuFilter{
 		Filters: filters.Filters{
 			Creator:    creator,
@@ -460,6 +450,7 @@ func (h *menuHandler) GetMenuRouteTree(ctx *gin.Context) {
 			BelongDept: *user.DeptID,
 		},
 		Status: status,
+		Title:  title,
 	}
 
 	list, err := h.svc.GetMenuRouteTree(ctx, filter)
@@ -473,9 +464,9 @@ func (h *menuHandler) GetMenuRouteTree(ctx *gin.Context) {
 	response.NewResponse().Success(ctx, "查询成功", list)
 }
 
-// GetListAll
-// @Summary 获取所有菜单
-// @Description 获取所有菜单列表信息
+// GetMenuTree
+// @Summary 获取菜单树
+// @Description 获取菜单树
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/json
@@ -483,7 +474,70 @@ func (h *menuHandler) GetMenuRouteTree(ctx *gin.Context) {
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param title query string false "菜单标题"
+// @Param title query string false "路由标题"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/system/menu/listTree [get]
+// @Security LoginToken
+func (h *menuHandler) GetMenuTree(ctx *gin.Context) {
+	// 从上下文中获取登录信息
+	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
+	if !ok {
+		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserID)))
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	user, err := h.userSvc.GetById(ctx, claims.UserID)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取用户信息异常 >>> %v", err.Error()))
+		zap.S().Error("获取用户信息异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	creator := ctx.DefaultQuery("creator", "")
+	modifier := ctx.DefaultQuery("modifier", "")
+	statusStr := ctx.DefaultQuery("status", "true")
+	status, err := strconv.ParseBool(statusStr)
+	if err != nil { // 空字符串、非法值都会触发错误，此时用默认值
+		status = true
+	}
+
+	title := ctx.DefaultQuery("title", "")
+
+	filter := domainSystem.MenuFilter{
+		Filters: filters.Filters{
+			Creator:    creator,
+			Modifier:   modifier,
+			BelongDept: *user.DeptID,
+		},
+		Status: status,
+		Title:  title,
+	}
+
+	list, err := h.svc.GetListTree(ctx, filter)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取菜单树异常 >>> %v", err.Error()))
+		zap.S().Error("获取菜单树异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().Success(ctx, "查询成功", list)
+}
+
+// GetListAll
+// @Summary 获取所有菜单列表
+// @Description 获取所有菜单列表
+// @Tags 系统管理/菜单管理
+// @Accept application/json
+// @Produce application/json
+// @Security BearerAuth
+// @Param creator query string false "创建人"
+// @Param modifier query string false "修改人"
+// @Param status query bool false "状态" default(true)
+// @Param title query string false "路由标题"
 // @Success 200 {array} []domainSystem.Menu
 // @Failure 400 {object} response.Response
 // @Router /v1/system/menu/listAll [get]
@@ -538,7 +592,7 @@ func (h *menuHandler) GetListAll(ctx *gin.Context) {
 
 // Export
 // @Summary 导出菜单
-// @Description 导出菜单信息到Excel文件
+// @Description 导出菜单到Excel文件
 // @Tags 系统管理/菜单管理
 // @Accept application/json
 // @Produce application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
@@ -546,7 +600,7 @@ func (h *menuHandler) GetListAll(ctx *gin.Context) {
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
 // @Param status query bool false "状态" default(true)
-// @Param title query string false "菜单标题"
+// @Param title query string false "路由标题"
 // @Success 200 {file} file "Excel文件"
 // @Failure 500 {object} response.Response
 // @Router /v1/system/menu/export [get]
@@ -750,8 +804,8 @@ func (h *menuHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("导出菜单信息异常 >>> %v", err.Error()))
-		zap.S().Error("导出菜单信息异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("导出菜单异常 >>> %v", err.Error()))
+		zap.S().Error("导出菜单异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -767,63 +821,3 @@ func (h *menuHandler) Export(ctx *gin.Context) {
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "生成Excel失败", nil)
 	}
 }
-
-// --------------------------------------------------
-
-// // GetMenuTree 获取菜单树形结构
-// // @Summary 获取菜单树形结构
-// // @Description 获取菜单树形结构
-// // @Tags 系统管理/菜单管理
-// // @Accept application/json
-// // @Produce application/json
-// // @Param creator query string false "创建人"
-// // @Param modifier query string false "修改人"
-// // @Param status query bool false "状态" default(true)
-// // @Param title query string false "菜单标题"
-// // @Success 200 {object} response.Response
-// // @Failure 400 {object} response.Response
-// // @Router /v1/system/menu/listTree [get]
-// // @Security LoginToken
-// func (h *menuHandler) GetMenuTree(ctx *gin.Context) {
-// 	// 从上下文中获取登录信息
-// 	claims, ok := ctx.MustGet("claims").(*jwt.Claims)
-// 	if !ok {
-// 		zap.S().Error("未找到用户认证信息 >>> ", zap.Error(errors.New(claims.UserId)))
-// 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-// 		return
-// 	}
-//
-// 	user, err := h.userSvc.GetById(ctx, claims.UserId)
-// 	if err != nil {
-// 		ctx.Set("internalError", fmt.Sprintf("获取用户信息异常 >>> %v", err.Error()))
-// 		zap.S().Error("获取用户信息异常 >>> ", err.Error())
-// 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-// 		return
-// 	}
-//
-// 	creator := ctx.DefaultQuery("creator", "")
-// 	modifier := ctx.DefaultQuery("modifier", "")
-// 	status, _ := strconv.ParseBool(ctx.DefaultQuery("status", "true"))
-//
-// 	title := ctx.DefaultQuery("title", "")
-//
-// 	filter := domainSystem.MenuFilter{
-// 		Filters: filters.Filters{
-// 			Creator:    creator,
-// 			Modifier:   modifier,
-// 			BelongDept: user.DeptId,
-// 		},
-// 		Status: status,
-// 		Title:  title,
-// 	}
-//
-// 	list, err := h.svc.GetListTree(ctx, filter)
-// 	if err != nil {
-// 		ctx.Set("internalError", fmt.Sprintf("获取菜单列表异常 >>> %v", err.Error()))
-// 		zap.S().Error("获取菜单列表异常 >>> ", err.Error())
-// 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-// 		return
-// 	}
-//
-// 	response.NewResponse().Success(ctx, "查询成功", list)
-// }

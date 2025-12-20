@@ -73,6 +73,9 @@ func (dao *GORMMenuDAO) Update(ctx context.Context, model system.Menu) error {
 		Where("id = ? AND timestamp = ?", model.Id, model.Timestamp).
 		Updates(map[string]any{
 			"status":          model.Status,
+			"name":            model.Name,
+			"path":            model.Path,
+			"component":       model.Component,
 			"title":           model.Title,
 			"icon":            model.Icon,
 			"show_badge":      model.ShowBadge,
@@ -116,7 +119,11 @@ func (dao *GORMMenuDAO) Update(ctx context.Context, model system.Menu) error {
 // FindById 根据id获取详情
 func (dao *GORMMenuDAO) FindById(ctx context.Context, id string) (*system.Menu, error) {
 	var model system.Menu
-	err := dao.db.WithContext(ctx).Where("id = ?", id).First(&model).Error
+	err := dao.db.WithContext(ctx).
+		Preload("Parent").
+		Where("id = ?", id).
+		First(&model).
+		Error
 	return &model, err
 }
 
@@ -178,7 +185,7 @@ func (dao *GORMMenuDAO) buildQuery(ctx context.Context, filter domainSystem.Menu
 		Status: filter.Status,
 		Title:  filter.Title,
 	}
-	return builder.QueryFilter(ctx, dao.db.WithContext(ctx).Model(&system.Menu{}))
+	return builder.QueryFilter(ctx, dao.db.WithContext(ctx).Preload("Parent").Model(&system.Menu{}))
 }
 
 // CheckExistByNameAndPathAndTitleAndParentId 检查name、path、title和parentId是否同时存在
