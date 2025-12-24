@@ -75,6 +75,7 @@ type MenuButtonHandler interface {
 	BatchDelete(ctx *gin.Context)
 	Update(ctx *gin.Context)
 	GetById(ctx *gin.Context)
+	GetListByMenuIds(ctx *gin.Context)
 	GetListPage(ctx *gin.Context)
 	GetListAll(ctx *gin.Context)
 }
@@ -102,6 +103,7 @@ func (h *menuButtonHandler) RegisterRoutes(router *gin.RouterGroup) {
 	base.POST("/batchDelete", h.BatchDelete)
 	base.PUT("/update", h.Update)
 	base.GET("/getById/:id", h.GetById)
+	base.GET("/listByMenuIds", h.GetListByMenuIds)
 	base.GET("/listPage", h.GetListPage)
 	base.GET("/listAll", h.GetListAll)
 }
@@ -395,6 +397,35 @@ func (h *menuButtonHandler) GetById(ctx *gin.Context) {
 	}
 
 	response.NewResponse().Success(ctx, "获取成功", detail)
+}
+
+// GetListByMenuIds
+// @Summary 获取指定菜单下的所有按钮
+// @Description 获取指定菜单下的所有按钮
+// @Tags 系统管理/菜单按钮管理
+// @Accept application/json
+// @Produce application/json
+// @Security BearerAuth
+// @Param menu_ids query []string false "菜单ID数组"
+// @Success 200 {object} response.Response
+// @Failure 400 {object} response.Response
+// @Router /v1/system/menuButton/listByMenuIds [get]
+// @Security LoginToken
+func (h *menuButtonHandler) GetListByMenuIds(ctx *gin.Context) {
+	menuIds, exists := ctx.GetQueryArray("menu_ids")
+	if !exists {
+		menuIds = []string{}
+	}
+
+	list, err := h.svc.GetListByMenuIds(ctx, menuIds)
+	if err != nil {
+		ctx.Set("internalError", fmt.Sprintf("获取指定菜单下的所有按钮异常 >>> %v", err.Error()))
+		zap.S().Error("获取指定菜单下的所有按钮异常 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	response.NewResponse().Success(ctx, "查询成功", list)
 }
 
 // GetListPage

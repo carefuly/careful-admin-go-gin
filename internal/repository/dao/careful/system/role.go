@@ -14,6 +14,7 @@ import (
 	domainSystem "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/system"
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/filters"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"time"
 )
@@ -38,12 +39,18 @@ type RoleDAO interface {
 }
 
 type GORMRoleDAO struct {
-	db *gorm.DB
+	db           *gorm.DB
+	deptDb       DeptDAO
+	menuDb       MenuDAO
+	menuButtonDb MenuButtonDAO
 }
 
-func NewGORMRoleDAO(db *gorm.DB) RoleDAO {
+func NewGORMRoleDAO(db *gorm.DB, deptDb DeptDAO, menuDb MenuDAO, menuButtonDb MenuButtonDAO) RoleDAO {
 	return &GORMRoleDAO{
-		db: db,
+		db:           db,
+		deptDb:       deptDb,
+		menuDb:       menuDb,
+		menuButtonDb: menuButtonDb,
 	}
 }
 
@@ -64,6 +71,14 @@ func (dao *GORMRoleDAO) BatchDelete(ctx context.Context, ids []string) error {
 
 // Update 更新
 func (dao *GORMRoleDAO) Update(ctx context.Context, model system.Role) error {
+	// 开启事务
+	tx := dao.db.WithContext(ctx).Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
 	result := dao.db.WithContext(ctx).Model(&model).
 		Where("id = ? AND timestamp = ?", model.Id, model.Timestamp).
 		Updates(map[string]any{
@@ -93,13 +108,83 @@ func (dao *GORMRoleDAO) Update(ctx context.Context, model system.Role) error {
 		}
 		return ErrRoleVersionInconsistency
 	}
-	return result.Error
+
+	// 更新关联关系
+	if err := dao.updateAssociations(tx, ctx, model); err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
+}
+
+// updateAssociations 更新所有关联关系
+func (dao *GORMRoleDAO) updateAssociations(tx *gorm.DB, ctx context.Context, role system.Role) error {
+	// 更新部门关联
+	// 删除旧关联
+	if err := tx.Exec("DELETE FROM careful_system_role_dept WHERE role_id = ?", role.Id).Error; err != nil {
+		zap.S().Error("删除部门关联异常：", err)
+		return err
+	}
+	for _, id := range role.DeptIDs {
+		dept, err := dao.deptDb.FindById(ctx, id)
+		if err != nil {
+			continue
+		}
+		if err := tx.Exec("INSERT INTO careful_system_role_dept (role_id, dept_id) VALUES (?, ?)",
+			role.Id, dept.Id).Error; err != nil {
+			zap.S().Error("更新部门关联异常：", err)
+			return err
+		}
+	}
+
+	// 更新菜单关联
+	// 删除旧关联
+	if err := tx.Exec("DELETE FROM careful_system_role_menu WHERE role_id = ?", role.Id).Error; err != nil {
+		zap.S().Error("删除菜单关联异常：", err)
+		return err
+	}
+	for _, id := range role.MenuIDs {
+		menu, err := dao.menuDb.FindById(ctx, id)
+		if err != nil {
+			continue
+		}
+		if err := tx.Exec("INSERT INTO careful_system_role_menu (role_id, menu_id) VALUES (?, ?)",
+			role.Id, menu.Id).Error; err != nil {
+			zap.S().Error("更新菜单关联异常：", err)
+			return err
+		}
+	}
+	// 更新菜单按钮关联
+	if err := tx.Exec("DELETE FROM careful_system_role_menu_button WHERE role_id = ?", role.Id).Error; err != nil {
+		zap.S().Error("删除菜单按钮关联异常：", err)
+		return err
+	}
+	for _, id := range role.MenuButtonIDs {
+		menuButton, err := dao.menuButtonDb.FindById(ctx, id)
+		if err != nil {
+			continue
+		}
+		if err := tx.Exec("INSERT INTO careful_system_role_menu_button (role_id, menu_button_id) VALUES (?, ?)",
+			role.Id, menuButton.Id).Error; err != nil {
+			zap.S().Error("更新菜单按钮关联异常：", err)
+			return err
+		}
+	}
+
+	return nil
 }
 
 // FindById 根据id获取详情
 func (dao *GORMRoleDAO) FindById(ctx context.Context, id string) (*system.Role, error) {
 	var model system.Role
-	err := dao.db.WithContext(ctx).Where("id = ?", id).First(&model).Error
+	err := dao.db.WithContext(ctx).
+		Preload("Dept").
+		Preload("Menu").
+		Preload("MenuButton").
+		Where("id = ?", id).
+		First(&model).
+		Error
 	return &model, err
 }
 

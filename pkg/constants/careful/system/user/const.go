@@ -40,6 +40,20 @@ const (
 	GenderConstSecret                        // 保密
 )
 
+// GenderMapping 用户性别映射
+var GenderMapping = map[GenderConst]string{
+	GenderConstMale:   "男",
+	GenderConstFemale: "女",
+	GenderConstSecret: "保密",
+}
+
+// GenderImportMapping 用户性别映射
+var GenderImportMapping = map[string]GenderConst{
+	"男":  GenderConstMale,
+	"女":  GenderConstFemale,
+	"保密": GenderConstSecret,
+}
+
 // String 返回性别的字符串表示
 func (g GenderConst) String() string {
 	switch g {

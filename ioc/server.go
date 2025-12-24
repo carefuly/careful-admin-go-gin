@@ -119,8 +119,8 @@ func (s *Server) InitGinMiddlewares(rely config.RelyConfig) []gin.HandlerFunc {
 			IgnorePaths("/api/v1/auth/login").
 			IgnorePaths("/api/v1/auth/refresh-token").
 			Build(), // 认证中间件
-		middleware.NewLogger(rely.Logger).Build(), // 请求日志
-		middleware.NewStorage(rely).Build(),       // 本地化日志
+		// middleware.NewLogger(rely.Logger).Build(), // 请求日志
+		// middleware.NewStorage(rely).Build(),       // 本地化日志
 	}
 }
 

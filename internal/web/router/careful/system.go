@@ -42,16 +42,8 @@ func (r *SystemRouter) RegisterRouter() {
 	userDAO := daoSystem.NewGORMUserDAO(r.rely.Db.Careful)
 	userRepository := repositorySystem.NewUserRepository(userDAO, userCacheLoggingDecorator)
 	userService := serviceSystem.NewUserService(userRepository)
-
-	// 角色
-	roleCache := cacheSystem.NewRedisRoleCache(r.rely.Redis)
-	roleCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
-	roleCacheLoggingDecorator := cacheDecoratorSystem.NewRoleCacheLoggingDecorator(roleCache, roleCacheLogger)
-	roleDAO := daoSystem.NewGORMRoleDAO(r.rely.Db.Careful)
-	roleRepository := repositorySystem.NewRoleRepository(roleDAO, roleCacheLoggingDecorator)
-	roleService := serviceSystem.NewRoleService(roleRepository)
-	roleHandler := handlerSystem.NewRoleHandler(r.rely, roleService, userService)
-	roleHandler.RegisterRoutes(baseRouter)
+	userHandler := handlerSystem.NewUserHandler(r.rely, userService, userService)
+	userHandler.RegisterRoutes(baseRouter)
 
 	// 菜单按钮
 	menuButtonCache := cacheSystem.NewRedisMenuButtonCache(r.rely.Redis)
@@ -84,6 +76,16 @@ func (r *SystemRouter) RegisterRouter() {
 	deptService := serviceSystem.NewDeptService(deptRepository)
 	deptHandler := handlerSystem.NewDeptHandler(r.rely, deptService, userService)
 	deptHandler.RegisterRoutes(baseRouter)
+
+	// 角色
+	roleCache := cacheSystem.NewRedisRoleCache(r.rely.Redis)
+	roleCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
+	roleCacheLoggingDecorator := cacheDecoratorSystem.NewRoleCacheLoggingDecorator(roleCache, roleCacheLogger)
+	roleDAO := daoSystem.NewGORMRoleDAO(r.rely.Db.Careful, deptDAO, menuDAO, menuButtonDAO)
+	roleRepository := repositorySystem.NewRoleRepository(roleDAO, roleCacheLoggingDecorator)
+	roleService := serviceSystem.NewRoleService(roleRepository)
+	roleHandler := handlerSystem.NewRoleHandler(r.rely, roleService, userService)
+	roleHandler.RegisterRoutes(baseRouter)
 
 	// 岗位
 	postCache := cacheSystem.NewRedisPostCache(r.rely.Redis)

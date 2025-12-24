@@ -49,15 +49,18 @@ type ImportRoleRequest struct {
 
 // UpdateRoleRequest 更新
 type UpdateRoleRequest struct {
-	Id          string         `json:"id" binding:"required" default:""`              // 主键ID
-	Status      bool           `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
-	Name        string         `json:"name" binding:"required,max=64" default:""`     // 角色名称
-	Code        string         `json:"code" binding:"required,max=64" default:""`     // 角色编码
-	DataScope   role.DataScope `json:"data_scope" binding:"omitempty" default:"1"`    // 数据权限范围
-	Description string         `json:"description" binding:"omitempty" default:""`    // 角色描述
-	Sort        int            `json:"sort" binding:"omitempty" default:"1"`          // 排序
-	Timestamp   int64          `json:"timestamp" binding:"omitempty"`                 // 版本
-	Remark      string         `json:"remark" binding:"omitempty,max=255" default:""` // 备注
+	Id            string         `json:"id" binding:"required" default:""`                 // 主键ID
+	Status        bool           `json:"status" binding:"omitempty" default:"true"`        // 状态【true-启用 false-停用】
+	Name          string         `json:"name" binding:"required,max=64" default:""`        // 角色名称
+	Code          string         `json:"code" binding:"required,max=64" default:""`        // 角色编码
+	DataScope     role.DataScope `json:"data_scope" binding:"omitempty" default:"1"`       // 数据权限范围
+	Description   string         `json:"description" binding:"omitempty" default:""`       // 角色描述
+	DeptIDs       []string       `json:"dept_ids" binding:"omitempty" default:"[]"`        // 部门ID数组
+	MenuIDs       []string       `json:"menu_ids" binding:"omitempty" default:"[]"`        // 菜单ID数组
+	MenuButtonIDs []string       `json:"menu_button_ids" binding:"omitempty" default:"[]"` // 按钮ID数组
+	Sort          int            `json:"sort" binding:"omitempty" default:"1"`             // 排序
+	Timestamp     int64          `json:"timestamp" binding:"omitempty"`                    // 版本
+	Remark        string         `json:"remark" binding:"omitempty,max=255" default:""`    // 备注
 }
 
 // RoleListPageResponse 列表分页响应
@@ -325,6 +328,9 @@ func (h *roleHandler) Update(ctx *gin.Context) {
 			DataScope:   req.DataScope,
 			Description: req.Description,
 		},
+		DeptIDs:       req.DeptIDs,
+		MenuIDs:       req.MenuIDs,
+		MenuButtonIDs: req.MenuButtonIDs,
 	}
 
 	if err := h.svc.Update(ctx, domain); err != nil {
@@ -547,7 +553,7 @@ func (h *roleHandler) GetListAll(ctx *gin.Context) {
 // @Param data_scope query int true "数据权限范围" default(0)
 // @Success 200 {file} file "Excel文件"
 // @Failure 500 {object} response.Response
-// @Router /v1/system/post/export [get]
+// @Router /v1/system/role/export [get]
 // @Security LoginToken
 func (h *roleHandler) Export(ctx *gin.Context) {
 	// 从上下文中获取登录信息

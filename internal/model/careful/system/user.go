@@ -29,7 +29,7 @@ type User struct {
 	Email       string           `gorm:"size:128;index;column:email;comment:邮箱" json:"email"`                                       // 邮箱
 	Mobile      string           `gorm:"size:11;index;column:mobile;comment:手机号" json:"mobile"`                                     // 手机号
 	Name        string           `gorm:"size:64;index;column:name;comment:真实姓名" json:"name"`                                        // 真实姓名
-	Avatar      string           `gorm:"type:mediumtext;column:avatar;comment:头像（url地址）" json:"avatar"`                             // 头像
+	Avatar      string           `gorm:"type:mediumtext;column:avatar;comment:头像" json:"avatar"`                                    // 头像
 	Birthday    *time.Time       `gorm:"column:birthday;comment:生日" json:"birthday"`                                                // 生日
 	City        string           `gorm:"size:100;column:city;comment:所在城市" json:"city"`                                             // 所在城市
 	Address     string           `gorm:"size:200;column:address;comment:详细地址" json:"address"`                                       // 详细地址
@@ -37,11 +37,19 @@ type User struct {
 	IsSuperuser bool             `gorm:"type:boolean;index;default:false;column:is_superuser;comment:是否为超级管理员" json:"is_superuser"` // 是否为超级管理员
 	LastLogin   *time.Time       `gorm:"column:last_login;comment:最后登录时间" json:"last_login"`                                        // 最后登录时间
 	LastLoginIp string           `gorm:"size:64;column:last_login_ip;comment:最后登录IP" json:"last_login_ip"`                          // 最后登录IP
-
-	DeptID *string `gorm:"size:110;index;column:dept_id;comment:部门ID" json:"dept_id"`                   // 部门ID
+	// manager 直属上级
+	ManagerID *string `gorm:"size:110;column:manager_id;comment:直属上级ID" json:"manager_id"` // 上级菜单ID
+	Manager   *User   `gorm:"foreignKey:ManagerID" json:"manager"`                         // 直属上级
+	// 所属部门
+	DeptID *string `gorm:"size:110;index;column:dept_id;comment:所属部门ID" json:"dept_id"`                 // 所属部门ID
 	Dept   *Dept   `gorm:"foreignKey:DeptID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL" json:"dept"` // 部门
-	// User -> Post
-	Posts []*Post `gorm:"many2many:careful_system_user_post;constraint:OnDelete:CASCADE;"` // 关联岗位
+	// 关联岗位 User -> Post
+	Post []*Post `gorm:"many2many:careful_system_user_post;constraint:OnDelete:CASCADE;" json:"post"` // 关联岗位
+	// 关联角色 User -> Role
+	Role []*Role `gorm:"many2many:careful_system_user_role;constraint:OnDelete:CASCADE;" json:"role"` // 关联角色
+	// 忽略GORM处理
+	PostIDs []string `gorm:"-" json:"post_ids"` // 忽略GORM处理
+	RoleIDs []string `gorm:"-" json:"role_ids"` // 忽略GORM处理
 }
 
 func NewUser() *User {
@@ -62,6 +70,7 @@ func (u *User) AutoMigrate(db *gorm.DB) {
 
 	// 迁移中间表并设置备注
 	u.migrateManyToManyTable(db, "careful_system_user_post", "用户-关联岗位表")
+	u.migrateManyToManyTable(db, "careful_system_user_role", "用户-关联角色表")
 }
 
 // Validate 验证用户数据

@@ -19,8 +19,11 @@ import (
 type Role struct {
 	system.Role
 
-	CreateTime string `json:"create_time"` // 创建时间
-	UpdateTime string `json:"update_time"` // 更新时间
+	DeptIDs       []string `json:"dept_ids"`        // 部门ids
+	MenuIDs       []string `json:"menu_ids"`        // 菜单ids
+	MenuButtonIDs []string `json:"menu_button_ids"` // 菜单按钮ids
+	CreateTime    string   `json:"create_time"`     // 创建时间
+	UpdateTime    string   `json:"update_time"`     // 更新时间
 }
 
 type RoleFilter struct {

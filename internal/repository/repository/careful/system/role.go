@@ -197,11 +197,14 @@ func (repo *roleRepository) toEntity(domain domainSystem.Role) modelSystem.Role 
 			BelongDept: domain.BelongDept,
 			Remark:     domain.Remark,
 		},
-		Status:      domain.Status,
-		Name:        domain.Name,
-		Code:        domain.Code,
-		DataScope:   domain.DataScope,
-		Description: domain.Description,
+		Status:        domain.Status,
+		Name:          domain.Name,
+		Code:          domain.Code,
+		DataScope:     domain.DataScope,
+		Description:   domain.Description,
+		DeptIDs:       domain.DeptIDs,
+		MenuIDs:       domain.MenuIDs,
+		MenuButtonIDs: domain.MenuButtonIDs,
 	}
 }
 

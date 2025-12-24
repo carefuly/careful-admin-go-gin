@@ -72,6 +72,7 @@ func initDatabase(database config.DatabaseDetail) (*gorm.DB, error) {
 			NamingStrategy: schema.NamingStrategy{
 				// TablePrefix: database.Prefix, // 表前缀
 			},
+			// Logger:  logger.Default.LogMode(logger.Info),
 			Logger: newLogger,
 		}
 
