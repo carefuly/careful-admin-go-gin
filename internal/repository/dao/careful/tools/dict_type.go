@@ -64,14 +64,15 @@ func (dao *GORMDictTypeDAO) Update(ctx context.Context, model tools.DictType) er
 	result := dao.db.WithContext(ctx).Model(&model).
 		Where("id = ? AND timestamp = ?", model.Id, model.Timestamp).
 		Updates(map[string]any{
-			"status":     model.Status,
-			"name":       model.Name,
-			"dict_tag":   model.DictTag,
-			"dict_color": model.DictColor,
-			"sort":       model.Sort,
-			"timestamp":  time.Now().UnixMicro(),
-			"modifier":   model.Modifier,
-			"remark":     model.Remark,
+			"status":      model.Status,
+			"name":        model.Name,
+			"dict_tag":    model.DictTag,
+			"dict_color":  model.DictColor,
+			"description": model.Description,
+			"sort":        model.Sort,
+			"timestamp":   time.Now().UnixMicro(),
+			"modifier":    model.Modifier,
+			"remark":      model.Remark,
 		})
 	// 处理行影响数为0的情况
 	if result.RowsAffected == 0 {
@@ -95,7 +96,11 @@ func (dao *GORMDictTypeDAO) Update(ctx context.Context, model tools.DictType) er
 // FindById 根据id获取详情
 func (dao *GORMDictTypeDAO) FindById(ctx context.Context, id string) (*tools.DictType, error) {
 	var model tools.DictType
-	err := dao.db.WithContext(ctx).Preload("Dict").Where("id = ?", id).First(&model).Error
+	err := dao.db.WithContext(ctx).
+		Preload("Dict").
+		Where("id = ?", id).
+		First(&model).
+		Error
 	return &model, err
 }
 
@@ -117,15 +122,8 @@ func (dao *GORMDictTypeDAO) FindListPage(ctx context.Context, filter domainTools
 // FindListAll 查询所有字典
 func (dao *GORMDictTypeDAO) FindListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]*tools.DictType, error) {
 	var models []*tools.DictType
-
-	query := dao.buildQuery(ctx, filter)
-
-	// 查询
-	if err := query.Find(&models).Error; err != nil {
-		return nil, err
-	}
-
-	return models, nil
+	err := dao.buildQuery(ctx, filter).Find(&models).Error
+	return models, err
 }
 
 // buildQuery 构建查询条件

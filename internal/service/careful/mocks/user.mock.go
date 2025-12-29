@@ -35,6 +35,48 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
 }
 
+// BatchDelete mocks base method.
+func (m *MockUserService) BatchDelete(ctx context.Context, ids []string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BatchDelete", ctx, ids)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// BatchDelete indicates an expected call of BatchDelete.
+func (mr *MockUserServiceMockRecorder) BatchDelete(ctx, ids interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BatchDelete", reflect.TypeOf((*MockUserService)(nil).BatchDelete), ctx, ids)
+}
+
+// Create mocks base method.
+func (m *MockUserService) Create(ctx context.Context, domain system.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", ctx, domain)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Create indicates an expected call of Create.
+func (mr *MockUserServiceMockRecorder) Create(ctx, domain interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockUserService)(nil).Create), ctx, domain)
+}
+
+// Delete mocks base method.
+func (m *MockUserService) Delete(ctx context.Context, id string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Delete", ctx, id)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Delete indicates an expected call of Delete.
+func (mr *MockUserServiceMockRecorder) Delete(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockUserService)(nil).Delete), ctx, id)
+}
+
 // GetById mocks base method.
 func (m *MockUserService) GetById(ctx context.Context, id string) (system.User, error) {
 	m.ctrl.T.Helper()
@@ -50,6 +92,37 @@ func (mr *MockUserServiceMockRecorder) GetById(ctx, id interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetById", reflect.TypeOf((*MockUserService)(nil).GetById), ctx, id)
 }
 
+// GetListAll mocks base method.
+func (m *MockUserService) GetListAll(ctx context.Context, filters system.UserFilter) ([]system.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetListAll", ctx, filters)
+	ret0, _ := ret[0].([]system.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetListAll indicates an expected call of GetListAll.
+func (mr *MockUserServiceMockRecorder) GetListAll(ctx, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListAll", reflect.TypeOf((*MockUserService)(nil).GetListAll), ctx, filters)
+}
+
+// GetListPage mocks base method.
+func (m *MockUserService) GetListPage(ctx context.Context, filters system.UserFilter) ([]system.User, int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetListPage", ctx, filters)
+	ret0, _ := ret[0].([]system.User)
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetListPage indicates an expected call of GetListPage.
+func (mr *MockUserServiceMockRecorder) GetListPage(ctx, filters interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetListPage", reflect.TypeOf((*MockUserService)(nil).GetListPage), ctx, filters)
+}
+
 // Login mocks base method.
 func (m *MockUserService) Login(ctx context.Context, username, password string) (system.User, error) {
 	m.ctrl.T.Helper()
@@ -63,6 +136,20 @@ func (m *MockUserService) Login(ctx context.Context, username, password string) 
 func (mr *MockUserServiceMockRecorder) Login(ctx, username, password interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockUserService)(nil).Login), ctx, username, password)
+}
+
+// Update mocks base method.
+func (m *MockUserService) Update(ctx context.Context, domain system.User) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Update", ctx, domain)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Update indicates an expected call of Update.
+func (mr *MockUserServiceMockRecorder) Update(ctx, domain interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Update", reflect.TypeOf((*MockUserService)(nil).Update), ctx, domain)
 }
 
 // UpdateLoginField mocks base method.

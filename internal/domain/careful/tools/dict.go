@@ -36,7 +36,8 @@ type DictFilter struct {
 func (f *DictFilter) QueryFilter(ctx context.Context, query *gorm.DB) *gorm.DB {
 	query = f.Filters.QueryFilter(ctx, query).
 		Where("status = ?", f.Status).
-		Order("sort ASC, update_time DESC")
+		Order("sort ASC").
+		Order("update_time DESC")
 
 	if f.Name != "" {
 		query = query.Where("name LIKE ?", "%"+f.Name+"%")

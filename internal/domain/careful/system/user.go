@@ -18,6 +18,7 @@ import (
 type User struct {
 	system.User
 
+	Buttons    []string `json:"buttons"`     // 按钮列表
 	PostIDs    []string `json:"post_ids"`    // 岗位ids
 	RoleIDs    []string `json:"role_ids"`    // 角色ids
 	CreateTime string   `json:"create_time"` // 创建时间

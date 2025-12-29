@@ -138,6 +138,21 @@ func (mr *MockDictRepositoryMockRecorder) GetByName(ctx, name interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetByName", reflect.TypeOf((*MockDictRepository)(nil).GetByName), ctx, name)
 }
 
+// GetDictTypeCount mocks base method.
+func (m *MockDictRepository) GetDictTypeCount(ctx context.Context, id string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetDictTypeCount", ctx, id)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDictTypeCount indicates an expected call of GetDictTypeCount.
+func (mr *MockDictRepositoryMockRecorder) GetDictTypeCount(ctx, id interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDictTypeCount", reflect.TypeOf((*MockDictRepository)(nil).GetDictTypeCount), ctx, id)
+}
+
 // GetListAll mocks base method.
 func (m *MockDictRepository) GetListAll(ctx context.Context, filters tools.DictFilter) ([]tools.Dict, error) {
 	m.ctrl.T.Helper()

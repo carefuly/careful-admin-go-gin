@@ -153,7 +153,7 @@ definitions:
         description: 上级部门
         type: string
       path:
-        description: 部门路径，格式：/1/2/3/
+        description: 路径，格式：/1/2/3/
         type: string
       phone:
         description: 部门电话
@@ -279,6 +279,9 @@ definitions:
       belong_dept:
         description: 数据归属部门
         type: string
+      create_time:
+        description: 创建时间
+        type: string
       createTime:
         description: 创建时间
         type: string
@@ -317,6 +320,9 @@ definitions:
       title:
         description: 按钮名称
         type: string
+      update_time:
+        description: 修改时间
+        type: string
       updateTime:
         description: 更新时间
         type: string
@@ -328,6 +334,9 @@ definitions:
         type: string
       code:
         description: 岗位编码
+        type: string
+      create_time:
+        description: 创建时间
         type: string
       createTime:
         description: 创建时间
@@ -374,6 +383,9 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
+      update_time:
+        description: 修改时间
+        type: string
       updateTime:
         description: 更新时间
         type: string
@@ -406,6 +418,11 @@ definitions:
         items:
           $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
         type: array
+      dept_ids:
+        description: 部门ids
+        items:
+          type: string
+        type: array
       description:
         description: 角色描述
         type: string
@@ -417,10 +434,20 @@ definitions:
         items:
           $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu'
         type: array
-      menuButton:
+      menu_button:
         description: 关联菜单按钮 Role -> MenuButton
         items:
           $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.MenuButton'
+        type: array
+      menu_button_ids:
+        description: 菜单按钮ids
+        items:
+          type: string
+        type: array
+      menu_ids:
+        description: 菜单ids
+        items:
+          type: string
         type: array
       modifier:
         description: 修改人
@@ -464,7 +491,7 @@ definitions:
       city:
         description: 所在城市
         type: string
-      createTime:
+      create_time:
         description: 创建时间
         type: string
       creator:
@@ -475,7 +502,7 @@ definitions:
         - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
         description: 部门
       dept_id:
-        description: 部门ID
+        description: 所属部门
         type: string
       email:
         description: 邮箱
@@ -496,6 +523,13 @@ definitions:
       last_login_ip:
         description: 最后登录IP
         type: string
+      manager:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User'
+        description: 直属上级
+      manager_id:
+        description: manager 直属上级
+        type: string
       mobile:
         description: 手机号
         type: string
@@ -505,14 +539,19 @@ definitions:
       name:
         description: 真实姓名
         type: string
-      posts:
-        description: User -> Post
+      post_ids:
+        description: 岗位ids
         items:
-          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post'
+          type: string
         type: array
       remark:
         description: 备注
         type: string
+      role_ids:
+        description: 角色ids
+        items:
+          type: string
+        type: array
       sort:
         description: 显示排序
         type: integer
@@ -523,7 +562,7 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
-      updateTime:
+      update_time:
         description: 更新时间
         type: string
       username:
@@ -543,6 +582,9 @@ definitions:
         type: string
       creator:
         description: 创建人
+        type: string
+      description:
+        description: 字典描述
         type: string
       id:
         description: 主键ID(自增)
@@ -591,10 +633,13 @@ definitions:
       creator:
         description: 创建人
         type: string
+      description:
+        description: 字典项描述
+        type: string
       dict:
         allOf:
         - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_tools.Dict'
-        description: 数据字典
+        description: 字典
       dict_color:
         description: 标签颜色
         type: string
@@ -656,6 +701,9 @@ definitions:
       code:
         description: 部门编码
         type: string
+      create_time:
+        description: 创建时间
+        type: string
       creator:
         description: 创建人
         type: string
@@ -692,7 +740,7 @@ definitions:
         description: 上级部门
         type: string
       path:
-        description: 部门路径，格式：/1/2/3/
+        description: 路径，格式：/1/2/3/
         type: string
       phone:
         description: 部门电话
@@ -709,6 +757,9 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
+      update_time:
+        description: 修改时间
+        type: string
     type: object
   github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu:
     properties:
@@ -723,6 +774,9 @@ definitions:
         type: string
       component:
         description: 组件地址
+        type: string
+      create_time:
+        description: 创建时间
         type: string
       creator:
         description: 创建人
@@ -797,6 +851,9 @@ definitions:
       title:
         description: 路由标题
         type: string
+      update_time:
+        description: 修改时间
+        type: string
     type: object
   github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.MenuButton:
     properties:
@@ -808,6 +865,9 @@ definitions:
         type: string
       belong_dept:
         description: 数据归属部门
+        type: string
+      create_time:
+        description: 创建时间
         type: string
       creator:
         description: 创建人
@@ -844,62 +904,9 @@ definitions:
       title:
         description: 按钮名称
         type: string
-    type: object
-  github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post:
-    properties:
-      belong_dept:
-        description: 数据归属部门
+      update_time:
+        description: 修改时间
         type: string
-      code:
-        description: 岗位编码
-        type: string
-      creator:
-        description: 创建人
-        type: string
-      dept:
-        allOf:
-        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
-        description: 所属部门
-      dept_id:
-        description: 所属部门
-        type: string
-      description:
-        description: 岗位描述
-        type: string
-      id:
-        description: 主键ID(自增)
-        type: string
-      level:
-        allOf:
-        - $ref: '#/definitions/post.Level'
-        description: 岗位级别
-      modifier:
-        description: 修改人
-        type: string
-      name:
-        description: 岗位名称
-        type: string
-      post_type:
-        allOf:
-        - $ref: '#/definitions/post.Type'
-        description: 岗位类型
-      remark:
-        description: 备注
-        type: string
-      sort:
-        description: 显示排序
-        type: integer
-      status:
-        description: 状态
-        type: boolean
-      timestamp:
-        description: 版本号(时间戳)
-        type: integer
-      users:
-        description: 关联用户 Post -> User
-        items:
-          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User'
-        type: array
     type: object
   github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User:
     properties:
@@ -921,6 +928,9 @@ definitions:
       city:
         description: 所在城市
         type: string
+      create_time:
+        description: 创建时间
+        type: string
       creator:
         description: 创建人
         type: string
@@ -929,7 +939,7 @@ definitions:
         - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept'
         description: 部门
       dept_id:
-        description: 部门ID
+        description: 所属部门
         type: string
       email:
         description: 邮箱
@@ -950,6 +960,13 @@ definitions:
       last_login_ip:
         description: 最后登录IP
         type: string
+      manager:
+        allOf:
+        - $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User'
+        description: 直属上级
+      manager_id:
+        description: manager 直属上级
+        type: string
       mobile:
         description: 手机号
         type: string
@@ -959,14 +976,24 @@ definitions:
       name:
         description: 真实姓名
         type: string
-      posts:
-        description: User -> Post
+      post_ids:
+        description: |-
+          关联岗位 User -> Post
+          Post []*Post `gorm:"many2many:careful_system_user_post;constraint:OnDelete:CASCADE;" json:"post"` // 关联岗位
+          关联角色 User -> Role
+          Role []*Role `gorm:"many2many:careful_system_user_role;constraint:OnDelete:CASCADE;" json:"role"` // 关联角色
+          忽略GORM处理
         items:
-          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post'
+          type: string
         type: array
       remark:
         description: 备注
         type: string
+      role_ids:
+        description: 忽略GORM处理
+        items:
+          type: string
+        type: array
       sort:
         description: 显示排序
         type: integer
@@ -977,6 +1004,9 @@ definitions:
       timestamp:
         description: 版本号(时间戳)
         type: integer
+      update_time:
+        description: 修改时间
+        type: string
       username:
         description: 用户名
         type: string
@@ -989,8 +1019,14 @@ definitions:
       code:
         description: 字典编码
         type: string
+      create_time:
+        description: 创建时间
+        type: string
       creator:
         description: 创建人
+        type: string
+      description:
+        description: 字典描述
         type: string
       id:
         description: 主键ID(自增)
@@ -1017,6 +1053,9 @@ definitions:
         allOf:
         - $ref: '#/definitions/dict.Type'
         description: 字典类型
+      update_time:
+        description: 修改时间
+        type: string
       value_type:
         allOf:
         - $ref: '#/definitions/dict.ValueType'
@@ -1290,6 +1329,8 @@ definitions:
     - code
     - name
     type: object
+  system.CreateUserRequest:
+    type: object
   system.DeptTree:
     properties:
       belong_dept:
@@ -1342,7 +1383,7 @@ definitions:
         description: 上级部门
         type: string
       path:
-        description: 部门路径，格式：/1/2/3/
+        description: 路径，格式：/1/2/3/
         type: string
       phone:
         description: 部门电话
@@ -1672,59 +1713,43 @@ definitions:
     - name
     type: object
   system.UpdateRoleRequest:
+    type: object
+  system.UpdateUserRequest:
+    type: object
+  system.UserListPageResponse:
     properties:
-      code:
-        description: 角色编码
-        maxLength: 64
-        type: string
-      data_scope:
-        allOf:
-        - $ref: '#/definitions/role.DataScope'
-        default: 1
-        description: 数据权限范围
-      description:
-        description: 角色描述
-        type: string
-      id:
-        description: 主键ID
-        type: string
-      name:
-        description: 角色名称
-        maxLength: 64
-        type: string
-      remark:
-        description: 备注
-        maxLength: 255
-        type: string
-      sort:
-        default: 1
-        description: 排序
+      list:
+        description: 列表
+        items:
+          $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+        type: array
+      page:
+        description: 页码
         type: integer
-      status:
-        default: true
-        description: 状态【true-启用 false-停用】
-        type: boolean
-      timestamp:
-        description: 版本
+      pageSize:
+        description: 每页数量
         type: integer
-    required:
-    - code
-    - id
-    - name
+      total:
+        description: 总数
+        type: integer
     type: object
   tools.CreateDictRequest:
     properties:
       code:
         description: 字典编码
-        maxLength: 100
+        maxLength: 64
+        type: string
+      description:
+        description: 字典描述
+        maxLength: 256
         type: string
       name:
         description: 字典名称
-        maxLength: 100
+        maxLength: 64
         type: string
       remark:
         description: 备注
-        maxLength: 255
+        maxLength: 512
         type: string
       sort:
         default: 1
@@ -1743,7 +1768,7 @@ definitions:
         allOf:
         - $ref: '#/definitions/dict.ValueType'
         default: 1
-        description: 字典值类型
+        description: 数据类型
     required:
     - code
     - name
@@ -1753,13 +1778,17 @@ definitions:
       bool_value:
         description: 布尔-字典项值
         type: boolean
+      description:
+        description: 字典项描述
+        maxLength: 256
+        type: string
       dict_color:
         description: 标签颜色
-        maxLength: 50
+        maxLength: 10
         type: string
       dict_id:
         description: 所属字典ID
-        maxLength: 100
+        maxLength: 40
         type: string
       dict_tag:
         allOf:
@@ -1772,11 +1801,11 @@ definitions:
         type: integer
       name:
         description: 字典项名称
-        maxLength: 50
+        maxLength: 64
         type: string
       remark:
         description: 备注
-        maxLength: 255
+        maxLength: 512
         type: string
       sort:
         default: 1
@@ -1788,7 +1817,7 @@ definitions:
         type: boolean
       str_value:
         description: 字符串-字典项值
-        maxLength: 50
+        maxLength: 64
         type: string
     required:
     - dict_id
@@ -1832,14 +1861,18 @@ definitions:
     properties:
       code:
         description: 字典编码
-        maxLength: 100
+        maxLength: 64
+        type: string
+      description:
+        description: 字典描述
+        maxLength: 256
         type: string
       id:
         description: 主键ID
         type: string
       remark:
         description: 备注
-        maxLength: 255
+        maxLength: 512
         type: string
       sort:
         default: 1
@@ -1861,13 +1894,17 @@ definitions:
       bool_value:
         description: 布尔-字典项值
         type: boolean
+      description:
+        description: 字典项描述
+        maxLength: 256
+        type: string
       dict_color:
         description: 标签颜色
-        maxLength: 50
+        maxLength: 10
         type: string
       dict_id:
         description: 所属字典ID
-        maxLength: 100
+        maxLength: 40
         type: string
       dict_tag:
         allOf:
@@ -1883,11 +1920,11 @@ definitions:
         type: integer
       name:
         description: 字典项名称
-        maxLength: 50
+        maxLength: 64
         type: string
       remark:
         description: 备注
-        maxLength: 255
+        maxLength: 512
         type: string
       sort:
         default: 1
@@ -1899,7 +1936,7 @@ definitions:
         type: boolean
       str_value:
         description: 字符串-字典项值
-        maxLength: 50
+        maxLength: 64
         type: string
       timestamp:
         description: 版本
@@ -3080,7 +3117,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: 导出角色到Excel文件
+      description: 导出岗位到Excel文件
       parameters:
       - description: 创建人
         in: query
@@ -3095,20 +3132,31 @@ paths:
         in: query
         name: status
         type: boolean
-      - description: 角色名称
+      - description: 岗位名称
         in: query
         name: name
         type: string
-      - description: 角色编码
+      - description: 岗位编码
         in: query
         name: code
         type: string
       - default: 0
-        description: 数据权限范围
+        description: 岗位类型
         in: query
-        name: data_scope
+        name: post_type
         required: true
         type: integer
+      - default: 0
+        description: 岗位级别
+        in: query
+        name: level
+        required: true
+        type: integer
+      - description: 所属部门ID
+        in: query
+        name: dept_id
+        required: true
+        type: string
       produces:
       - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
       responses:
@@ -3123,9 +3171,9 @@ paths:
       security:
       - BearerAuth: []
       - LoginToken: []
-      summary: 导出角色
+      summary: 导出岗位
       tags:
-      - 系统管理/角色管理
+      - 系统管理/岗位管理
   /v1/system/post/getById/{id}:
     get:
       consumes:
@@ -3437,6 +3485,56 @@ paths:
       summary: 删除角色
       tags:
       - 系统管理/角色管理
+  /v1/system/role/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出角色到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 角色名称
+        in: query
+        name: name
+        type: string
+      - description: 角色编码
+        in: query
+        name: code
+        type: string
+      - default: 0
+        description: 数据权限范围
+        in: query
+        name: data_scope
+        required: true
+        type: integer
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 导出角色
+      tags:
+      - 系统管理/角色管理
   /v1/system/role/getById/{id}:
     get:
       consumes:
@@ -3638,6 +3736,351 @@ paths:
       summary: 更新角色
       tags:
       - 系统管理/角色管理
+  /v1/system/user/batchDelete:
+    post:
+      consumes:
+      - application/json
+      description: 批量删除用户
+      parameters:
+      - description: id数组
+        in: body
+        name: ids
+        required: true
+        schema:
+          items:
+            type: string
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 批量删除用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/create:
+    post:
+      consumes:
+      - application/json
+      description: 创建用户
+      parameters:
+      - description: 请求
+        in: body
+        name: CreateUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 创建用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/delete/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除指定id用户
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 删除用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/export:
+    get:
+      consumes:
+      - application/json
+      description: 导出用户到Excel文件
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 用户名
+        in: query
+        name: username
+        type: string
+      - description: 邮箱
+        in: query
+        name: email
+        type: string
+      - description: 手机号
+        in: query
+        name: mobile
+        type: string
+      - description: 所属部门ID
+        in: query
+        name: dept_id
+        type: string
+      produces:
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      responses:
+        "200":
+          description: Excel文件
+          schema:
+            type: file
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 导出用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/getById/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定id用户
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/import:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 导入用户
+      parameters:
+      - description: 文件(支持xlsx/csv格式)
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 导入用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/listAll:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有用户
+      parameters:
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 用户名
+        in: query
+        name: username
+        type: string
+      - description: 邮箱
+        in: query
+        name: email
+        type: string
+      - description: 手机号
+        in: query
+        name: mobile
+        type: string
+      - description: 所属部门ID
+        in: query
+        name: dept_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              items:
+                $ref: '#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User'
+              type: array
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取所有用户
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/listPage:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户分页列表
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 创建人
+        in: query
+        name: creator
+        type: string
+      - description: 修改人
+        in: query
+        name: modifier
+        type: string
+      - default: true
+        description: 状态
+        in: query
+        name: status
+        type: boolean
+      - description: 用户名
+        in: query
+        name: username
+        type: string
+      - description: 邮箱
+        in: query
+        name: email
+        type: string
+      - description: 手机号
+        in: query
+        name: mobile
+        type: string
+      - description: 所属部门ID
+        in: query
+        name: dept_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/system.UserListPageResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 获取用户分页列表
+      tags:
+      - 系统管理/用户管理
+  /v1/system/user/update:
+    put:
+      consumes:
+      - application/json
+      description: 更新用户
+      parameters:
+      - description: 请求
+        in: body
+        name: UpdateUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/system.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Response'
+      security:
+      - BearerAuth: []
+      - LoginToken: []
+      summary: 更新用户
+      tags:
+      - 系统管理/用户管理
   /v1/tools/dict/batchDelete:
     post:
       consumes:

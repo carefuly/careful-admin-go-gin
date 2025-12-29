@@ -172,7 +172,7 @@ func Test_dictTypeService_Create(t *testing.T) {
 			defer ctrl.Finish()
 
 			dictSvc := NewDictTypeService(tc.mock(ctrl))
-			err := dictSvc.Create(context.Background(), tc.domain)
+			_, err := dictSvc.Create(context.Background(), tc.domain)
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}

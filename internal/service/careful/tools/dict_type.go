@@ -34,7 +34,7 @@ var (
 )
 
 type DictTypeService interface {
-	Create(ctx context.Context, domain domainTools.DictType) error
+	Create(ctx context.Context, domain domainTools.DictType) (domainTools.DictType, error)
 	Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
@@ -58,22 +58,22 @@ func NewDictTypeService(repo repositoryTools.DictTypeRepository, dictRepo reposi
 }
 
 // Create 创建
-func (svc *dictTypeService) Create(ctx context.Context, domain domainTools.DictType) error {
+func (svc *dictTypeService) Create(ctx context.Context, domain domainTools.DictType) (domainTools.DictType, error) {
 	// 获取字典详情
 	dict, err := svc.dictRepo.GetById(ctx, domain.DictID)
 	if err != nil {
 		if errors.Is(err, repositoryTools.ErrDictNotFound) {
-			return repositoryTools.ErrDictNotFound
+			return domainTools.DictType{}, repositoryTools.ErrDictNotFound
 		}
-		return err
+		return domainTools.DictType{}, err
 	}
 
 	if dict.Id == "" {
-		return repositoryTools.ErrDictNotFound
+		return domainTools.DictType{}, repositoryTools.ErrDictNotFound
 	}
 
 	if !dict.Status {
-		return repositoryTools.ErrDictDisabled
+		return domainTools.DictType{}, repositoryTools.ErrDictDisabled
 	}
 
 	// 设置DictName和TypeValue
@@ -82,14 +82,15 @@ func (svc *dictTypeService) Create(ctx context.Context, domain domainTools.DictT
 
 	// 唯一性校验
 	// 逻辑较为复杂，暂时不实现，默认使用mysql唯一性约束
-	if _, err := svc.repo.Create(ctx, domain); err != nil {
+	domain, err = svc.repo.Create(ctx, domain)
+	if err != nil {
 		if svc.IsDuplicateEntryError(err) {
-			return repositoryTools.ErrDictTypeDuplicate
+			return domainTools.DictType{}, repositoryTools.ErrDictTypeDuplicate
 		}
-		return err
+		return domainTools.DictType{}, err
 	}
 
-	return nil
+	return domain, err
 }
 
 // Import 导入
@@ -179,13 +180,14 @@ func (svc *dictTypeService) Import(ctx context.Context, user domainSystem.User, 
 					Sort:       sort,
 					Remark:     list["备注"],
 				},
-				Status:    true,
-				Name:      name,
-				DictTag:   dictTag,
-				DictColor: list["标签颜色"],
-				DictName:  dict.Name,
-				ValueType: dict.ValueType,
-				DictID:    dict.Id,
+				Status:      true,
+				Name:        name,
+				DictTag:     dictTag,
+				DictColor:   list["标签颜色"],
+				DictName:    dict.Name,
+				ValueType:   dict.ValueType,
+				Description: list["字典项描述"],
+				DictID:      dict.Id,
 			},
 			StrValue:  list["字符串值"],
 			IntValue:  int64(intValue),
@@ -236,6 +238,10 @@ func (svc *dictTypeService) Update(ctx context.Context, domain domainTools.DictT
 		return repositoryTools.ErrDictNotFound
 	}
 
+	if !dict.Status {
+		return repositoryTools.ErrDictDisabled
+	}
+
 	// 设置DictName和TypeValue
 	domain.DictName = dict.Name
 	domain.ValueType = dict.ValueType
@@ -243,18 +249,19 @@ func (svc *dictTypeService) Update(ctx context.Context, domain domainTools.DictT
 	// 唯一性校验
 	// 逻辑较为复杂，暂时不实现，默认使用mysql唯一性约束
 	err = svc.repo.Update(ctx, domain)
-	if svc.IsDuplicateEntryError(err) {
-		return repositoryTools.ErrDictTypeDuplicate
+	if err != nil {
+		if svc.IsDuplicateEntryError(err) {
+			return repositoryTools.ErrDictTypeDuplicate
+		}
+		switch {
+		case errors.Is(err, repositoryTools.ErrDictTypeVersionInconsistency):
+			return repositoryTools.ErrDictTypeVersionInconsistency
+		default:
+			return err
+		}
 	}
 
-	switch {
-	case err == nil:
-		return err
-	case errors.Is(err, repositoryTools.ErrDictTypeVersionInconsistency):
-		return repositoryTools.ErrDictTypeVersionInconsistency
-	default:
-		return err
-	}
+	return nil
 }
 
 // GetById 获取详情
@@ -273,13 +280,27 @@ func (svc *dictTypeService) GetById(ctx context.Context, id string) (domainTools
 }
 
 // GetListPage 分页查询列表
-func (svc *dictTypeService) GetListPage(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error) {
-	return svc.repo.GetListPage(ctx, filter)
+func (svc *dictTypeService) GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error) {
+	list, row, err := svc.repo.GetListPage(ctx, filters)
+	if err != nil {
+		return []domainTools.DictType{}, row, err
+	}
+	if list == nil || len(list) == 0 || row == 0 {
+		return []domainTools.DictType{}, row, nil
+	}
+	return list, row, nil
 }
 
 // GetListAll 查询所有列表
 func (svc *dictTypeService) GetListAll(ctx context.Context, filter domainTools.DictTypeFilter) ([]domainTools.DictType, error) {
-	return svc.repo.GetListAll(ctx, filter)
+	list, err := svc.repo.GetListAll(ctx, filter)
+	if err != nil {
+		return []domainTools.DictType{}, err
+	}
+	if list == nil || len(list) == 0 {
+		return []domainTools.DictType{}, nil
+	}
+	return list, nil
 }
 
 // IsDuplicateEntryError 判断是否是唯一冲突错误

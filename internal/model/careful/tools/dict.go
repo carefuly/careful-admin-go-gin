@@ -19,11 +19,12 @@ import (
 type Dict struct {
 	models.CoreModels
 
-	Status    bool           `gorm:"type:boolean;index;column:status;comment:状态【true-启用 false-停用】" json:"status"`   // 状态
-	Name      string         `gorm:"size:100;not null;uniqueIndex;column:name;comment:字典名称" json:"name"`            // 字典名称
-	Code      string         `gorm:"size:100;not null;uniqueIndex;column:code;comment:字典编码" json:"code"`            // 字典编码
-	Type      dict.Type      `gorm:"type:tinyint;default:1;index;column:type;comment:字典类型" json:"type"`             // 字典类型
-	ValueType dict.ValueType `gorm:"type:tinyint;default:1;index;column:value_type;comment:数据类型" json:"value_type"` // 数据类型
+	Status      bool           `gorm:"type:boolean;index;column:status;comment:状态【true-启用 false-停用】" json:"status"`   // 状态
+	Name        string         `gorm:"size:64;not null;uniqueIndex;column:name;comment:字典名称" json:"name"`             // 字典名称
+	Code        string         `gorm:"size:64;not null;uniqueIndex;column:code;comment:字典编码" json:"code"`             // 字典编码
+	Type        dict.Type      `gorm:"type:tinyint;default:1;index;column:type;comment:字典类型" json:"type"`             // 字典类型
+	ValueType   dict.ValueType `gorm:"type:tinyint;default:1;index;column:value_type;comment:数据类型" json:"value_type"` // 数据类型
+	Description string         `gorm:"size:256;column:description;comment:字典描述" json:"description"`                   // 字典描述
 }
 
 func NewDict() *Dict {

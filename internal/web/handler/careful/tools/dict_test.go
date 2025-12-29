@@ -52,7 +52,7 @@ func Test_dictHandler_Create(t *testing.T) {
 						CoreModels: models.CoreModels{Id: "1"},
 					},
 				}, nil)
-				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(nil)
+				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domainTools.Dict{}, nil)
 				return dictService, userService
 			},
 			reqBody: `
@@ -111,7 +111,7 @@ func Test_dictHandler_Create(t *testing.T) {
 }
 `,
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "无效的字典分类枚举值: 4",
+			wantMsg:  "无效的字典类型枚举值: 4",
 		},
 		{
 			name: "value_type参数不匹配",
@@ -147,7 +147,7 @@ func Test_dictHandler_Create(t *testing.T) {
 						CoreModels: models.CoreModels{Id: "1"},
 					},
 				}, nil)
-				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(serviceTools.ErrDictNameDuplicate)
+				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domainTools.Dict{}, serviceTools.ErrDictNameDuplicate)
 				return dictService, userService
 			},
 			reqBody: `
@@ -172,7 +172,7 @@ func Test_dictHandler_Create(t *testing.T) {
 						CoreModels: models.CoreModels{Id: "1"},
 					},
 				}, nil)
-				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(serviceTools.ErrDictCodeDuplicate)
+				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domainTools.Dict{}, serviceTools.ErrDictCodeDuplicate)
 				return dictService, userService
 			},
 			reqBody: `
@@ -197,7 +197,7 @@ func Test_dictHandler_Create(t *testing.T) {
 						CoreModels: models.CoreModels{Id: "1"},
 					},
 				}, nil)
-				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(errors.New("服务器异常"))
+				dictService.EXPECT().Create(gomock.Any(), gomock.Any()).Return(domainTools.Dict{}, errors.New("服务器异常"))
 				return dictService, userService
 			},
 			reqBody: `
@@ -270,6 +270,17 @@ func Test_dictHandler_Delete(t *testing.T) {
 			id:       "1",
 			wantCode: http.StatusOK,
 			wantMsg:  "删除成功",
+		},
+		{
+			name: "字典下仍有字典项，无法删除",
+			mock: func(ctrl *gomock.Controller) serviceTools.DictService {
+				dictService := svcmocks.NewMockDictService(ctrl)
+				dictService.EXPECT().Delete(gomock.Any(), "1").Return(serviceTools.ErrDictHasType)
+				return dictService
+			},
+			id:       "1",
+			wantCode: http.StatusBadRequest,
+			wantMsg:  "字典下仍有字典项，无法删除",
 		},
 		{
 			name: "服务器异常",
@@ -549,7 +560,7 @@ func Test_dictHandler_GetById(t *testing.T) {
 			wantMsg:  "获取成功",
 		},
 		{
-			name: "数据字典不存在",
+			name: "字典不存在",
 			mock: func(ctrl *gomock.Controller) serviceTools.DictService {
 				dictService := svcmocks.NewMockDictService(ctrl)
 				dictService.EXPECT().GetById(gomock.Any(), "1").
@@ -558,7 +569,7 @@ func Test_dictHandler_GetById(t *testing.T) {
 			},
 			id:       "1",
 			wantCode: http.StatusBadRequest,
-			wantMsg:  "数据字典不存在",
+			wantMsg:  "字典不存在",
 		},
 		{
 			name: "服务器异常",

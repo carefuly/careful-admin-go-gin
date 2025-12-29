@@ -29,19 +29,23 @@ import (
 	"go.uber.org/zap"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // CreateDictRequest 创建
 type CreateDictRequest struct {
-	Status    bool           `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
-	Name      string         `json:"name" binding:"required,max=100" default:""`    // 字典名称
-	Code      string         `json:"code" binding:"required,max=100" default:""`    // 字典编码
-	Type      dict.Type      `json:"type" binding:"omitempty" default:"1"`          // 字典分类
-	ValueType dict.ValueType `json:"value_type" binding:"omitempty" default:"1"`    // 字典值类型
-	Sort      int            `json:"sort" binding:"omitempty" default:"1"`          // 排序
-	Remark    string         `json:"remark" binding:"omitempty,max=255" default:""` // 备注
+	Status      bool           `json:"status" binding:"omitempty" default:"true"`          // 状态【true-启用 false-停用】
+	Name        string         `json:"name" binding:"required,max=64" default:""`          // 字典名称
+	Code        string         `json:"code" binding:"required,max=64" default:""`          // 字典编码
+	Type        dict.Type      `json:"type" binding:"omitempty" default:"1"`               // 字典分类
+	ValueType   dict.ValueType `json:"value_type" binding:"omitempty" default:"1"`         // 数据类型
+	Description string         `json:"description" binding:"omitempty,max=256" default:""` // 字典描述
+	Sort        int            `json:"sort" binding:"omitempty" default:"1"`               // 排序
+	Remark      string         `json:"remark" binding:"omitempty,max=512" default:""`      // 备注
 }
 
 // ImportDictRequest 导入
@@ -51,12 +55,13 @@ type ImportDictRequest struct {
 
 // UpdateDictRequest 更新
 type UpdateDictRequest struct {
-	Id        string `json:"id" binding:"required" default:""`              // 主键ID
-	Status    bool   `json:"status" binding:"omitempty" default:"true"`     // 状态【true-启用 false-停用】
-	Code      string `json:"code" binding:"required,max=100" default:""`    // 字典编码
-	Sort      int    `json:"sort" binding:"omitempty" default:"1"`          // 排序
-	Timestamp int64  `json:"timestamp" binding:"omitempty"`                 // 版本
-	Remark    string `json:"remark" binding:"omitempty,max=255" default:""` // 备注
+	Id          string `json:"id" binding:"required" default:""`                   // 主键ID
+	Status      bool   `json:"status" binding:"omitempty" default:"true"`          // 状态【true-启用 false-停用】
+	Code        string `json:"code" binding:"required,max=64" default:""`          // 字典编码
+	Description string `json:"description" binding:"omitempty,max=256" default:""` // 字典描述
+	Sort        int    `json:"sort" binding:"omitempty" default:"1"`               // 排序
+	Timestamp   int64  `json:"timestamp" binding:"omitempty"`                      // 版本
+	Remark      string `json:"remark" binding:"omitempty,max=512" default:""`      // 备注
 }
 
 // DictListPageResponse 列表分页响应
@@ -145,7 +150,7 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 
 	// 校验参数
 	typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
-	converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+	converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典类型")
 	_, err = converter.FromEnum(req.Type)
 	if err != nil {
 		response.NewResponse().Error(ctx, http.StatusBadRequest, err.Error(), nil)
@@ -169,15 +174,17 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
 			},
-			Status:    req.Status,
-			Name:      req.Name,
-			Code:      req.Code,
-			Type:      req.Type,
-			ValueType: req.ValueType,
+			Status:      req.Status,
+			Name:        req.Name,
+			Code:        req.Code,
+			Type:        req.Type,
+			ValueType:   req.ValueType,
+			Description: req.Description,
 		},
 	}
 
-	if err := h.svc.Create(ctx, domain); err != nil {
+	domain, err = h.svc.Create(ctx, domain)
+	if err != nil {
 		switch {
 		case errors.Is(err, serviceTools.ErrDictNameDuplicate):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典名称已存在", nil)
@@ -186,14 +193,14 @@ func (h *dictHandler) Create(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典编码已存在", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("创建数据字典异常 >>> %v", err.Error()))
-			zap.S().Error("创建数据字典异常 >>> ", zap.Error(err))
+			ctx.Set("internalError", fmt.Sprintf("创建字典异常 >>> %v", err.Error()))
+			zap.S().Error("创建字典异常 >>> ", zap.Error(err))
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
 	}
 
-	response.NewResponse().Success(ctx, "新增成功", nil)
+	response.NewResponse().Success(ctx, "新增成功", domain)
 }
 
 // Import
@@ -231,11 +238,42 @@ func (h *dictHandler) Import(ctx *gin.Context) {
 		return
 	}
 
-	// 保存导入的文件信息
+	// 验证文件类型
+	ext := strings.ToLower(filepath.Ext(req.File.Filename))
+	if ext != ".xls" && ext != ".xlsx" {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, "不支持的文件格式，仅支持xls/xlsx", nil)
+		return
+	}
+
+	// 验证文件大小
+	const maxFileSize = 5 << 20 // 5MB
+	if req.File.Size > maxFileSize {
+		response.NewResponse().Error(ctx, http.StatusBadRequest,
+			fmt.Sprintf("文件大小超过限制(%dMB)", maxFileSize/(1<<20)), nil)
+		return
+	}
+
+	// 创建安全的文件名
+	safeFilename := req.File.Filename
+
+	// 创建目录结构
 	format := time.Now().Format("2006-01-02")
-	filePath := "./media/uploads/" + format + "/" + req.File.Filename
+	uploadDir := filepath.Join("./media/uploads", format)
+
+	// 确保目录存在
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		ctx.Set("internalError", fmt.Sprintf("创建目录失败 >>> %v", err.Error()))
+		zap.S().Error("创建目录失败 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 正确的文件保存路径
+	filePath := filepath.Join(uploadDir, safeFilename)
+
+	// 保存导入的文件信息
 	if err := ctx.SaveUploadedFile(req.File, filePath); err != nil {
-		response.NewResponse().Error(ctx, http.StatusBadRequest, "保存文件失败", nil)
+		response.NewResponse().Error(ctx, http.StatusBadRequest, "保存文件失败: "+err.Error(), nil)
 		return
 	}
 
@@ -271,10 +309,16 @@ func (h *dictHandler) Delete(ctx *gin.Context) {
 	}
 
 	if err := h.svc.Delete(ctx, id); err != nil {
-		ctx.Set("internalError", fmt.Sprintf("删除数据字典异常 >>> %v", err.Error()))
-		zap.S().Error("删除数据字典异常 >>> ", zap.Error(err))
-		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
-		return
+		switch {
+		case errors.Is(err, serviceTools.ErrDictHasType):
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典下仍有字典项，无法删除", nil)
+			return
+		default:
+			ctx.Set("internalError", fmt.Sprintf("删除字典异常 >>> %v", err.Error()))
+			zap.S().Error("删除字典异常 >>> ", zap.Error(err))
+			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+			return
+		}
 	}
 
 	response.NewResponse().Success(ctx, "删除成功", nil)
@@ -299,10 +343,9 @@ func (h *dictHandler) BatchDelete(ctx *gin.Context) {
 		return
 	}
 
-	err := h.svc.BatchDelete(ctx, ids)
-	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("批量删除数据字典异常 >>> %v", err.Error()))
-		zap.S().Error("批量删除数据字典异常 >>> ", zap.Error(err))
+	if err := h.svc.BatchDelete(ctx, ids); err != nil {
+		ctx.Set("internalError", fmt.Sprintf("批量删除字典异常 >>> %v", err.Error()))
+		zap.S().Error("批量删除字典异常 >>> ", zap.Error(err))
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -356,8 +399,9 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 				BelongDept: user.DeptID,
 				Remark:     req.Remark,
 			},
-			Status: req.Status,
-			Code:   req.Code,
+			Status:      req.Status,
+			Code:        req.Code,
+			Description: req.Description,
 		},
 	}
 
@@ -373,8 +417,8 @@ func (h *dictHandler) Update(ctx *gin.Context) {
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据版本不一致，取消修改，请刷新后重试", nil)
 			return
 		default:
-			ctx.Set("internalError", fmt.Sprintf("更新数据字典异常 >>> %v", err.Error()))
-			zap.S().Error("更新数据字典异常 >>> ", err.Error())
+			ctx.Set("internalError", fmt.Sprintf("更新字典异常 >>> %v", err.Error()))
+			zap.S().Error("更新字典异常 >>> ", err.Error())
 			response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 			return
 		}
@@ -405,11 +449,11 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 	detail, err := h.svc.GetById(ctx, id)
 	if err != nil {
 		if errors.Is(err, serviceTools.ErrDictNotFound) {
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典不存在", nil)
 			return
 		}
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -428,7 +472,7 @@ func (h *dictHandler) GetById(ctx *gin.Context) {
 // @Param pageSize query int true "每页数量" default(10)
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
-// @Param status query bool false "状态" default(true)
+// @Param status query bool true "状态" default(true)
 // @Param name query string false "字典名称"
 // @Param code query string false "字典编码"
 // @Param type query int true "字典分类" default(0)
@@ -484,8 +528,8 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 
 	list, total, err := h.svc.GetListPage(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典分页列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典分页列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典分页列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典分页列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -507,7 +551,7 @@ func (h *dictHandler) GetListPage(ctx *gin.Context) {
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
-// @Param status query bool false "状态" default(true)
+// @Param status query bool true "状态" default(true)
 // @Param name query string false "字典名称"
 // @Param code query string false "字典编码"
 // @Param type query int true "字典分类" default(0)
@@ -557,8 +601,8 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
@@ -575,7 +619,7 @@ func (h *dictHandler) GetListAll(ctx *gin.Context) {
 // @Security BearerAuth
 // @Param creator query string false "创建人"
 // @Param modifier query string false "修改人"
-// @Param status query bool false "状态" default(true)
+// @Param status query bool true "状态" default(true)
 // @Param name query string false "字典名称"
 // @Param code query string false "字典编码"
 // @Param type query int true "字典分类" default(0)
@@ -625,28 +669,28 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 
 	list, err := h.svc.GetListAll(ctx, filter)
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("获取数据字典列表异常 >>> %v", err.Error()))
-		zap.S().Error("获取数据字典列表异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("获取字典列表异常 >>> %v", err.Error()))
+		zap.S().Error("获取字典列表异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}
 
 	// 准备导出配置
-	filename := fmt.Sprintf("数据字典导出_%s.xlsx", time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("字典导出_%s.xlsx", time.Now().Format("20060102150405"))
 	cfg := excelutil.ExcelExportConfig{
-		SheetName:  "数据字典",
+		SheetName:  "字典",
 		FileName:   filename,
 		StreamMode: true,
 		Columns: []excelutil.ExcelColumn{
 			{Title: "字典名称", Field: "Name", Width: 22},
-			{Title: "字典编码", Field: "Code", Width: 17},
+			{Title: "字典编码", Field: "Code", Width: 22},
 			{
 				Title: "字典类型",
 				Field: "Type",
 				Width: 15,
 				Formatter: func(value interface{}) string {
 					typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
-					converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+					converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典类型")
 					str, _ := converter.FromEnum(value.(dict.Type))
 					return str
 				},
@@ -662,6 +706,7 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 					return str
 				},
 			},
+			{Title: "字典描述", Field: "Description", Width: 30},
 			{
 				Title: "状态",
 				Field: "Status",
@@ -688,8 +733,8 @@ func (h *dictHandler) Export(ctx *gin.Context) {
 	exporter := excelutil.NewExcelExporter(&cfg)
 	f, err := exporter.Export()
 	if err != nil {
-		ctx.Set("internalError", fmt.Sprintf("导出数据字典异常 >>> %v", err.Error()))
-		zap.S().Error("导出数据字典异常 >>> ", err.Error())
+		ctx.Set("internalError", fmt.Sprintf("导出字典异常 >>> %v", err.Error()))
+		zap.S().Error("导出字典异常 >>> ", err.Error())
 		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
 		return
 	}

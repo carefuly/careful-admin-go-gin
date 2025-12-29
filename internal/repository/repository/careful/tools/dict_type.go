@@ -25,7 +25,6 @@ var (
 	ErrDictTypeInvalidDictValueType = daoTools.ErrDictTypeInvalidDictValueType
 	ErrDictTypeNotFound             = daoTools.ErrDictTypeNotFound
 	ErrDictTypeDuplicate            = daoTools.ErrDictTypeDuplicate
-	ErrDictDisabled                 = daoTools.ErrDictDisabled
 	ErrDictTypeVersionInconsistency = daoTools.ErrDictTypeVersionInconsistency
 )
 
@@ -156,39 +155,21 @@ func (repo *dictTypeRepository) GetById(ctx context.Context, id string) (domainT
 // GetListPage 分页查询列表
 func (repo *dictTypeRepository) GetListPage(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, int64, error) {
 	list, row, err := repo.dao.FindListPage(ctx, filters)
-	if err != nil {
-		return []domainTools.DictType{}, row, err
-	}
-
-	if len(list) == 0 {
-		return []domainTools.DictType{}, row, nil
-	}
-
 	var domains []domainTools.DictType
 	for _, v := range list {
 		domains = append(domains, repo.toDomain(v))
 	}
-
-	return domains, row, nil
+	return domains, row, err
 }
 
 // GetListAll 查询所有列表
 func (repo *dictTypeRepository) GetListAll(ctx context.Context, filters domainTools.DictTypeFilter) ([]domainTools.DictType, error) {
 	list, err := repo.dao.FindListAll(ctx, filters)
-	if err != nil {
-		return []domainTools.DictType{}, err
-	}
-
-	if len(list) == 0 {
-		return []domainTools.DictType{}, nil
-	}
-
 	var domains []domainTools.DictType
 	for _, v := range list {
 		domains = append(domains, repo.toDomain(v))
 	}
-
-	return domains, nil
+	return domains, err
 }
 
 // toEntity 转换为实体模型
@@ -203,13 +184,14 @@ func (repo *dictTypeRepository) toEntity(domain domainTools.DictType) (modelTool
 			BelongDept: domain.BelongDept,
 			Remark:     domain.Remark,
 		},
-		Status:    domain.Status,
-		Name:      domain.Name,
-		DictTag:   domain.DictTag,
-		DictColor: domain.DictColor,
-		DictName:  domain.DictName,
-		ValueType: domain.ValueType,
-		DictID:    domain.DictID,
+		Status:      domain.Status,
+		Name:        domain.Name,
+		DictTag:     domain.DictTag,
+		DictColor:   domain.DictColor,
+		DictName:    domain.DictName,
+		ValueType:   domain.ValueType,
+		Description: domain.Description,
+		DictID:      domain.DictID,
 	}
 
 	// 根据类型设置值

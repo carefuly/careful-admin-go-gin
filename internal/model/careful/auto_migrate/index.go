@@ -10,30 +10,29 @@ package auto_migrate
 
 import (
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/logger"
-	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/system"
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/tools"
 	"gorm.io/gorm"
 )
 
 // AutoMigrate 迁移表
 func AutoMigrate(db *gorm.DB) {
-	initSystem(db)
+	// initSystem(db)
 	initTools(db)
-	initLogger(db)
+	// initLogger(db)
 }
 
 func initSystem(db *gorm.DB) {
-	system.NewDept().AutoMigrate(db)       // 部门表
-	system.NewMenu().AutoMigrate(db)       // 菜单表
-	system.NewMenuButton().AutoMigrate(db) // 菜单按钮表
-	system.NewPost().AutoMigrate(db)       // 岗位表
-	system.NewRole().AutoMigrate(db)       // 角色表
-	system.NewUser().AutoMigrate(db)       // 用户表
+	// system.NewDept().AutoMigrate(db)       // 部门表
+	// system.NewMenu().AutoMigrate(db)       // 菜单表
+	// system.NewMenuButton().AutoMigrate(db) // 菜单按钮表
+	// system.NewPost().AutoMigrate(db)       // 岗位表
+	// system.NewRole().AutoMigrate(db)       // 角色表
+	// system.NewUser().AutoMigrate(db)       // 用户表
 }
 
 func initTools(db *gorm.DB) {
 	tools.NewDict().AutoMigrate(db)     // 字典表
-	tools.NewDictType().AutoMigrate(db) // 字典项表
+	// tools.NewDictType().AutoMigrate(db) // 字典项表
 }
 
 func initLogger(db *gorm.DB) {

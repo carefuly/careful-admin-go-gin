@@ -123,7 +123,7 @@ func Test_dictService_Create(t *testing.T) {
 			defer ctrl.Finish()
 
 			dictSvc := NewDictService(tc.mock(ctrl))
-			err := dictSvc.Create(context.Background(), tc.domain)
+			_, err := dictSvc.Create(context.Background(), tc.domain)
 			assert.Equal(t, tc.wantErr, err)
 		})
 	}
@@ -140,6 +140,7 @@ func Test_dictService_Delete(t *testing.T) {
 			name: "删除成功",
 			mock: func(ctrl *gomock.Controller) repositoryTools.DictRepository {
 				repo := repomocks.NewMockDictRepository(ctrl)
+				repo.EXPECT().GetDictTypeCount(gomock.Any(), "1").Return(int64(0), nil)
 				repo.EXPECT().Delete(gomock.Any(), "1").Return(nil)
 				return repo
 			},
@@ -147,9 +148,20 @@ func Test_dictService_Delete(t *testing.T) {
 			wantErr: nil,
 		},
 		{
+			name: "字典下仍有字典项，无法删除",
+			mock: func(ctrl *gomock.Controller) repositoryTools.DictRepository {
+				repo := repomocks.NewMockDictRepository(ctrl)
+				repo.EXPECT().GetDictTypeCount(gomock.Any(), "1").Return(int64(1), nil)
+				return repo
+			},
+			id:      "1",
+			wantErr: repositoryTools.ErrDictHasType,
+		},
+		{
 			name: "数据库异常",
 			mock: func(ctrl *gomock.Controller) repositoryTools.DictRepository {
 				repo := repomocks.NewMockDictRepository(ctrl)
+				repo.EXPECT().GetDictTypeCount(gomock.Any(), "1").Return(int64(0), nil)
 				repo.EXPECT().Delete(gomock.Any(), "1").Return(errors.New("数据库异常"))
 				return repo
 			},

@@ -13,7 +13,6 @@ import (
 	modelLogger "github.com/carefuly/careful-admin-go-gin/internal/model/careful/logger"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"time"
 )
 
@@ -35,15 +34,13 @@ func (l *CacheLogger) Log(ctx context.Context, entity *modelLogger.CacheLogger) 
 		defer cancel()
 
 		// 保存原始日志级别
-		originalLogger := l.db.Logger
-
+		// originalLogger := l.db.Logger
 		// 临时禁用SQL日志
-		l.db.Logger = logger.Default.LogMode(logger.Silent)
-
+		// l.db.Logger = logger.Default.LogMode(logger.Silent)
 		// 确保恢复原始日志设置
-		defer func() {
-			l.db.Logger = originalLogger
-		}()
+		// defer func() {
+		// 	l.db.Logger = originalLogger
+		// }()
 
 		// 使用数据库连接池
 		tx := l.db.WithContext(logCtx).Begin()

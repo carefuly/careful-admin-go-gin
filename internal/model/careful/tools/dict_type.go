@@ -29,17 +29,18 @@ var (
 type DictType struct {
 	models.CoreModels
 
-	Status    bool              `gorm:"type:boolean;index;column:status;comment:状态【true-启用 false-停用】" json:"status"`            // 状态
-	Name      string            `gorm:"size:50;not null;index;column:name;comment:字典项名称" json:"name"`                           // 字典项名称
-	StrValue  sql.NullString    `gorm:"size:50;column:str_value;comment:字符串-字典项值" swaggertype:"string" json:"str_value"`        // 字符串-字典项值
-	IntValue  sql.NullInt64     `gorm:"type:tinyint;column:int_value;comment:整型-字典项值" swaggertype:"number" json:"int_value"`    // 整型-字典项值
-	BoolValue sql.NullBool      `gorm:"type:boolean;column:bool_value;comment:布尔-字典项值" swaggertype:"boolean" json:"bool_value"` // 布尔-字典项值
-	DictTag   dict_type.DictTag `gorm:"size:10;default:primary;index;column:dict_tag;comment:标签类型" json:"dict_tag"`             // 标签类型
-	DictColor string            `gorm:"size:20;column:dict_color;comment:标签颜色" json:"dict_color"`                               // 标签颜色
-	DictName  string            `gorm:"size:100;index;column:dict_name;comment:字典名称" json:"dict_name"`                          // 字典名称
-	ValueType dict.ValueType    `gorm:"type:tinyint;default:1;index;column:value_type;comment:数据类型" json:"value_type"`          // 数据类型
-	DictID    string            `gorm:"size:110;index;column:dict_id;comment:所属字典ID" json:"dict_id"`                            // 所属字典ID
-	Dict      *Dict             `gorm:"foreignKey:DictID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"dict"`             // 数据字典
+	Status      bool              `gorm:"type:boolean;index;column:status;comment:状态【true-启用 false-停用】" json:"status"`   // 状态
+	Name        string            `gorm:"size:64;not null;index;column:name;comment:字典项名称" json:"name"`                  // 字典项名称
+	StrValue    sql.NullString    `gorm:"size:64;column:str_value;comment:字符串-字典项值" swaggertype:"string" json:"-"`       // 字符串-字典项值
+	IntValue    sql.NullInt64     `gorm:"type:tinyint;column:int_value;comment:整型-字典项值" swaggertype:"number" json:"-"`   // 整型-字典项值
+	BoolValue   sql.NullBool      `gorm:"type:boolean;column:bool_value;comment:布尔-字典项值" swaggertype:"boolean" json:"-"` // 布尔-字典项值
+	DictTag     dict_type.DictTag `gorm:"size:10;default:primary;index;column:dict_tag;comment:标签类型" json:"dict_tag"`    // 标签类型
+	DictColor   string            `gorm:"size:10;column:dict_color;comment:标签颜色" json:"dict_color"`                      // 标签颜色
+	DictName    string            `gorm:"size:64;index;column:dict_name;comment:字典名称" json:"dict_name"`                  // 字典名称
+	ValueType   dict.ValueType    `gorm:"type:tinyint;default:1;index;column:value_type;comment:数据类型" json:"value_type"` // 数据类型
+	Description string            `gorm:"size:256;column:description;comment:字典项描述" json:"description"`                  // 字典项描述
+	DictID      string            `gorm:"size:40;index;column:dict_id;comment:所属字典ID" json:"dict_id"`                    // 所属字典ID
+	Dict        *Dict             `gorm:"foreignKey:DictID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE" json:"dict"`    // 字典
 }
 
 func NewDictType() *DictType {

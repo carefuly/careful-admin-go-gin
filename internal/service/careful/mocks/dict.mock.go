@@ -52,11 +52,12 @@ func (mr *MockDictServiceMockRecorder) BatchDelete(ctx, ids interface{}) *gomock
 }
 
 // Create mocks base method.
-func (m *MockDictService) Create(ctx context.Context, domain tools.Dict) error {
+func (m *MockDictService) Create(ctx context.Context, domain tools.Dict) (tools.Dict, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Create", ctx, domain)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(tools.Dict)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.

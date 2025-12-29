@@ -24,6 +24,8 @@ var (
 	ErrDictNotFound             = daoTools.ErrDictNotFound
 	ErrDictNameDuplicate        = daoTools.ErrDictNameDuplicate
 	ErrDictCodeDuplicate        = daoTools.ErrDictCodeDuplicate
+	ErrDictDisabled             = daoTools.ErrDictDisabled
+	ErrDictHasType              = daoTools.ErrDictHasType
 	ErrDictVersionInconsistency = daoTools.ErrDictVersionInconsistency
 )
 
@@ -35,6 +37,7 @@ type DictRepository interface {
 
 	GetById(ctx context.Context, id string) (domainTools.Dict, error)
 	GetByName(ctx context.Context, name string) (domainTools.Dict, error)
+	GetDictTypeCount(ctx context.Context, id string) (int64, error)
 	GetListPage(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, int64, error)
 	GetListAll(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, error)
 
@@ -74,7 +77,7 @@ func (repo *dictRepository) Delete(ctx context.Context, id string) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // BatchDelete 批量删除
@@ -94,7 +97,7 @@ func (repo *dictRepository) BatchDelete(ctx context.Context, ids []string) error
 		}
 	}
 
-	return err
+	return nil
 }
 
 // Update 更新
@@ -148,48 +151,32 @@ func (repo *dictRepository) GetById(ctx context.Context, id string) (domainTools
 // GetByName 根据name获取
 func (repo *dictRepository) GetByName(ctx context.Context, name string) (domainTools.Dict, error) {
 	model, err := repo.dao.FindByName(ctx, name)
-	if err != nil {
-		return domainTools.Dict{}, err
-	}
-	return repo.toDomain(model), nil
+	return repo.toDomain(model), err
+}
+
+// GetDictTypeCount 获取字典下的字典项数量
+func (repo *dictRepository) GetDictTypeCount(ctx context.Context, id string) (int64, error) {
+	return repo.dao.FindDictTypeCount(ctx, id)
 }
 
 // GetListPage 分页查询列表
 func (repo *dictRepository) GetListPage(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, int64, error) {
 	list, row, err := repo.dao.FindListPage(ctx, filters)
-	if err != nil {
-		return []domainTools.Dict{}, row, err
-	}
-
-	if len(list) == 0 {
-		return []domainTools.Dict{}, row, nil
-	}
-
-	var domain []domainTools.Dict
+	var domains []domainTools.Dict
 	for _, v := range list {
-		domain = append(domain, repo.toDomain(v))
+		domains = append(domains, repo.toDomain(v))
 	}
-
-	return domain, row, nil
+	return domains, row, err
 }
 
 // GetListAll 查询所有列表
 func (repo *dictRepository) GetListAll(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, error) {
 	list, err := repo.dao.FindListAll(ctx, filters)
-	if err != nil {
-		return []domainTools.Dict{}, err
-	}
-
-	if len(list) == 0 {
-		return []domainTools.Dict{}, nil
-	}
-
-	var toDomain []domainTools.Dict
+	var domains []domainTools.Dict
 	for _, v := range list {
-		toDomain = append(toDomain, repo.toDomain(v))
+		domains = append(domains, repo.toDomain(v))
 	}
-
-	return toDomain, nil
+	return domains, err
 }
 
 // CheckExistByName 检查name是否存在
@@ -214,11 +201,12 @@ func (repo *dictRepository) toEntity(domain domainTools.Dict) modelTools.Dict {
 			BelongDept: domain.BelongDept,
 			Remark:     domain.Remark,
 		},
-		Status:    domain.Status,
-		Name:      domain.Name,
-		Code:      domain.Code,
-		Type:      domain.Type,
-		ValueType: domain.ValueType,
+		Status:      domain.Status,
+		Name:        domain.Name,
+		Code:        domain.Code,
+		Type:        domain.Type,
+		ValueType:   domain.ValueType,
+		Description: domain.Description,
 	}
 }
 

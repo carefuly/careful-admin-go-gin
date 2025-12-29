@@ -32,11 +32,12 @@ var (
 	ErrDictNameDuplicate        = repositoryTools.ErrDictNameDuplicate
 	ErrDictCodeDuplicate        = repositoryTools.ErrDictCodeDuplicate
 	ErrDictDisabled             = repositoryTools.ErrDictDisabled
+	ErrDictHasType              = repositoryTools.ErrDictHasType
 	ErrDictVersionInconsistency = repositoryTools.ErrDictVersionInconsistency
 )
 
 type DictService interface {
-	Create(ctx context.Context, domain domainTools.Dict) error
+	Create(ctx context.Context, domain domainTools.Dict) (domainTools.Dict, error)
 	Import(ctx context.Context, user domainSystem.User, listMap []map[string]string) _import.ImportResult
 	Delete(ctx context.Context, id string) error
 	BatchDelete(ctx context.Context, ids []string) error
@@ -59,37 +60,37 @@ func NewDictService(repo repositoryTools.DictRepository) DictService {
 }
 
 // Create 创建
-func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) error {
+func (svc *dictService) Create(ctx context.Context, domain domainTools.Dict) (domainTools.Dict, error) {
 	exists, err := svc.repo.CheckExistByName(ctx, domain.Name, "")
 	if err != nil {
-		return err
+		return domainTools.Dict{}, err
 	}
 	if exists {
-		return repositoryTools.ErrDictNameDuplicate
+		return domainTools.Dict{}, repositoryTools.ErrDictNameDuplicate
 	}
-
 	exists, err = svc.repo.CheckExistByCode(ctx, domain.Code, "")
 	if err != nil {
-		return err
+		return domainTools.Dict{}, err
 	}
 	if exists {
-		return repositoryTools.ErrDictCodeDuplicate
+		return domainTools.Dict{}, repositoryTools.ErrDictCodeDuplicate
 	}
 
-	if _, err := svc.repo.Create(ctx, domain); err != nil {
+	domain, err = svc.repo.Create(ctx, domain)
+	if err != nil {
 		// 分析具体冲突字段
 		if field, isDuplicate := svc.IsDuplicateEntryError(err); isDuplicate {
 			switch field {
 			case "name":
-				return repositoryTools.ErrDictNameDuplicate
+				return domainTools.Dict{}, repositoryTools.ErrDictNameDuplicate
 			case "code":
-				return repositoryTools.ErrDictCodeDuplicate
+				return domainTools.Dict{}, repositoryTools.ErrDictCodeDuplicate
 			}
 		}
-		return err
+		return domainTools.Dict{}, err
 	}
 
-	return nil
+	return domain, err
 }
 
 // Import 导入
@@ -116,7 +117,7 @@ func (svc *dictService) Import(ctx context.Context, user domainSystem.User, list
 
 		// 类型转换
 		typeValidValues := []string{"普通字典", "系统字典", "枚举字典"}
-		converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典分类")
+		converter := enumconv.NewEnumConverter(dict.TypeMapping, dict.TypeImportMapping, typeValidValues, "字典类型")
 		dictType, err := converter.ToEnum(list["字典类型"])
 		if err != nil {
 			list["导入状态"] = "400"
@@ -174,11 +175,12 @@ func (svc *dictService) Import(ctx context.Context, user domainSystem.User, list
 					Sort:       sort,
 					Remark:     list["备注"],
 				},
-				Status:    true,
-				Name:      name,
-				Code:      code,
-				Type:      dictType,
-				ValueType: valueType,
+				Status:      true,
+				Name:        name,
+				Code:        code,
+				Type:        dictType,
+				ValueType:   valueType,
+				Description: list["字典描述"],
 			},
 		}
 
@@ -203,12 +205,32 @@ func (svc *dictService) Import(ctx context.Context, user domainSystem.User, list
 
 // Delete 删除
 func (svc *dictService) Delete(ctx context.Context, id string) error {
+	count, err := svc.repo.GetDictTypeCount(ctx, id)
+	if err != nil {
+		return err
+	}
+	if count > 0 {
+		return repositoryTools.ErrDictHasType
+	}
 	return svc.repo.Delete(ctx, id)
 }
 
 // BatchDelete 批量删除
 func (svc *dictService) BatchDelete(ctx context.Context, ids []string) error {
-	return svc.repo.BatchDelete(ctx, ids)
+	var deleteIds []string
+
+	for _, id := range ids {
+		count, err := svc.repo.GetDictTypeCount(ctx, id)
+		if err != nil {
+			continue
+		}
+		if count > 0 {
+			continue
+		}
+		deleteIds = append(deleteIds, id)
+	}
+
+	return svc.repo.BatchDelete(ctx, deleteIds)
 }
 
 // Update 更新
@@ -247,7 +269,7 @@ func (svc *dictService) Update(ctx context.Context, domain domainTools.Dict) err
 		}
 	}
 
-	return err
+	return nil
 }
 
 // GetById 获取详情
@@ -282,12 +304,26 @@ func (svc *dictService) GetByName(ctx context.Context, name string) (domainTools
 
 // GetListPage 分页查询列表
 func (svc *dictService) GetListPage(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, int64, error) {
-	return svc.repo.GetListPage(ctx, filters)
+	list, row, err := svc.repo.GetListPage(ctx, filters)
+	if err != nil {
+		return []domainTools.Dict{}, row, err
+	}
+	if list == nil || len(list) == 0 || row == 0 {
+		return []domainTools.Dict{}, row, nil
+	}
+	return list, row, nil
 }
 
 // GetListAll 查询所有列表
 func (svc *dictService) GetListAll(ctx context.Context, filters domainTools.DictFilter) ([]domainTools.Dict, error) {
-	return svc.repo.GetListAll(ctx, filters)
+	list, err := svc.repo.GetListAll(ctx, filters)
+	if err != nil {
+		return []domainTools.Dict{}, err
+	}
+	if list == nil || len(list) == 0 {
+		return []domainTools.Dict{}, nil
+	}
+	return list, nil
 }
 
 // IsDuplicateEntryError 分析错误消息中的索引名

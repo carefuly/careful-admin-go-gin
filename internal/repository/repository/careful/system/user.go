@@ -243,6 +243,7 @@ func (repo *userRepository) toEntity(domain domainSystem.User) modelSystem.User 
 func (repo *userRepository) toDomain(entity *modelSystem.User) domainSystem.User {
 	model := domainSystem.User{
 		User: *entity,
+		Buttons: make([]string, 0),
 	}
 
 	if entity.Birthday != nil {

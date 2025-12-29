@@ -1839,7 +1839,7 @@ const docTemplate = `{
                         "LoginToken": []
                     }
                 ],
-                "description": "导出角色到Excel文件",
+                "description": "导出岗位到Excel文件",
                 "consumes": [
                     "application/json"
                 ],
@@ -1847,9 +1847,9 @@ const docTemplate = `{
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 ],
                 "tags": [
-                    "系统管理/角色管理"
+                    "系统管理/岗位管理"
                 ],
-                "summary": "导出角色",
+                "summary": "导出岗位",
                 "parameters": [
                     {
                         "type": "string",
@@ -1872,21 +1872,36 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "角色名称",
+                        "description": "岗位名称",
                         "name": "name",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "角色编码",
+                        "description": "岗位编码",
                         "name": "code",
                         "in": "query"
                     },
                     {
                         "type": "integer",
                         "default": 0,
-                        "description": "数据权限范围",
-                        "name": "data_scope",
+                        "description": "岗位类型",
+                        "name": "post_type",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "岗位级别",
+                        "name": "level",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "所属部门ID",
+                        "name": "dept_id",
                         "in": "query",
                         "required": true
                     }
@@ -2400,6 +2415,84 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/system/role/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导出角色到Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "系统管理/角色管理"
+                ],
+                "summary": "导出角色",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色名称",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "角色编码",
+                        "name": "code",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 0,
+                        "description": "数据权限范围",
+                        "name": "data_scope",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/system/role/getById/{id}": {
             "get": {
                 "security": [
@@ -2699,6 +2792,559 @@ const docTemplate = `{
                         "required": true,
                         "schema": {
                             "$ref": "#/definitions/system.UpdateRoleRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/batchDelete": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "批量删除用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "批量删除用户",
+                "parameters": [
+                    {
+                        "description": "id数组",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/create": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "创建用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "创建用户",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "CreateUserRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.CreateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/delete/{id}": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "删除指定id用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "删除用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/export": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导出用户到Excel文件",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "导出用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "邮箱",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "手机号",
+                        "name": "mobile",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "所属部门ID",
+                        "name": "dept_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Excel文件",
+                        "schema": {
+                            "type": "file"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/getById/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取指定id用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "获取用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/import": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "导入用户",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "导入用户",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "文件(支持xlsx/csv格式)",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/listAll": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取所有用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "获取所有用户",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "邮箱",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "手机号",
+                        "name": "mobile",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "所属部门ID",
+                        "name": "dept_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/listPage": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "获取用户分页列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "获取用户分页列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "页码",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "每页数量",
+                        "name": "pageSize",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "创建人",
+                        "name": "creator",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "修改人",
+                        "name": "modifier",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "状态",
+                        "name": "status",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "用户名",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "邮箱",
+                        "name": "email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "手机号",
+                        "name": "mobile",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "所属部门ID",
+                        "name": "dept_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/system.UserListPageResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/system/user/update": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    },
+                    {
+                        "LoginToken": []
+                    }
+                ],
+                "description": "更新用户",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "系统管理/用户管理"
+                ],
+                "summary": "更新用户",
+                "parameters": [
+                    {
+                        "description": "请求",
+                        "name": "UpdateUserRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/system.UpdateUserRequest"
                         }
                     }
                 ],
@@ -4073,7 +4719,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "path": {
-                    "description": "部门路径，格式：/1/2/3/",
+                    "description": "路径，格式：/1/2/3/",
                     "type": "string"
                 },
                 "phone": {
@@ -4250,6 +4896,10 @@ const docTemplate = `{
                     "description": "创建时间",
                     "type": "string"
                 },
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
                 "creator": {
                     "description": "创建人",
                     "type": "string"
@@ -4305,6 +4955,10 @@ const docTemplate = `{
                 "updateTime": {
                     "description": "更新时间",
                     "type": "string"
+                },
+                "update_time": {
+                    "description": "修改时间",
+                    "type": "string"
                 }
             }
         },
@@ -4320,6 +4974,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "createTime": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
+                "create_time": {
                     "description": "创建时间",
                     "type": "string"
                 },
@@ -4391,6 +5049,10 @@ const docTemplate = `{
                     "description": "更新时间",
                     "type": "string"
                 },
+                "update_time": {
+                    "description": "修改时间",
+                    "type": "string"
+                },
                 "users": {
                     "description": "关联用户 Post -\u003e User",
                     "type": "array",
@@ -4434,6 +5096,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
                     }
                 },
+                "dept_ids": {
+                    "description": "部门ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "description": {
                     "description": "角色描述",
                     "type": "string"
@@ -4449,11 +5118,25 @@ const docTemplate = `{
                         "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Menu"
                     }
                 },
-                "menuButton": {
+                "menu_button": {
                     "description": "关联菜单按钮 Role -\u003e MenuButton",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.MenuButton"
+                    }
+                },
+                "menu_button_ids": {
+                    "description": "菜单按钮ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "menu_ids": {
+                    "description": "菜单ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 },
                 "modifier": {
@@ -4513,7 +5196,7 @@ const docTemplate = `{
                     "description": "所在城市",
                     "type": "string"
                 },
-                "createTime": {
+                "create_time": {
                     "description": "创建时间",
                     "type": "string"
                 },
@@ -4530,7 +5213,7 @@ const docTemplate = `{
                     ]
                 },
                 "dept_id": {
-                    "description": "部门ID",
+                    "description": "所属部门",
                     "type": "string"
                 },
                 "email": {
@@ -4561,6 +5244,18 @@ const docTemplate = `{
                     "description": "最后登录IP",
                     "type": "string"
                 },
+                "manager": {
+                    "description": "直属上级",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User"
+                        }
+                    ]
+                },
+                "manager_id": {
+                    "description": "manager 直属上级",
+                    "type": "string"
+                },
                 "mobile": {
                     "description": "手机号",
                     "type": "string"
@@ -4573,16 +5268,23 @@ const docTemplate = `{
                     "description": "真实姓名",
                     "type": "string"
                 },
-                "posts": {
-                    "description": "User -\u003e Post",
+                "post_ids": {
+                    "description": "岗位ids",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post"
+                        "type": "string"
                     }
                 },
                 "remark": {
                     "description": "备注",
                     "type": "string"
+                },
+                "role_ids": {
+                    "description": "角色ids",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "sort": {
                     "description": "显示排序",
@@ -4600,7 +5302,7 @@ const docTemplate = `{
                     "description": "版本号(时间戳)",
                     "type": "integer"
                 },
-                "updateTime": {
+                "update_time": {
                     "description": "更新时间",
                     "type": "string"
                 },
@@ -4627,6 +5329,10 @@ const docTemplate = `{
                 },
                 "creator": {
                     "description": "创建人",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "字典描述",
                     "type": "string"
                 },
                 "id": {
@@ -4698,8 +5404,12 @@ const docTemplate = `{
                     "description": "创建人",
                     "type": "string"
                 },
+                "description": {
+                    "description": "字典项描述",
+                    "type": "string"
+                },
                 "dict": {
-                    "description": "数据字典",
+                    "description": "字典",
                     "allOf": [
                         {
                             "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_tools.Dict"
@@ -4794,6 +5504,10 @@ const docTemplate = `{
                     "description": "部门编码",
                     "type": "string"
                 },
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
                 "creator": {
                     "description": "创建人",
                     "type": "string"
@@ -4847,7 +5561,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "path": {
-                    "description": "部门路径，格式：/1/2/3/",
+                    "description": "路径，格式：/1/2/3/",
                     "type": "string"
                 },
                 "phone": {
@@ -4869,6 +5583,10 @@ const docTemplate = `{
                 "timestamp": {
                     "description": "版本号(时间戳)",
                     "type": "integer"
+                },
+                "update_time": {
+                    "description": "修改时间",
+                    "type": "string"
                 }
             }
         },
@@ -4889,6 +5607,10 @@ const docTemplate = `{
                 },
                 "component": {
                     "description": "组件地址",
+                    "type": "string"
+                },
+                "create_time": {
+                    "description": "创建时间",
                     "type": "string"
                 },
                 "creator": {
@@ -4990,6 +5712,10 @@ const docTemplate = `{
                 "title": {
                     "description": "路由标题",
                     "type": "string"
+                },
+                "update_time": {
+                    "description": "修改时间",
+                    "type": "string"
                 }
             }
         },
@@ -5006,6 +5732,10 @@ const docTemplate = `{
                 },
                 "belong_dept": {
                     "description": "数据归属部门",
+                    "type": "string"
+                },
+                "create_time": {
+                    "description": "创建时间",
                     "type": "string"
                 },
                 "creator": {
@@ -5059,90 +5789,10 @@ const docTemplate = `{
                 "title": {
                     "description": "按钮名称",
                     "type": "string"
-                }
-            }
-        },
-        "github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post": {
-            "type": "object",
-            "properties": {
-                "belong_dept": {
-                    "description": "数据归属部门",
+                },
+                "update_time": {
+                    "description": "修改时间",
                     "type": "string"
-                },
-                "code": {
-                    "description": "岗位编码",
-                    "type": "string"
-                },
-                "creator": {
-                    "description": "创建人",
-                    "type": "string"
-                },
-                "dept": {
-                    "description": "所属部门",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Dept"
-                        }
-                    ]
-                },
-                "dept_id": {
-                    "description": "所属部门",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "岗位描述",
-                    "type": "string"
-                },
-                "id": {
-                    "description": "主键ID(自增)",
-                    "type": "string"
-                },
-                "level": {
-                    "description": "岗位级别",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/post.Level"
-                        }
-                    ]
-                },
-                "modifier": {
-                    "description": "修改人",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "岗位名称",
-                    "type": "string"
-                },
-                "post_type": {
-                    "description": "岗位类型",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/post.Type"
-                        }
-                    ]
-                },
-                "remark": {
-                    "description": "备注",
-                    "type": "string"
-                },
-                "sort": {
-                    "description": "显示排序",
-                    "type": "integer"
-                },
-                "status": {
-                    "description": "状态",
-                    "type": "boolean"
-                },
-                "timestamp": {
-                    "description": "版本号(时间戳)",
-                    "type": "integer"
-                },
-                "users": {
-                    "description": "关联用户 Post -\u003e User",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User"
-                    }
                 }
             }
         },
@@ -5173,6 +5823,10 @@ const docTemplate = `{
                     "description": "所在城市",
                     "type": "string"
                 },
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
                 "creator": {
                     "description": "创建人",
                     "type": "string"
@@ -5186,7 +5840,7 @@ const docTemplate = `{
                     ]
                 },
                 "dept_id": {
-                    "description": "部门ID",
+                    "description": "所属部门",
                     "type": "string"
                 },
                 "email": {
@@ -5217,6 +5871,18 @@ const docTemplate = `{
                     "description": "最后登录IP",
                     "type": "string"
                 },
+                "manager": {
+                    "description": "直属上级",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.User"
+                        }
+                    ]
+                },
+                "manager_id": {
+                    "description": "manager 直属上级",
+                    "type": "string"
+                },
                 "mobile": {
                     "description": "手机号",
                     "type": "string"
@@ -5229,16 +5895,23 @@ const docTemplate = `{
                     "description": "真实姓名",
                     "type": "string"
                 },
-                "posts": {
-                    "description": "User -\u003e Post",
+                "post_ids": {
+                    "description": "关联岗位 User -\u003e Post\nPost []*Post ` + "`" + `gorm:\"many2many:careful_system_user_post;constraint:OnDelete:CASCADE;\" json:\"post\"` + "`" + ` // 关联岗位\n关联角色 User -\u003e Role\nRole []*Role ` + "`" + `gorm:\"many2many:careful_system_user_role;constraint:OnDelete:CASCADE;\" json:\"role\"` + "`" + ` // 关联角色\n忽略GORM处理",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_model_careful_system.Post"
+                        "type": "string"
                     }
                 },
                 "remark": {
                     "description": "备注",
                     "type": "string"
+                },
+                "role_ids": {
+                    "description": "忽略GORM处理",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "sort": {
                     "description": "显示排序",
@@ -5255,6 +5928,10 @@ const docTemplate = `{
                 "timestamp": {
                     "description": "版本号(时间戳)",
                     "type": "integer"
+                },
+                "update_time": {
+                    "description": "修改时间",
+                    "type": "string"
                 },
                 "username": {
                     "description": "用户名",
@@ -5273,8 +5950,16 @@ const docTemplate = `{
                     "description": "字典编码",
                     "type": "string"
                 },
+                "create_time": {
+                    "description": "创建时间",
+                    "type": "string"
+                },
                 "creator": {
                     "description": "创建人",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "字典描述",
                     "type": "string"
                 },
                 "id": {
@@ -5312,6 +5997,10 @@ const docTemplate = `{
                             "$ref": "#/definitions/dict.Type"
                         }
                     ]
+                },
+                "update_time": {
+                    "description": "修改时间",
+                    "type": "string"
                 },
                 "value_type": {
                     "description": "数据类型",
@@ -5678,6 +6367,9 @@ const docTemplate = `{
                 }
             }
         },
+        "system.CreateUserRequest": {
+            "type": "object"
+        },
         "system.DeptTree": {
             "type": "object",
             "properties": {
@@ -5753,7 +6445,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "path": {
-                    "description": "部门路径，格式：/1/2/3/",
+                    "description": "路径，格式：/1/2/3/",
                     "type": "string"
                 },
                 "phone": {
@@ -6195,57 +6887,31 @@ const docTemplate = `{
             }
         },
         "system.UpdateRoleRequest": {
+            "type": "object"
+        },
+        "system.UpdateUserRequest": {
+            "type": "object"
+        },
+        "system.UserListPageResponse": {
             "type": "object",
-            "required": [
-                "code",
-                "id",
-                "name"
-            ],
             "properties": {
-                "code": {
-                    "description": "角色编码",
-                    "type": "string",
-                    "maxLength": 64
+                "list": {
+                    "description": "列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/github_com_carefuly_careful-admin-go-gin_internal_domain_careful_system.User"
+                    }
                 },
-                "data_scope": {
-                    "description": "数据权限范围",
-                    "default": 1,
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/role.DataScope"
-                        }
-                    ]
+                "page": {
+                    "description": "页码",
+                    "type": "integer"
                 },
-                "description": {
-                    "description": "角色描述",
-                    "type": "string"
+                "pageSize": {
+                    "description": "每页数量",
+                    "type": "integer"
                 },
-                "id": {
-                    "description": "主键ID",
-                    "type": "string"
-                },
-                "name": {
-                    "description": "角色名称",
-                    "type": "string",
-                    "maxLength": 64
-                },
-                "remark": {
-                    "description": "备注",
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "sort": {
-                    "description": "排序",
-                    "type": "integer",
-                    "default": 1
-                },
-                "status": {
-                    "description": "状态【true-启用 false-停用】",
-                    "type": "boolean",
-                    "default": true
-                },
-                "timestamp": {
-                    "description": "版本",
+                "total": {
+                    "description": "总数",
                     "type": "integer"
                 }
             }
@@ -6260,17 +6926,22 @@ const docTemplate = `{
                 "code": {
                     "description": "字典编码",
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 64
+                },
+                "description": {
+                    "description": "字典描述",
+                    "type": "string",
+                    "maxLength": 256
                 },
                 "name": {
                     "description": "字典名称",
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 64
                 },
                 "remark": {
                     "description": "备注",
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 512
                 },
                 "sort": {
                     "description": "排序",
@@ -6292,7 +6963,7 @@ const docTemplate = `{
                     ]
                 },
                 "value_type": {
-                    "description": "字典值类型",
+                    "description": "数据类型",
                     "default": 1,
                     "allOf": [
                         {
@@ -6313,15 +6984,20 @@ const docTemplate = `{
                     "description": "布尔-字典项值",
                     "type": "boolean"
                 },
+                "description": {
+                    "description": "字典项描述",
+                    "type": "string",
+                    "maxLength": 256
+                },
                 "dict_color": {
                     "description": "标签颜色",
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 10
                 },
                 "dict_id": {
                     "description": "所属字典ID",
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 40
                 },
                 "dict_tag": {
                     "description": "标签类型",
@@ -6340,12 +7016,12 @@ const docTemplate = `{
                 "name": {
                     "description": "字典项名称",
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 64
                 },
                 "remark": {
                     "description": "备注",
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 512
                 },
                 "sort": {
                     "description": "排序",
@@ -6360,7 +7036,7 @@ const docTemplate = `{
                 "str_value": {
                     "description": "字符串-字典项值",
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 64
                 }
             }
         },
@@ -6422,7 +7098,12 @@ const docTemplate = `{
                 "code": {
                     "description": "字典编码",
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 64
+                },
+                "description": {
+                    "description": "字典描述",
+                    "type": "string",
+                    "maxLength": 256
                 },
                 "id": {
                     "description": "主键ID",
@@ -6431,7 +7112,7 @@ const docTemplate = `{
                 "remark": {
                     "description": "备注",
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 512
                 },
                 "sort": {
                     "description": "排序",
@@ -6461,15 +7142,20 @@ const docTemplate = `{
                     "description": "布尔-字典项值",
                     "type": "boolean"
                 },
+                "description": {
+                    "description": "字典项描述",
+                    "type": "string",
+                    "maxLength": 256
+                },
                 "dict_color": {
                     "description": "标签颜色",
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 10
                 },
                 "dict_id": {
                     "description": "所属字典ID",
                     "type": "string",
-                    "maxLength": 100
+                    "maxLength": 40
                 },
                 "dict_tag": {
                     "description": "标签类型",
@@ -6492,12 +7178,12 @@ const docTemplate = `{
                 "name": {
                     "description": "字典项名称",
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 64
                 },
                 "remark": {
                     "description": "备注",
                     "type": "string",
-                    "maxLength": 255
+                    "maxLength": 512
                 },
                 "sort": {
                     "description": "排序",
@@ -6512,7 +7198,7 @@ const docTemplate = `{
                 "str_value": {
                     "description": "字符串-字典项值",
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 64
                 },
                 "timestamp": {
                     "description": "版本",

@@ -116,6 +116,7 @@ func (s *Server) InitGinMiddlewares(rely config.RelyConfig) []gin.HandlerFunc {
 	return []gin.HandlerFunc{
 		middleware.NewCorsMiddlewareBuilder().Build(), // 跨域支持
 		middleware.NewLoginJWTMiddlewareBuilder(rely).
+			IgnorePaths("/health").
 			IgnorePaths("/api/v1/auth/login").
 			IgnorePaths("/api/v1/auth/refresh-token").
 			Build(), // 认证中间件

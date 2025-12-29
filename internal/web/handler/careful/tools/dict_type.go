@@ -30,22 +30,26 @@ import (
 	"go.uber.org/zap"
 	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
 // CreateDictTypeRequest 创建
 type CreateDictTypeRequest struct {
-	Status    bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
-	Name      string            `json:"name" binding:"required,max=50" default:""`             // 字典项名称
-	StrValue  string            `json:"str_value" binding:"omitempty,max=50" default:""`       // 字符串-字典项值
-	IntValue  int64             `json:"int_value" binding:"omitempty"`                         // 整型-字典项值
-	BoolValue bool              `json:"bool_value" binding:"omitempty"`                        // 布尔-字典项值
-	DictTag   dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
-	DictColor string            `json:"dict_color" binding:"omitempty,max=50" default:""`      // 标签颜色
-	DictID    string            `json:"dict_id" binding:"required,max=100" default:""`         // 所属字典ID
-	Sort      int               `json:"sort" binding:"omitempty" default:"1"`                  // 排序
-	Remark    string            `json:"remark" binding:"omitempty,max=255" default:""`         // 备注
+	Status      bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
+	Name        string            `json:"name" binding:"required,max=64" default:""`             // 字典项名称
+	StrValue    string            `json:"str_value" binding:"omitempty,max=64" default:""`       // 字符串-字典项值
+	IntValue    int64             `json:"int_value" binding:"omitempty"`                         // 整型-字典项值
+	BoolValue   bool              `json:"bool_value" binding:"omitempty"`                        // 布尔-字典项值
+	DictTag     dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
+	DictColor   string            `json:"dict_color" binding:"omitempty,max=10" default:""`      // 标签颜色
+	Description string            `json:"description" binding:"omitempty,max=256" default:""`    // 字典项描述
+	DictID      string            `json:"dict_id" binding:"required,max=40" default:""`          // 所属字典ID
+	Sort        int               `json:"sort" binding:"omitempty" default:"1"`                  // 排序
+	Remark      string            `json:"remark" binding:"omitempty,max=512" default:""`         // 备注
 }
 
 // ImportDictTypeRequest 导入
@@ -55,22 +59,19 @@ type ImportDictTypeRequest struct {
 
 // UpdateDictTypeRequest 更新
 type UpdateDictTypeRequest struct {
-	Id        string            `json:"id" binding:"required" default:""`                      // 主键ID
-	Status    bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
-	Name      string            `json:"name" binding:"required,max=50" default:""`             // 字典项名称
-	StrValue  string            `json:"str_value" binding:"omitempty,max=50" default:""`       // 字符串-字典项值
-	IntValue  int64             `json:"int_value" binding:"omitempty"`                         // 整型-字典项值
-	BoolValue bool              `json:"bool_value" binding:"omitempty"`                        // 布尔-字典项值
-	DictTag   dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
-	DictColor string            `json:"dict_color" binding:"omitempty,max=50" default:""`      // 标签颜色
-	DictID    string            `json:"dict_id" binding:"required,max=100" default:""`         // 所属字典ID
-	Sort      int               `json:"sort" binding:"omitempty" default:"1"`                  // 排序
-	Timestamp int64             `json:"timestamp" binding:"omitempty"`                         // 版本
-	Remark    string            `json:"remark" binding:"omitempty,max=255" default:""`         // 备注
-}
-
-type ListByDictNamesRequest struct {
-	DictNames []string `json:"dictNames"` // 数组参数格式: ?dictNames=性别&dictNames=计量单位
+	Id          string            `json:"id" binding:"required" default:""`                      // 主键ID
+	Status      bool              `json:"status" binding:"omitempty" default:"true"`             // 状态【true-启用 false-停用】
+	Name        string            `json:"name" binding:"required,max=64" default:""`             // 字典项名称
+	StrValue    string            `json:"str_value" binding:"omitempty,max=64" default:""`       // 字符串-字典项值
+	IntValue    int64             `json:"int_value" binding:"omitempty"`                         // 整型-字典项值
+	BoolValue   bool              `json:"bool_value" binding:"omitempty"`                        // 布尔-字典项值
+	DictTag     dict_type.DictTag `json:"dict_tag" binding:"omitempty,max=10" default:"primary"` // 标签类型
+	DictColor   string            `json:"dict_color" binding:"omitempty,max=10" default:""`      // 标签颜色
+	Description string            `json:"description" binding:"omitempty,max=256" default:""`    // 字典项描述
+	DictID      string            `json:"dict_id" binding:"required,max=40" default:""`          // 所属字典ID
+	Sort        int               `json:"sort" binding:"omitempty" default:"1"`                  // 排序
+	Timestamp   int64             `json:"timestamp" binding:"omitempty"`                         // 版本
+	Remark      string            `json:"remark" binding:"omitempty,max=512" default:""`         // 备注
 }
 
 // DictTypeListPageResponse 列表分页响应
@@ -186,10 +187,11 @@ func (h *dictTypeHandler) Create(ctx *gin.Context) {
 		BoolValue: req.BoolValue,
 	}
 
-	if err := h.svc.Create(ctx, domain); err != nil {
+	domain, err = h.svc.Create(ctx, domain)
+	if err != nil {
 		switch {
 		case errors.Is(err, serviceTools.ErrDictNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典不存在", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictDisabled):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典已被禁用，无法在其下创建字典项", nil)
@@ -208,7 +210,7 @@ func (h *dictTypeHandler) Create(ctx *gin.Context) {
 		}
 	}
 
-	response.NewResponse().Success(ctx, "新增成功", nil)
+	response.NewResponse().Success(ctx, "新增成功", domain)
 }
 
 // Import
@@ -246,11 +248,42 @@ func (h *dictTypeHandler) Import(ctx *gin.Context) {
 		return
 	}
 
-	// 保存导入的文件信息
+	// 验证文件类型
+	ext := strings.ToLower(filepath.Ext(req.File.Filename))
+	if ext != ".xls" && ext != ".xlsx" {
+		response.NewResponse().Error(ctx, http.StatusBadRequest, "不支持的文件格式，仅支持xls/xlsx", nil)
+		return
+	}
+
+	// 验证文件大小
+	const maxFileSize = 5 << 20 // 5MB
+	if req.File.Size > maxFileSize {
+		response.NewResponse().Error(ctx, http.StatusBadRequest,
+			fmt.Sprintf("文件大小超过限制(%dMB)", maxFileSize/(1<<20)), nil)
+		return
+	}
+
+	// 创建安全的文件名
+	safeFilename := req.File.Filename
+
+	// 创建目录结构
 	format := time.Now().Format("2006-01-02")
-	filePath := "./media/uploads/" + format + "/" + req.File.Filename
+	uploadDir := filepath.Join("./media/uploads", format)
+
+	// 确保目录存在
+	if err := os.MkdirAll(uploadDir, 0755); err != nil {
+		ctx.Set("internalError", fmt.Sprintf("创建目录失败 >>> %v", err.Error()))
+		zap.S().Error("创建目录失败 >>> ", err.Error())
+		response.NewResponse().Error(ctx, http.StatusInternalServerError, "服务器异常", nil)
+		return
+	}
+
+	// 正确的文件保存路径
+	filePath := filepath.Join(uploadDir, safeFilename)
+
+	// 保存导入的文件信息
 	if err := ctx.SaveUploadedFile(req.File, filePath); err != nil {
-		response.NewResponse().Error(ctx, http.StatusBadRequest, "保存文件失败", nil)
+		response.NewResponse().Error(ctx, http.StatusBadRequest, "保存文件失败: "+err.Error(), nil)
 		return
 	}
 
@@ -394,7 +427,7 @@ func (h *dictTypeHandler) Update(ctx *gin.Context) {
 	if err := h.svc.Update(ctx, domain); err != nil {
 		switch {
 		case errors.Is(err, serviceTools.ErrDictNotFound):
-			response.NewResponse().Error(ctx, http.StatusBadRequest, "数据字典不存在", nil)
+			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典不存在", nil)
 			return
 		case errors.Is(err, serviceTools.ErrDictDisabled):
 			response.NewResponse().Error(ctx, http.StatusBadRequest, "字典已被禁用，无法在其下创建字典项", nil)
@@ -691,7 +724,7 @@ func (h *dictTypeHandler) Export(ctx *gin.Context) {
 	// 准备导出配置
 	filename := fmt.Sprintf("字典项导出_%s.xlsx", time.Now().Format("20060102150405"))
 	cfg := excelutil.ExcelExportConfig{
-		SheetName:  "数据字典",
+		SheetName:  "字典项",
 		FileName:   filename,
 		StreamMode: true,
 		Columns: []excelutil.ExcelColumn{
@@ -721,6 +754,7 @@ func (h *dictTypeHandler) Export(ctx *gin.Context) {
 					return str
 				},
 			},
+			{Title: "字典项描述", Field: "Description", Width: 30},
 			{
 				Title: "状态",
 				Field: "Status",

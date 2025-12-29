@@ -11,6 +11,7 @@ package tools
 import (
 	"context"
 	"errors"
+	"fmt"
 	domainTools "github.com/carefuly/careful-admin-go-gin/internal/domain/careful/tools"
 	"github.com/carefuly/careful-admin-go-gin/internal/model/careful/tools"
 	"github.com/carefuly/careful-admin-go-gin/pkg/ginx/filters"
@@ -23,6 +24,7 @@ var (
 	ErrDictNameDuplicate        = errors.New("字典名称已存在")
 	ErrDictCodeDuplicate        = errors.New("字典编码已存在")
 	ErrDictDisabled             = errors.New("字典已被禁用，无法在其下创建字典项")
+	ErrDictHasType              = errors.New("字典下仍有字典项，无法删除")
 	ErrDictVersionInconsistency = errors.New("数据已被修改，请刷新后重试")
 )
 
@@ -34,6 +36,7 @@ type DictDAO interface {
 
 	FindById(ctx context.Context, id string) (*tools.Dict, error)
 	FindByName(ctx context.Context, name string) (*tools.Dict, error)
+	FindDictTypeCount(ctx context.Context, id string) (int64, error)
 	FindListPage(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, int64, error)
 	FindListAll(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, error)
 
@@ -68,15 +71,17 @@ func (dao *GORMDictDAO) BatchDelete(ctx context.Context, ids []string) error {
 
 // Update 更新
 func (dao *GORMDictDAO) Update(ctx context.Context, model tools.Dict) error {
-	result := dao.db.WithContext(ctx).Model(&model).
+	result := dao.db.WithContext(ctx).
+		Model(&model).
 		Where("id = ? AND timestamp = ?", model.Id, model.Timestamp).
 		Updates(map[string]any{
-			"status":    model.Status,
-			"code":      model.Code,
-			"sort":      model.Sort,
-			"timestamp": time.Now().UnixMicro(),
-			"modifier":  model.Modifier,
-			"remark":    model.Remark,
+			"status":      model.Status,
+			"code":        model.Code,
+			"description": model.Description,
+			"sort":        model.Sort,
+			"timestamp":   time.Now().UnixMicro(),
+			"modifier":    model.Modifier,
+			"remark":      model.Remark,
 		})
 	// 处理行影响数为0的情况
 	if result.RowsAffected == 0 {
@@ -104,11 +109,22 @@ func (dao *GORMDictDAO) FindById(ctx context.Context, id string) (*tools.Dict, e
 	return &model, err
 }
 
-// FindByName 根据字典名称获取详情
+// FindByName 根据name获取详情
 func (dao *GORMDictDAO) FindByName(ctx context.Context, name string) (*tools.Dict, error) {
 	var model tools.Dict
 	err := dao.db.WithContext(ctx).Where("name = ?", name).First(&model).Error
 	return &model, err
+}
+
+// FindDictTypeCount 获取字典下的字典项数量
+func (dao *GORMDictDAO) FindDictTypeCount(ctx context.Context, id string) (int64, error) {
+	var count int64
+	err := dao.db.WithContext(ctx).
+		Model(&tools.DictType{}).
+		Where("dict_id = ?", id).
+		Count(&count).
+		Error
+	return count, err
 }
 
 // FindListPage 分页查询
@@ -129,15 +145,8 @@ func (dao *GORMDictDAO) FindListPage(ctx context.Context, filter domainTools.Dic
 // FindListAll 获取所有列表
 func (dao *GORMDictDAO) FindListAll(ctx context.Context, filter domainTools.DictFilter) ([]*tools.Dict, error) {
 	var models []*tools.Dict
-
-	query := dao.buildQuery(ctx, filter)
-
-	// 查询
-	if err := query.Find(&models).Error; err != nil {
-		return nil, err
-	}
-
-	return models, nil
+	err := dao.buildQuery(ctx, filter).Find(&models).Error
+	return models, err
 }
 
 // buildQuery 构建查询条件
@@ -159,40 +168,29 @@ func (dao *GORMDictDAO) buildQuery(ctx context.Context, filter domainTools.DictF
 
 // CheckExistByName 检查name是否存在
 func (dao *GORMDictDAO) CheckExistByName(ctx context.Context, name, excludeId string) (bool, error) {
-	var model tools.Dict
-	query := dao.db.WithContext(ctx).Model(&tools.Dict{}).
-		Select("id"). // 只查询必要的字段
-		Where("name = ?", name)
-
-	if excludeId != "" {
-		query = query.Where("id != ?", excludeId)
-	}
-
-	// 使用 LIMIT 1 快速判断是否存在
-	err := query.Limit(1).First(&model).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil // 不存在
-	}
-	return err == nil, err // 存在或查询出错
+	return dao.checkByField(ctx, "name", name, excludeId)
 }
 
 // CheckExistByCode 检查code是否存在
 func (dao *GORMDictDAO) CheckExistByCode(ctx context.Context, code, excludeId string) (bool, error) {
-	var model tools.Dict
-	query := dao.db.WithContext(ctx).Model(&tools.Dict{}).
-		Select("id"). // 只查询必要的字段
-		Where("code = ?", code)
+	return dao.checkByField(ctx, "code", code, excludeId)
+}
+
+// checkByField 检查指定字段
+func (dao *GORMDictDAO) checkByField(ctx context.Context, field string, value interface{}, excludeId string) (bool, error) {
+	query := dao.db.WithContext(ctx).
+		Model(&tools.Dict{}).
+		Select("1"). // 只需检查存在性
+		Where(fmt.Sprintf("%s = ?", field), value)
 
 	if excludeId != "" {
 		query = query.Where("id != ?", excludeId)
 	}
 
-	// 使用 LIMIT 1 快速判断是否存在
-	err := query.Limit(1).First(&model).Error
-
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return false, nil // 不存在
+	var exists bool
+	err := query.Limit(1).Find(&exists).Error
+	if err != nil {
+		return false, err
 	}
-	return err == nil, err // 存在或查询出错
+	return exists, nil
 }

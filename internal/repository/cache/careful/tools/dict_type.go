@@ -28,6 +28,7 @@ type DictTypeCache interface {
 	Set(ctx context.Context, domain domainTools.DictType) error
 	Del(ctx context.Context, id string) error
 	SetNotFound(ctx context.Context, id string) error // 防止缓存穿透
+	Key(id string) string
 }
 
 type RedisDictTypeCache struct {
@@ -43,7 +44,7 @@ func NewRedisDictTypeCache(cmd redis.Cmdable) DictTypeCache {
 }
 
 func (c *RedisDictTypeCache) Get(ctx context.Context, id string) (*domainTools.DictType, error) {
-	key := c.key(id)
+	key := c.Key(id)
 
 	data, err := c.cmd.Get(ctx, key).Result()
 	if err != nil {
@@ -64,7 +65,7 @@ func (c *RedisDictTypeCache) Get(ctx context.Context, id string) (*domainTools.D
 }
 
 func (c *RedisDictTypeCache) Set(ctx context.Context, domain domainTools.DictType) error {
-	key := c.key(domain.Id)
+	key := c.Key(domain.Id)
 	data, err := json.Marshal(domain)
 	if err != nil {
 		return err
@@ -73,16 +74,16 @@ func (c *RedisDictTypeCache) Set(ctx context.Context, domain domainTools.DictTyp
 }
 
 func (c *RedisDictTypeCache) Del(ctx context.Context, id string) error {
-	key := c.key(id)
+	key := c.Key(id)
 	return c.cmd.Del(ctx, key).Err()
 }
 
 func (c *RedisDictTypeCache) SetNotFound(ctx context.Context, id string) error {
-	key := c.key(id)
+	key := c.Key(id)
 	// 设置短暂的有效期防止缓存穿透
 	return c.cmd.Set(ctx, key, "not_found", time.Minute).Err()
 }
 
-func (c *RedisDictTypeCache) key(id string) string {
+func (c *RedisDictTypeCache) Key(id string) string {
 	return fmt.Sprintf("%s:%s", ErrDictTypeKey, id)
 }

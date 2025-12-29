@@ -37,13 +37,14 @@ type DictTypeFilter struct {
 	DictTag   dict_type.DictTag `json:"dict_tag"`   // 标签类型
 	DictName  string            `json:"dict_name"`  // 字典名称
 	ValueType dict.ValueType    `json:"value_type"` // 数据类型
-	DictID    string            `json:"dict_id"`    // 字典ID
+	DictID    string            `json:"dict_id"`    // 所属字典ID
 }
 
 func (f *DictTypeFilter) QueryFilter(ctx context.Context, query *gorm.DB) *gorm.DB {
 	query = f.Filters.QueryFilter(ctx, query).
 		Where("status = ?", f.Status).
-		Order("sort ASC, update_time DESC")
+		Order("sort ASC").
+		Order("update_time DESC")
 
 	if f.Name != "" {
 		query = query.Where("name LIKE ?", "%"+f.Name+"%")
@@ -52,7 +53,7 @@ func (f *DictTypeFilter) QueryFilter(ctx context.Context, query *gorm.DB) *gorm.
 		query = query.Where("dict_tag LIKE ?", "%"+f.DictTag+"%")
 	}
 	if f.DictName != "" {
-		query = query.Where("dict_name LIKE ?", "%"+f.DictName+"%")
+		query = query.Where("dict_name = ?", f.DictName)
 	}
 	if f.ValueType > 0 {
 		query = query.Where("value_type = ?", f.ValueType)

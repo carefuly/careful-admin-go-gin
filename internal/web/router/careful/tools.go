@@ -40,31 +40,38 @@ func NewToolsRouter(rely config.RelyConfig, router *gin.RouterGroup) *ToolsRoute
 func (r *ToolsRouter) RegisterRouter() {
 	baseRouter := r.router.Group("/tools")
 
-	// 用户
+	// cache
 	userCache := cacheSystem.NewRedisUserCache(r.rely.Redis)
 	userCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
 	userCacheLoggingDecorator := cacheDecoratorSystem.NewUserCacheLoggingDecorator(userCache, userCacheLogger)
-	userDAO := daoSystem.NewGORMUserDAO(r.rely.Db.Careful)
-	userRepository := repositorySystem.NewUserRepository(userDAO, userCacheLoggingDecorator)
-	userService := serviceSystem.NewUserService(userRepository)
-
-	// 数据字典
 	dictCache := cacheTools.NewRedisDictCache(r.rely.Redis)
 	dictCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
-	dictDAO := daoTools.NewGORMDictDAO(r.rely.Db.Careful)
 	dictCacheLoggingDecorator := cacheDecoratorTools.NewDictCacheLoggingDecorator(dictCache, dictCacheLogger)
-	dictRepository := repositoryTools.NewDictRepository(dictDAO, dictCacheLoggingDecorator)
-	dictService := serviceTools.NewDictService(dictRepository)
-	dictHandler := handlerTools.NewDictHandler(r.rely, dictService, userService)
-	dictHandler.RegisterRoutes(baseRouter)
-
-	// 字典项
 	dictTypeCache := cacheTools.NewRedisDictTypeCache(r.rely.Redis)
 	dictTypeCacheLogger := cacheRecord.NewCacheLogger(r.rely.Db.Careful)
-	dictTypeDAO := daoTools.NewGORMDictTypeDAO(r.rely.Db.Careful)
 	dictTypeCacheLoggingDecorator := cacheDecoratorTools.NewDictTypeCacheLoggingDecorator(dictTypeCache, dictTypeCacheLogger)
+
+	// dao
+	userDAO := daoSystem.NewGORMUserDAO(r.rely.Db.Careful)
+	dictDAO := daoTools.NewGORMDictDAO(r.rely.Db.Careful)
+	dictTypeDAO := daoTools.NewGORMDictTypeDAO(r.rely.Db.Careful)
+
+	// repository
+	userRepository := repositorySystem.NewUserRepository(userDAO, userCacheLoggingDecorator)
+	dictRepository := repositoryTools.NewDictRepository(dictDAO, dictCacheLoggingDecorator)
 	dictTypeRepository := repositoryTools.NewDictTypeRepository(dictTypeDAO, dictTypeCacheLoggingDecorator)
+
+	// service
+	userService := serviceSystem.NewUserService(userRepository)
+	dictService := serviceTools.NewDictService(dictRepository)
 	dictTypeService := serviceTools.NewDictTypeService(dictTypeRepository, dictRepository)
+
+	// web
+	dictHandler := handlerTools.NewDictHandler(r.rely, dictService, userService)
 	dictTypeHandler := handlerTools.NewDictTypeHandler(r.rely, dictTypeService, userService)
+
+	// 数据字典
+	dictHandler.RegisterRoutes(baseRouter)
+	// 字典项
 	dictTypeHandler.RegisterRoutes(baseRouter)
 }
